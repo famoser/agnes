@@ -1,0 +1,31 @@
+# this is a sample inventory file. you can use this as a template when configuring the tool.
+
+servers:
+  "mangel.io": &server_mangel_io
+    host: "mangel.io"
+    user: "admin"
+    path: "/home/mangelio/www" # the path of the installation will be $path/$channel/$environment
+
+channels:
+  "app.mangel.io":
+    server: *server_mangel_io
+    environments:
+      - production
+      - staging
+      - education
+      - dev
+      
+environments:
+  production:
+    level: 1
+  education:
+    level: 1
+  staging:
+    pre_deploy: copy_environment production
+    level: 2
+  dev:
+    level: 3
+
+scripts:
+  copy_environment:
+      rsync -azP $SOURCE $TARGET
