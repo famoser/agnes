@@ -18,5 +18,4 @@ copy_shared:
     down: true
 
 fixtures:
-  groups:
-    1: [dev]
+  allow: [dev]
