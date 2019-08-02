@@ -14,18 +14,27 @@ channels:
       - staging
       - education
       - dev
-      
-environments:
-  production:
-    level: 1
-  education:
-    level: 1
-  staging:
-    pre_deploy: copy_environment production
-    level: 2
-  dev:
-    level: 3
 
-scripts:
-  copy_environment:
-      rsync -azP $SOURCE $TARGET
+policies:
+  deploy:
+    groups:
+      1: [production, education]
+      2: [staging]
+      3: [dev]
+    directions:
+      up: true
+      cross: true
+      down: false
+  copy_shared:
+    groups:
+      1: [production]
+      2: [dev, staging, education]
+    directions:
+      up: false
+      cross: true
+      down: true
+  fixtures:
+    groups:
+      1: [dev]
+    directions:
+      cross: true
