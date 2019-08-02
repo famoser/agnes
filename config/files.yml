@@ -1,0 +1,2 @@
+domain_overrides.json:
+  path: var/transient/domainOverrides.json
