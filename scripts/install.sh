@@ -9,6 +9,12 @@ execute mirations
 switch to new release
 clean up old releases
 
-automatic cleanup must not cleanup of some deployments failed
-release version detection
-set env file based on release, environment & host
+-> need state file inside release folder
+{ 
+    "release": "v1.2", # release version
+    "successful": true, # detect for automatic cleanup if enough releases available; detect errors with install & allow retry
+    "online": [{
+        "start": "2019-01-01T20:00:00"
+        "end": null
+    }]
+}
