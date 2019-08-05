@@ -1,4 +1,51 @@
-release_adapter: github
+application:
+  url: git@github.com:famoser/agnes
+  api_key: %env(GITHUB_API_KEY)%
+
+servers:
+  main:
+    host: %env(HOST)%
+    user: %env(USER)%
+    path: %env(PATH)% # the path of the installation will be $path/$environment_name/$environment
+    keep_releases: 2
+    environments:
+      app.mangel.io: [production, education, staging, dev]
+
+scripts:
+  # example script from a symfony application
+  release:
+    - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
+    - yarn install
+    - yarn run encore production
+    - rm -rf node_modules
+
+  shared:
+    - var/persistent
+
+  writable:
+    - var
+
+  env:
+    - .env.local
+
+  files:
+    - var/transient/domainOverrides.json
+    - var/transient/authorization/whitelists/developers.txt
+
+  warump:
+    - php bin/console cache:clear -n
+    - cp -r $PREVIOUS_RELEASE_PATH/var/transient var/transient
+
+  migration:
+    - php bin/console doctrine:migrations:migrate -n
+
+  rollback_migration:
+    - cd $PREVIOUS_RELEASE_PATH && export MIGRATE_TO=$(php bin/console doctrine:migrations:latest)
+    - php bin/console doctrine:migrations:migrate $MIGRATE_TO -n
+
+  fixtures:
+    - composer install --no-interaction --optimize-autoloader --no-scripts
+    - php bin/console doctrine:fixtures:load -n
 
 policies:
   strategy: unanimous # all matching policies must be valid
@@ -11,7 +58,7 @@ policies:
         0: [production, education]
         1: [staging]
         2: [dev]
-        
+
     - type: branch_whitelist
       filter:
         environment: [production, education, staging]
@@ -28,7 +75,6 @@ policies:
     - type: whitelist
       filter:
         environment: [dev]
-
 
 events:
   deploy:
