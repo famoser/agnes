@@ -1,39 +1,44 @@
-release:
-  adapter: github
+release_adapter: github
 
-deploy:
-  policies:
+policies:
+  strategy: unanimous # all matching policies must be valid
+  allow_if_all_abstain: true # if no matching policy is found, the execution is allowed
+
+  deploy:
     - type: write_up
       filter: null
       layers:
         0: [production, education]
         1: [staging]
         2: [dev]
+        
     - type: branch_whitelist
       filter:
         environment: [production, education, staging]
       branch: [master]
 
-  before:
-    - filter:
-        environment: [staging]
-      command: copy_shared
-      arguments: { source: production }
-
-  after:
-    - filter:
-        environment: [dev]
-      command: fixtures
-
-rollback:
-
-copy_shared:
-  policies:
+  copy_shared:
     - type: write_down
       filter: null
       layers:
         0: [production]
         1: [dev, staging, education]
 
-fixtures:
-  whitelist: [dev]
+  fixtures:
+    - type: whitelist
+      filter:
+        environment: [dev]
+
+
+events:
+  deploy:
+    before:
+      - filter:
+          environment: [staging]
+        command: copy_shared
+        arguments: { source: production }
+
+    after:
+      - filter:
+          environment: [dev]
+        command: fixtures
