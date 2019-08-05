@@ -1,0 +1,49 @@
+release:
+  adapter: github
+
+deploy:
+  policies:
+    - type: write_up
+      filter: null
+      layers:
+        0: [production, education]
+        1: [staging]
+        2: [dev]
+    - type: branch_whitelist
+      filter:
+        environment: [production, education, staging]
+      branch: [master]
+
+  before:
+    - filter:
+        environment: [staging]
+      command: copy_shared
+      arguments: { source: production }
+
+  after:
+    - filter:
+        environment: [dev]
+      command: fixtures
+
+
+rollback:
+
+copy_shared:
+  policies:
+    - type: write_down
+      filter: null
+      layers:
+        0: [production]
+        1: [dev, staging, education]
+
+fixtures:
+  whitelist: [dev]
+
+servers:
+  mangel.io:
+    host: mangel.io
+    user: admin
+    path: /home/mangelio/www # the path of the installation will be $path/$environment_name/$environment
+    keep_releases: 2
+    environments:
+      app.mangel.io: [production, education, staging, dev]

@@ -1,8 +1,0 @@
-before_deploy:
-  copy_shared:
-    - environments: [staging]
-      source: production
-
-after_deploy:
-  fixtures:
-    - environments: [dev]
