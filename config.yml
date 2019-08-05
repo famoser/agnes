@@ -25,7 +25,6 @@ deploy:
         environment: [dev]
       command: fixtures
 
-
 rollback:
 
 copy_shared:
@@ -38,12 +37,3 @@ copy_shared:
 
 fixtures:
   whitelist: [dev]
-
-servers:
-  mangel.io:
-    host: mangel.io
-    user: admin
-    path: /home/mangelio/www # the path of the installation will be $path/$environment_name/$environment
-    keep_releases: 2
-    environments:
-      app.mangel.io: [production, education, staging, dev]
