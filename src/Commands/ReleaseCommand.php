@@ -68,12 +68,12 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $githubConfig = $this->configurationService->getGithubConfig();
 
         $taskConfig = $this->configurationService->getTaskConfig("release");
-        // $this->buildRelease($taskConfig, $githubConfig, $release);
+        $this->buildRelease($taskConfig, $githubConfig, $release);
 
         // zip build folder
         $fileName = "release-" . $release->getTagName() . ".zip";
         $filePath = $taskConfig->getWorkingFolder() . "/" . $fileName;
-        // $this->compress($taskConfig->getWorkingFolder(), $filePath);
+        $this->compress($taskConfig->getWorkingFolder(), $filePath);
 
         $release->setAsset($fileName, "application/zip", file_get_contents($filePath));
 

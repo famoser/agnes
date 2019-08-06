@@ -33,7 +33,7 @@ class ReleaseService
     public function publishRelease(Release $release, GithubConfig $githubConfig)
     {
         $response = $this->createRelease($release, $githubConfig);
-        
+
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
         $releaseId = (int)$responseObject->id;
