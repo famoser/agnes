@@ -44,5 +44,7 @@ abstract class ConfigurationAwareCommand extends Command
     {
         $configFilePath = $input->getOption("config");
         $this->configurationService->loadConfig($configFilePath);
+
+        parent::initialize($input, $output);
     }
 }

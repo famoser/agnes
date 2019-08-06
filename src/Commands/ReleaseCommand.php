@@ -44,8 +44,8 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $this->setName('release')
             ->setDescription('Create a new release.')
             ->setHelp('This command compiles & publishes a new release according to the passed configuration.')
-            ->addOption("name", "n", InputOption::VALUE_REQUIRED, "name of the release")
-            ->addOption("commitish", "n", InputOption::VALUE_REQUIRED, "commit or branch of the release");
+            ->addOption("name", "na", InputOption::VALUE_REQUIRED, "name of the release")
+            ->addOption("commitish", "b", InputOption::VALUE_REQUIRED, "branch or commit of the release");
 
         parent::configure();
     }
@@ -60,10 +60,20 @@ class ReleaseCommand extends ConfigurationAwareCommand
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $release = $this->getRelease($input);
+        $githubConfig = $this->configurationService->getGithubConfig();
 
-        $this->setReleaseAsset($release);
+        $taskConfig = $this->configurationService->getTaskConfig("release");
+        $taskConfig->prependCommand("git clone git@github.com:" . $githubConfig->getRepository());
+        $this->taskExecutionService->execute($taskConfig);
 
-        $this->publishRelease($release);
+        // zip build folder
+        $fileName = "release-" . $release->getTagName() . ".zip";
+        $filePath = $taskConfig->getWorkingFolder() . "/" . $fileName;
+        $this->compress($taskConfig->getWorkingFolder(), $filePath);
+
+        $release->setAsset($fileName, "application/zip", file_get_contents($filePath));
+
+//        $this->releaseService->publishRelease($release, $githubConfig);
     }
 
     /**
@@ -94,32 +104,5 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $commitish = $input->getOption("commitish");
 
         return new Release($name, $commitish);
-    }
-
-    /**
-     * @param Release $release
-     * @throws \Exception
-     */
-    private function setReleaseAsset(Release $release): void
-    {
-        $releaseBuildConfig = $this->configurationService->getTaskConfig("release");
-        $this->taskExecutionService->execute($releaseBuildConfig);
-
-        $fileName = "release-" . $release->getTagName() . ".zip";
-        $filePath = $releaseBuildConfig->getWorkingFolder() . "/" . $fileName;
-        $this->compress($releaseBuildConfig->getWorkingFolder(), $filePath);
-
-        $release->setAsset($fileName, "application/zip", file_get_contents($filePath));
-    }
-
-    /**
-     * @param Release $release
-     * @throws Exception
-     * @throws \Exception
-     */
-    private function publishRelease(Release $release): void
-    {
-        $githubConfig = $this->configurationService->getGithubConfig();
-        $this->releaseService->publishRelease($release, $githubConfig);
     }
 }

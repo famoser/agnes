@@ -35,10 +35,12 @@ class ConfigurationService
      */
     public function loadConfig(string $path)
     {
-        $configFileContent = file_get_contents($this->basePath . $path);
+        $configFileContent = file_get_contents($this->basePath . DIRECTORY_SEPARATOR . $path);
         $config = Yaml::parse($configFileContent);
 
         $this->replaceEnvVariables($config);
+
+        $this->config = $config;
     }
 
     /**
@@ -47,8 +49,8 @@ class ConfigurationService
      */
     public function getGithubConfig()
     {
-        $apiToken = $this->getValue("agnes", "github_api_token");
-        $repository = $this->getValue("application", "repository");
+        $apiToken = $this->getConfigEntry("agnes", "github_api_token");
+        $repository = $this->getConfigEntry("application", "repository");
 
         return new GithubConfig($apiToken, $repository);
     }
@@ -60,30 +62,41 @@ class ConfigurationService
      */
     public function getTaskConfig(string $task)
     {
-        $folder = $this->basePath . $this->getValue("agnes", "build_folder");
-        $releaseScript = $this->getValue("application", "scripts", $task);
+        $folder = $this->basePath . DIRECTORY_SEPARATOR . $this->getConfigEntry("agnes", "build_folder");
+        $releaseScript = $this->getConfigEntry("application", "scripts", $task);
 
         return new TaskConfig($folder, $releaseScript);
     }
 
     /**
+     * @param string[] ...$key
+     * @return string|string[]
+     * @throws \Exception
+     */
+    private function getConfigEntry(...$key)
+    {
+        return $this->getValue($this->config, ...$key);
+    }
+
+    /**
+     * @param array $config
      * @param string $first
      * @param string[] ...$additionalDept
      * @return string|string[]
      * @throws \Exception
      */
-    private function getValue(string $first, ...$additionalDept)
+    private function getValue(array $config, string $first, ...$additionalDept)
     {
-        if (!isset($this->config[$first])) {
+        if (!isset($config[$first])) {
             throw new \Exception("key " . $first . " does not exist.");
         }
 
+        $value = $config[$first];
         if (count($additionalDept) > 0) {
-            return $this->getValue(...$additionalDept);
+            return $this->getValue($value, ...$additionalDept);
         }
 
-        return $this->config[$first];
-
+        return $value;
     }
 
     /**

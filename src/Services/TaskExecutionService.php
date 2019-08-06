@@ -15,7 +15,18 @@ class TaskExecutionService
     public function execute(TaskConfig $taskConfig, array $envVariables = [])
     {
         $this->setEnvironmentVariables($envVariables);
-        $this->executeCommands($taskConfig);
+
+        // create build folder
+        if (!is_dir($taskConfig->getWorkingFolder())) {
+            mkdir($taskConfig->getWorkingFolder(), 0777, true);
+        }
+
+        // change working directory
+        chdir($taskConfig->getWorkingFolder());
+
+        // execute commands
+        $this->executeCommands($taskConfig->getPrependCommands());
+        $this->executeCommands($taskConfig->getCommands());
     }
 
     /**
@@ -29,17 +40,17 @@ class TaskExecutionService
     }
 
     /**
-     * @param TaskConfig $taskConfig
+     * @param array $commands
      * @throws \Exception
      */
-    private function executeCommands(TaskConfig $taskConfig): void
+    private function executeCommands(array $commands): void
     {
-        foreach ($taskConfig->getScript() as $command) {
-            exec("cd " . $taskConfig->getWorkingFolder());
+        // execute commands
+        foreach ($commands as $command) {
             exec($command, $output, $returnVar);
 
             if ($returnVar !== 0) {
-                throw new \Exception("command execution of " . $command . " failed with " . $returnVar . ". \n" . $output);
+                throw new \Exception("command execution of " . $command . " failed with " . $returnVar . ".");
             }
         }
     }

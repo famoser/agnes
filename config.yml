@@ -7,9 +7,6 @@ application:
   scripts:
     release:
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
-      - yarn install
-      - yarn run encore production
-      - rm -rf node_modules
 
     deploy:
       - php bin/console cache:clear -n

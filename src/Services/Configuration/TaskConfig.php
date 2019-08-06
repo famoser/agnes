@@ -12,19 +12,24 @@ class TaskConfig
     private $workingFolder;
 
     /**
+     * @var string[]
+     */
+    private $prependCommands = [];
+
+    /**
      * @var array
      */
-    private $script;
+    private $commands;
 
     /**
      * ReleaseBuildConfig constructor.
      * @param string $workingFolder
-     * @param string[] $script
+     * @param string[] $commands
      */
-    public function __construct(string $workingFolder, array $script)
+    public function __construct(string $workingFolder, array $commands)
     {
         $this->workingFolder = $workingFolder;
-        $this->script = $script;
+        $this->commands = $commands;
     }
 
     /**
@@ -38,8 +43,24 @@ class TaskConfig
     /**
      * @return string[]
      */
-    public function getScript(): array
+    public function getCommands(): array
     {
-        return $this->script;
+        return $this->commands;
+    }
+
+    /**
+     * @param string $command
+     */
+    public function prependCommand(string $command)
+    {
+        $this->prependCommands[] = $command;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getPrependCommands(): array
+    {
+        return $this->prependCommands;
     }
 }
