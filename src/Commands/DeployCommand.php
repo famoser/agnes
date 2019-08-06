@@ -15,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ReleaseCommand extends ConfigurationAwareCommand
+class DeployCommand extends ConfigurationAwareCommand
 {
     /**
      * @var GithubService
@@ -50,11 +50,13 @@ class ReleaseCommand extends ConfigurationAwareCommand
 
     public function configure()
     {
-        $this->setName('release')
-            ->setDescription('Create a new release.')
-            ->setHelp('This command compiles & publishes a new release according to the passed configuration.')
+        $this->setName('deploy')
+            ->setDescription('Deploy a release to a specific environment.')
+            ->setHelp('This command downloads, installs & publishes a release to a specific environment.')
             ->addOption("name", "na", InputOption::VALUE_REQUIRED, "name of the release")
-            ->addOption("commitish", "b", InputOption::VALUE_REQUIRED, "branch or commit of the release");
+            ->addOption("stage", "st", InputOption::VALUE_OPTIONAL, "the stage to install the release on")
+            ->addOption("environment", "e", InputOption::VALUE_OPTIONAL, "the environment to install the release on")
+            ->addOption("server", "se", InputOption::VALUE_OPTIONAL, "the server to install the release on");
 
         parent::configure();
     }
@@ -68,47 +70,29 @@ class ReleaseCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $release = $this->getRelease($input);
         $githubConfig = $this->configurationService->getGithubConfig();
 
-        $taskConfig = $this->configurationService->getTaskConfig("release");
-        $this->buildRelease($taskConfig, $githubConfig->getRepository(), $release->getTargetCommitish());
-
-        // zip build folder
-        $fileName = "release-" . $release->getTagName() . ".zip";
-        $filePath = $taskConfig->getWorkingFolder() . "/" . $fileName;
-        $this->compressionService->compress($taskConfig->getWorkingFolder(), $filePath);
-
-        $release->setAsset($fileName, "application/zip", file_get_contents($filePath));
-
-        $this->githubService->publish($release, $githubConfig);
+        $targetReleaseName = $input->getOption("name");
+        $release = $this->getRelease($targetReleaseName, $githubConfig);
     }
 
     /**
-     * @param InputInterface $input
-     * @return Release
-     */
-    private function getRelease(InputInterface $input): Release
-    {
-        $name = $input->getOption("name");
-        $commitish = $input->getOption("commitish");
-
-        return new Release($name, $commitish);
-    }
-
-    /**
-     * @param TaskConfig $taskConfig
-     * @param string $repository
-     * @param string $targetCommitish
-     * @return void
+     * @param string $targetReleaseName
+     * @param GithubConfig $githubConfig
+     * @return \Agnes\Services\Github\Release
+     * @throws Exception
      * @throws \Exception
      */
-    private function buildRelease(TaskConfig $taskConfig, string $repository, string $targetCommitish)
+    private function getRelease(string $targetReleaseName, GithubConfig $githubConfig): \Agnes\Services\Github\Release
     {
-        $taskConfig->prependCommand("git clone git@github.com:" . $repository . " .");
-        $taskConfig->prependCommand("git checkout " . $targetCommitish);
-        $taskConfig->prependCommand("rm -rf .git");
+        $releases = $this->githubService->releases($githubConfig);
 
-        $this->taskExecutionService->execute($taskConfig, [], true);
+        foreach ($releases as $release) {
+            if ($release->getName() === $targetReleaseName) {
+                return $release;
+            }
+        }
+
+        throw new \Exception("release with name " . $targetReleaseName . " not found.");
     }
 }

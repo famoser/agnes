@@ -4,7 +4,8 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Agnes\Commands\ReleaseCommand;
-use Agnes\Release\ReleaseService;
+use Agnes\Release\CompressionService;
+use Agnes\Release\GithubService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\TaskExecutionService;
 use Http\Adapter\Guzzle6\Client;
@@ -17,9 +18,10 @@ $dotenv->loadEnv($path);
 
 $configService = new ConfigurationService(__DIR__);
 $client = Client::createWithConfig([]);
-$releaseService = new ReleaseService($client);
+$releaseService = new GithubService($client);
 $taskExecutionService = new TaskExecutionService();
+$compressionService = new CompressionService();
 
 $app = new Application();
-$app->add(new ReleaseCommand($configService, $releaseService, $taskExecutionService));
+$app->add(new ReleaseCommand($configService, $releaseService, $taskExecutionService, $compressionService));
 $app->run();

@@ -10,17 +10,22 @@ class TaskExecutionService
     /**
      * @param TaskConfig $taskConfig
      * @param array $envVariables
+     * @param bool $clearWorkingFolder
      * @throws \Exception
      */
-    public function execute(TaskConfig $taskConfig, array $envVariables = [])
+    public function execute(TaskConfig $taskConfig, array $envVariables = [], $clearWorkingFolder = false)
     {
         $this->setEnvironmentVariables($envVariables);
 
-        // clean build folder if it already exists
-        if (is_dir($taskConfig->getWorkingFolder())) {
+        // clean target folder if already existing
+        if (is_dir($taskConfig->getWorkingFolder()) && $clearWorkingFolder) {
             exec("rm -rf " . $taskConfig->getWorkingFolder());
         }
-        mkdir($taskConfig->getWorkingFolder(), 0777, true);
+
+        // ensure target folder exists
+        if (!is_dir($taskConfig->getWorkingFolder())) {
+            mkdir($taskConfig->getWorkingFolder(), 0777, true);
+        }
 
         // change working directory
         chdir($taskConfig->getWorkingFolder());

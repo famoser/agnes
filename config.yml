@@ -35,8 +35,10 @@ application:
 
 servers:
   mangel.io:
-    host: '%env(SERVER_HOST)%'
-    user: '%env(SERVER_USER)%'
+    connection:
+      type: ssh
+      host: '%env(SERVER_HOST)%'
+      user: '%env(SERVER_USER)%'
     path: '%env(SERVER_PATH)%' # the path of the installation will be $path/$environment_name/$environment
     keep_releases: 2
     environments:
