@@ -103,7 +103,7 @@ class ConfigurationService
      * @param array $config
      * @throws \Exception
      */
-    private function replaceEnvVariables(array $config)
+    private function replaceEnvVariables(array &$config)
     {
         foreach ($config as &$item) {
             if (is_array($item)) {

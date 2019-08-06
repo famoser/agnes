@@ -33,7 +33,7 @@ class ReleaseService
     public function publishRelease(Release $release, GithubConfig $githubConfig)
     {
         $response = $this->createRelease($release, $githubConfig);
-
+        
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
         $releaseId = (int)$responseObject->id;
@@ -60,17 +60,26 @@ class ReleaseService
               "target_commitish": "' . $release->getTargetCommitish() . '",
               "name": "' . $release->getName() . '",
               "body": "' . $release->getDescription() . '",
-              "draft": ' . $release->getDraft() . ',
-              "prerelease": ' . $release->getPrerelease() . '
+              "draft": ' . $this->booleanToString($release->getDraft()) . ',
+              "prerelease": ' . $this->booleanToString($release->getPrerelease()) . '
             }'
         );
 
         $response = $this->httpClient->sendRequest($request);
         if ($response->getStatusCode() !== 201) {
-            throw new \Exception("Creation of release failed with status code " . $response->getStatusCode());
+            throw new \Exception("Creation of release failed with status code " . $response->getStatusCode() . "\n" . $response->getBody());
         }
 
         return $response;
+    }
+
+    /**
+     * @param bool $input
+     * @return string
+     */
+    private function booleanToString(bool $input)
+    {
+        return $input ? "true" : "false";
     }
 
     /**
@@ -85,16 +94,16 @@ class ReleaseService
     {
         $request = new Request(
             'POST',
-            'https://api.github.com/repos/' . $config->getRepository() . '/releases/' . $releaseId . "/assets?name=" . $release->getAssetName(),
+            'https://uploads.github.com/repos/' . $config->getRepository() . '/releases/' . $releaseId . "/assets?name=" . $release->getAssetName(),
             [
                 "Authorization" => "token " . $config->getApiToken(),
                 "Content-Type" => $release->getAssetContentType()
             ],
-            $release->getAssetName()
+            $release->getAssetContent()
         );
         $response = $this->httpClient->sendRequest($request);
         if ($response->getStatusCode() !== 201) {
-            throw new \Exception("Creation of release asset failed with status code " . $response->getStatusCode());
+            throw new \Exception("Creation of release asset failed with status code " . $response->getStatusCode() . "\n" . $response->getBody());
         }
 
         return $response;

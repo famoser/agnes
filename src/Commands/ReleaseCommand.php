@@ -5,6 +5,8 @@ namespace Agnes\Commands;
 
 use Agnes\Release\Release;
 use Agnes\Release\ReleaseService;
+use Agnes\Services\Configuration\GithubConfig;
+use Agnes\Services\Configuration\TaskConfig;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\TaskExecutionService;
 use Http\Client\Exception;
@@ -66,15 +68,12 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $githubConfig = $this->configurationService->getGithubConfig();
 
         $taskConfig = $this->configurationService->getTaskConfig("release");
-        $taskConfig->prependCommand("git clone git@github.com:" . $githubConfig->getRepository() . " .");
-        $taskConfig->prependCommand("git checkout " . $release->getTargetCommitish());
-        $taskConfig->prependCommand("rm -rf .git");
-        $this->taskExecutionService->execute($taskConfig);
+        // $this->buildRelease($taskConfig, $githubConfig, $release);
 
         // zip build folder
         $fileName = "release-" . $release->getTagName() . ".zip";
         $filePath = $taskConfig->getWorkingFolder() . "/" . $fileName;
-        $this->compress($taskConfig->getWorkingFolder(), $filePath);
+        // $this->compress($taskConfig->getWorkingFolder(), $filePath);
 
         $release->setAsset($fileName, "application/zip", file_get_contents($filePath));
 
@@ -128,5 +127,21 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $commitish = $input->getOption("commitish");
 
         return new Release($name, $commitish);
+    }
+
+    /**
+     * @param TaskConfig $taskConfig
+     * @param GithubConfig $githubConfig
+     * @param Release $release
+     * @return void
+     * @throws \Exception
+     */
+    private function buildRelease(TaskConfig $taskConfig, GithubConfig $githubConfig, Release $release)
+    {
+        $taskConfig->prependCommand("git clone git@github.com:" . $githubConfig->getRepository() . " .");
+        $taskConfig->prependCommand("git checkout " . $release->getTargetCommitish());
+        $taskConfig->prependCommand("rm -rf .git");
+
+        $this->taskExecutionService->execute($taskConfig);
     }
 }
