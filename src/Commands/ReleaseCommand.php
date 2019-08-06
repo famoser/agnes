@@ -3,6 +3,7 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Services\ConfigurationService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -12,24 +13,42 @@ use Symfony\Component\Yaml\Yaml;
 
 class ReleaseCommand extends Command
 {
+    /**
+     * @var ConfigurationService
+     */
+    private $configurationService;
+
+    /**
+     * ReleaseCommand constructor.
+     * @param ConfigurationService $configurationService
+     */
+    public function __construct(ConfigurationService $configurationService)
+    {
+        parent::__construct();
+
+        $this->configurationService = $configurationService;
+    }
+
     public function configure()
     {
         $this->setName('release')
             ->setDescription('Create a new release.')
             ->setHelp('This command compiles & publishes a new release according to the passed configuration.')
-            ->addOption('config', "c", InputOption::VALUE_OPTIONAL, "The config file.");
+            ->addOption('config', "c", InputOption::VALUE_OPTIONAL, "The config file.", "config.yml");
     }
 
-    private function parseConfig(string $path)
-    {
 
-        $configFileContent = file_get_contents($path);
-        return Yaml::parse($configFileContent);
-    }
-
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|void|null
+     * @throws \Exception
+     */
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $configFilePath = $input->getOption("config");
-        $config = $this->parseConfig($configFilePath);
+        $config = $this->configurationService->parseConfig($configFilePath);
+
+
     }
 }
