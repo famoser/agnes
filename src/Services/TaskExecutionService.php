@@ -16,10 +16,11 @@ class TaskExecutionService
     {
         $this->setEnvironmentVariables($envVariables);
 
-        // create build folder
-        if (!is_dir($taskConfig->getWorkingFolder())) {
-            mkdir($taskConfig->getWorkingFolder(), 0777, true);
+        // clean build folder if it already exists
+        if (is_dir($taskConfig->getWorkingFolder())) {
+            exec("rm -rf " . $taskConfig->getWorkingFolder());
         }
+        mkdir($taskConfig->getWorkingFolder(), 0777, true);
 
         // change working directory
         chdir($taskConfig->getWorkingFolder());

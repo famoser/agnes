@@ -8,6 +8,9 @@ use Agnes\Release\ReleaseService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\TaskExecutionService;
 use Http\Client\Exception;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -63,7 +66,9 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $githubConfig = $this->configurationService->getGithubConfig();
 
         $taskConfig = $this->configurationService->getTaskConfig("release");
-        $taskConfig->prependCommand("git clone git@github.com:" . $githubConfig->getRepository());
+        $taskConfig->prependCommand("git clone git@github.com:" . $githubConfig->getRepository() . " .");
+        $taskConfig->prependCommand("git checkout " . $release->getTargetCommitish());
+        $taskConfig->prependCommand("rm -rf .git");
         $this->taskExecutionService->execute($taskConfig);
 
         // zip build folder
@@ -73,25 +78,44 @@ class ReleaseCommand extends ConfigurationAwareCommand
 
         $release->setAsset($fileName, "application/zip", file_get_contents($filePath));
 
-//        $this->releaseService->publishRelease($release, $githubConfig);
+        $this->releaseService->publishRelease($release, $githubConfig);
     }
 
     /**
      * @param string $folder
      * @param string $zipFile
+     * @return bool
+     * @throws \Exception
      */
     private function compress(string $folder, string $zipFile)
     {
-        $zipArchive = new ZipArchive();
+        $zip = new ZipArchive();
 
-        if (!$zipArchive->open($zipFile, ZIPARCHIVE::OVERWRITE))
-            die("Failed to create archive\n");
+        if (!$zip->open($zipFile, ZipArchive::CREATE | ZIPARCHIVE::OVERWRITE)) {
+            throw new \Exception("Failed to create archive");
+        }
 
-        $zipArchive->addGlob($folder . "/**/*");
-        if (!$zipArchive->status == ZIPARCHIVE::ER_OK)
-            echo "Failed to write files to zip\n";
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder), RecursiveIteratorIterator::SELF_FIRST);
 
-        $zipArchive->close();
+        foreach ($files as $file) {
+            // Ignore "." and ".." folders
+            if (in_array(substr($file, strrpos($file, '/') + 1), array('.', '..')))
+                continue;
+
+            $file = realpath($file);
+
+            if (is_dir($file) === true) {
+                $zip->addEmptyDir(str_replace($folder . '/', '', $file . '/'));
+            } else if (is_file($file) === true) {
+                $zip->addFile($file, str_replace($folder . '/', '', $file));
+            }
+        }
+
+        if (!$zip->status == ZIPARCHIVE::ER_OK) {
+            throw new \Exception("Failed to write files to zip");
+        }
+
+        return $zip->close();
     }
 
     /**
