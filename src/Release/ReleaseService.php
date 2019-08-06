@@ -74,6 +74,29 @@ class ReleaseService
     }
 
     /**
+     * @param int $releaseId
+     * @param GithubConfig $config
+     * @return ResponseInterface
+     * @throws Exception
+     * @throws \Exception
+     */
+    private function deleteRelease(int $releaseId, GithubConfig $config)
+    {
+        $request = new Request(
+            'DELETE',
+            'https://api.github.com/repos/' . $config->getRepository() . '/releases/' . $releaseId,
+            ["Authorization" => "token " . $config->getApiToken()]
+        );
+
+        $response = $this->httpClient->sendRequest($request);
+        if ($response->getStatusCode() !== 204) {
+            throw new \Exception("Removal of release failed with status code " . $response->getStatusCode() . "\n" . $response->getBody());
+        }
+
+        return $response;
+    }
+
+    /**
      * @param bool $input
      * @return string
      */
