@@ -3,11 +3,11 @@
 
 namespace Agnes\Release;
 
-
-use Agnes\Configuration\Github;
+use Agnes\Services\Configuration\GithubConfig;
 use GuzzleHttp\Psr7\Request;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
+use Psr\Http\Message\ResponseInterface;
 
 class ReleaseService
 {
@@ -17,32 +17,43 @@ class ReleaseService
     private $httpClient;
 
     /**
-     * @var Github
-     */
-    private $github;
-
-    /**
      * ReleaseService constructor.
      * @param HttpClient $httpClient
-     * @param Github $github
      */
-    public function __construct(HttpClient $httpClient, Github $github)
+    public function __construct(HttpClient $httpClient)
     {
         $this->httpClient = $httpClient;
-        $this->github = $github;
     }
 
     /**
      * @param Release $release
+     * @param GithubConfig $githubConfig
+     * @throws Exception
+     */
+    public function publishRelease(Release $release, GithubConfig $githubConfig)
+    {
+        $response = $this->createRelease($release, $githubConfig);
+
+        $responseJson = $response->getBody()->getContents();
+        $responseObject = json_decode($responseJson);
+        $releaseId = (int)$responseObject->id;
+
+        $this->addReleaseAsset($releaseId, $release, $githubConfig);
+    }
+
+    /**
+     * @param Release $release
+     * @param GithubConfig $config
+     * @return ResponseInterface
      * @throws Exception
      * @throws \Exception
      */
-    public function publishRelease(Release $release)
+    private function createRelease(Release $release, GithubConfig $config): ResponseInterface
     {
         $request = new Request(
             'POST',
-            'https://api.github.com/repos/' . $this->github->getRepository() . '/releases',
-            ["Authorization" => "token " . $this->github->getApiToken()],
+            'https://api.github.com/repos/' . $config->getRepository() . '/releases',
+            ["Authorization" => "token " . $config->getApiToken()],
             '
             {
               "tag_name": "' . $release->getTagName() . '",
@@ -59,17 +70,24 @@ class ReleaseService
             throw new \Exception("Creation of release failed with status code " . $response->getStatusCode());
         }
 
-        $responseJson = $response->getBody()->getContents();
-        $responseObject = json_decode($responseJson);
-        $releaseId = $responseObject->id;
+        return $response;
+    }
 
-        //application/zip
-
+    /**
+     * @param int $releaseId
+     * @param Release $release
+     * @param GithubConfig $config
+     * @return ResponseInterface
+     * @throws Exception
+     * @throws \Exception
+     */
+    private function addReleaseAsset(int $releaseId, Release $release, GithubConfig $config): ResponseInterface
+    {
         $request = new Request(
             'POST',
-            'https://api.github.com/repos/' . $this->github->getRepository() . '/releases/' . $releaseId . "/assets?name=" . $release->getAssetName(),
+            'https://api.github.com/repos/' . $config->getRepository() . '/releases/' . $releaseId . "/assets?name=" . $release->getAssetName(),
             [
-                "Authorization" => "token " . $this->github->getApiToken(),
+                "Authorization" => "token " . $config->getApiToken(),
                 "Content-Type" => $release->getAssetContentType()
             ],
             $release->getAssetName()
@@ -78,5 +96,7 @@ class ReleaseService
         if ($response->getStatusCode() !== 201) {
             throw new \Exception("Creation of release asset failed with status code " . $response->getStatusCode());
         }
+
+        return $response;
     }
 }

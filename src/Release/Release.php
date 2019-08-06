@@ -57,7 +57,7 @@ class Release
      * @param string $targetCommitish
      * @param string|null $description
      */
-    public function __construct(string $name, string $targetCommitish, string $assetContent, string $description = null)
+    public function __construct(string $name, string $targetCommitish, string $description = null)
     {
         $this->tagName = $name;
         $this->targetCommitish = $targetCommitish;
@@ -65,6 +65,18 @@ class Release
         $this->description = $description ?? "Release of " . $name;
         $this->prerelease = strpos($name, "-") > 0;
         $this->draft = false;
+    }
+
+    /**
+     * @param string $assetName
+     * @param string $assetContentType
+     * @param string $assetContent
+     */
+    public function setAsset(string $assetName, string $assetContentType, string $assetContent)
+    {
+        $this->assetName = $assetName;
+        $this->assetContentType = $assetContentType;
+        $this->assetContent = $assetContent;
     }
 
     /**

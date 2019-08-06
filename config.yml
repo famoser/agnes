@@ -1,6 +1,40 @@
-github:
-  api_token: '%env(GITHUB_API_TOKEN)%'
+agnes:
+  github_api_token: '%env(GITHUB_API_TOKEN)%'
+  build_folder: .build
+
+application:
   repository: famoser/agnes
+  scripts:
+    release:
+      - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
+      - yarn install
+      - yarn run encore production
+      - rm -rf node_modules
+
+    deploy:
+      - php bin/console cache:clear -n
+      - cp -r $PREVIOUS_RELEASE_PATH/var/transient var/transient
+      - find var -type d -print0 | xargs -0 chmod 0755
+      - find var -type f -print0 | xargs -0 chmod 0644
+      - php bin/console doctrine:migrations:migrate -n
+
+    rollback:
+      - cd $PREVIOUS_RELEASE_PATH && export MIGRATE_TO=$(php bin/console doctrine:migrations:latest)
+      - php bin/console doctrine:migrations:migrate $MIGRATE_TO -n
+
+    fixtures:
+      - composer install --no-interaction --optimize-autoloader --no-scripts
+      - php bin/console doctrine:fixtures:load -n
+
+  paths:
+    shared:
+      - var/persistent
+
+    env: .env.local
+
+    files:
+      - var/transient/domainOverrides.json
+      - var/transient/authorization/whitelists/developers.txt
 
 servers:
   mangel.io:
