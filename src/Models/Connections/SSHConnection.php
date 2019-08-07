@@ -52,7 +52,7 @@ class SSHConnection extends Connection
      */
     public function readFile(string $filePath, FileService $fileService): string
     {
-        return $fileService->readSSH($this, $filePath);
+        return $fileService->readFileSSH($this, $filePath);
     }
 
     /**
@@ -62,6 +62,15 @@ class SSHConnection extends Connection
      */
     public function writeFile(string $filePath, string $content, FileService $fileService)
     {
-        $fileService->writeSSH($this, $filePath, $content);
+        $fileService->writeFileSSH($this, $filePath, $content);
+    }
+
+    /**
+     * @param string $dir
+     * @return string[]
+     */
+    public function getFolders(string $dir): array
+    {
+        
     }
 }

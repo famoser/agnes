@@ -12,7 +12,7 @@ class FileService
      * @param string $filePath
      * @return string
      */
-    public function readLocal(string $filePath): string
+    public function readFileLocal(string $filePath): string
     {
         return file_get_contents($filePath);
     }
@@ -21,7 +21,7 @@ class FileService
      * @param string $filePath
      * @param string $content
      */
-    public function writeLocal(string $filePath, string $content)
+    public function writeFileLocal(string $filePath, string $content)
     {
         file_put_contents($filePath, $content);
     }
@@ -31,7 +31,7 @@ class FileService
      * @param string $filePath
      * @return string
      */
-    public function readSSH(SSHConnection $SSHConnection, string $filePath): string
+    public function readFileSSH(SSHConnection $SSHConnection, string $filePath): string
     {
         $tempFile = $this->getTempFile();
 
@@ -50,7 +50,7 @@ class FileService
      * @param string $filePath
      * @param string $content
      */
-    public function writeSSH(SSHConnection $SSHConnection, string $filePath, string $content)
+    public function writeFileSSH(SSHConnection $SSHConnection, string $filePath, string $content)
     {
         $tempFile = $this->getTempFile();
         file_put_contents($tempFile, $content);
@@ -58,6 +58,15 @@ class FileService
         // download file
         $destination = $this->getRsyncPath($SSHConnection, $filePath);
         exec("rsync -chavzP $tempFile $destination");
+    }
+
+    /**
+     * @param string $dir
+     * @return string[]
+     */
+    public function getFoldersLocal(string $dir)
+    {
+        return glob("$dir/*", GLOB_ONLYDIR);
     }
 
     /**

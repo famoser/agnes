@@ -31,7 +31,7 @@ class GithubService
     }
 
     /**
-     * @return \Agnes\Services\Github\Release[]
+     * @return Release[]
      * @throws Exception
      * @throws \Exception
      */
@@ -46,7 +46,7 @@ class GithubService
             if (count($release->assets) > 0) {
                 $assetId = $release->assets[0]->id;
 
-                $parsedRelease[] = new \Agnes\Services\Github\Release($name, $assetId);
+                $parsedRelease[] = new Release($name, $assetId);
             }
         }
 

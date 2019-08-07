@@ -4,13 +4,13 @@
 namespace Agnes\Deploy;
 
 
+use Agnes\Models\Tasks\Instance;
 use Agnes\Release\Release;
-use Agnes\Services\Configuration\Installation;
 
 class Deployment
 {
     /**
-     * @var Installation
+     * @var Instance
      */
     private $target;
 
@@ -21,19 +21,19 @@ class Deployment
 
     /**
      * Deployment constructor.
-     * @param Installation $target
+     * @param Instance $target
      * @param Release $release
      */
-    public function __construct(Installation $target, Release $release)
+    public function __construct(Instance $target, Release $release)
     {
         $this->target = $target;
         $this->release = $release;
     }
 
     /**
-     * @return Installation
+     * @return Instance
      */
-    public function getTarget(): Installation
+    public function getTarget(): Instance
     {
         return $this->target;
     }

@@ -27,7 +27,7 @@ class LocalConnection extends Connection
      */
     public function readFile(string $filePath, FileService $fileService): string
     {
-        return $fileService->readLocal($filePath);
+        return $fileService->readFileLocal($filePath);
     }
 
     /**
@@ -37,6 +37,15 @@ class LocalConnection extends Connection
      */
     public function writeFile(string $filePath, string $content, FileService $fileService)
     {
-        $fileService->writeLocal($filePath, $content);
+        $fileService->writeFileLocal($filePath, $content);
+    }
+
+    /**
+     * @param string $dir
+     * @return string[]
+     */
+    public function getFolders(string $dir, FileService $fileService): array
+    {
+        return $fileService->getFoldersLocal($dir);
     }
 }

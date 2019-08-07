@@ -3,6 +3,7 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Deploy\Deployment;
 use Agnes\Release\CompressionService;
 use Agnes\Release\Release;
 use Agnes\Release\GithubService;
@@ -55,9 +56,9 @@ class DeployCommand extends ConfigurationAwareCommand
             ->setDescription('Deploy a release to a specific environment.')
             ->setHelp('This command downloads, installs & publishes a release to a specific environment.')
             ->addOption("name", "na", InputOption::VALUE_REQUIRED, "name of the release")
-            ->addOption("stage", "st", InputOption::VALUE_OPTIONAL, "the stage to install the release on")
+            ->addOption("server", "se", InputOption::VALUE_OPTIONAL, "the server to install the release on")
             ->addOption("environment", "e", InputOption::VALUE_OPTIONAL, "the environment to install the release on")
-            ->addOption("server", "se", InputOption::VALUE_OPTIONAL, "the server to install the release on");
+            ->addOption("stage", "st", InputOption::VALUE_OPTIONAL, "the stage to install the release on");
 
         parent::configure();
     }
@@ -71,31 +72,45 @@ class DeployCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $githubConfig = $this->configurationService->getGithubConfig();
-
         $targetReleaseName = $input->getOption("name");
-        $release = $this->getRelease($targetReleaseName, $githubConfig);
+        $release = $this->getRelease($targetReleaseName);
+
+        $server = $input->getOption("server");
+        $environment = $input->getOption("environment");
+        $stage = $input->getOption("stage");
+        $installations = $this->getInstallations($server, $environment, $stage);
+
+        $deployment = new Deployment()
 
         $releaseContent = $this->githubService->asset($release->getAssetId());
     }
 
     /**
      * @param string $targetReleaseName
-     * @param GithubConfig $githubConfig
-     * @return \Agnes\Services\Github\Release
+     * @return Release
      * @throws Exception
      * @throws \Exception
      */
-    private function getRelease(string $targetReleaseName, GithubConfig $githubConfig): \Agnes\Services\Github\Release
+    private function getRelease(string $targetReleaseName): Release
     {
-        $releases = $this->githubService->releases($githubConfig);
+        $releases = $this->githubService->releases();
 
         foreach ($releases as $release) {
             if ($release->getName() === $targetReleaseName) {
-                return $release;
+                return new Release($release->getName(), $release->getCommitish());
             }
         }
 
         throw new \Exception("release with name " . $targetReleaseName . " not found.");
+    }
+
+    /**
+     * @param string|null $server
+     * @param string|null $environment
+     * @param string|null $stage
+     */
+    private function getInstallations(?string $server, ?string $environment, ?string $stage)
+    {
+
     }
 }

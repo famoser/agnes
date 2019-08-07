@@ -12,7 +12,9 @@ use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Task;
 use Agnes\Models\Connections\LocalConnection;
 use Agnes\Models\Connections\SSHConnection;
+use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\GithubConfig;
+use Agnes\Services\Configuration\Server;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
@@ -69,17 +71,8 @@ class ConfigurationService
     public function getBuildConnection()
     {
         $connection = $this->getConfigEntry("agnes", "build", "connection");
-        $connectionType = $connection["type"];
 
-        if ($connectionType === "local") {
-            $path = $this->basePath . DIRECTORY_SEPARATOR . $connection["path"];
-            return new LocalConnection($path);
-        } else if ($connectionType === "ssh") {
-            $destination = $connection["destination"];
-            return new SSHConnection($connection["path"], $destination);
-        } else {
-            throw new \Exception("unknown connection type $connectionType");
-        }
+        return $this->getConnection($connection);
     }
 
     /**
@@ -94,7 +87,7 @@ class ConfigurationService
 
     /**
      * @param string[] ...$key
-     * @return string|string[]|string[][]|string[][][]
+     * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws \Exception
      */
     private function getConfigEntry(...$key)
@@ -105,7 +98,7 @@ class ConfigurationService
     /**
      * @param $default
      * @param string[] ...$key
-     * @return string|string[]|string[][]|string[][][]
+     * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws \Exception
      */
     private function getConfigEntryOrDefault($default, ...$key)
@@ -119,7 +112,7 @@ class ConfigurationService
      * @param $default
      * @param string $first
      * @param string[] ...$additionalDept
-     * @return string|string[]|string[][]|string[][][]
+     * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws \Exception
      */
     private function getValue(array $config, bool $throwOnMissing, $default, string $first, ...$additionalDept)
@@ -160,6 +153,31 @@ class ConfigurationService
                 }
             }
         }
+    }
+
+
+    /**
+     * @return Server[]
+     * @throws \Exception
+     */
+    public function getServers(): array
+    {
+        $serverConfigs = $this->getConfigEntryOrDefault([], "servers");
+
+        $servers = [];
+        foreach ($serverConfigs as $serverName => $serverConfig) {
+            $connection = $this->getConnection($serverConfig["connection"]);
+            $keepReleases = (int)$serverConfig["keep_releases"];
+
+            $environments = [];
+            foreach ($serverConfig["environments"] as $environmentName => $stages) {
+                $environments[] = new Environment($environmentName, $stages);
+            }
+
+            $servers[] = new Server($serverName, $connection, $keepReleases, $environments);
+        }
+
+        return $servers;
     }
 
     /**
@@ -206,6 +224,25 @@ class ConfigurationService
         $stages = isset($filter["stages"]) ? $filter["stages"] : [];
 
         return new Filter($servers, $environments, $stages);
+    }
 
+    /**
+     * @param $connection
+     * @return LocalConnection|SSHConnection
+     * @throws \Exception
+     */
+    private function getConnection($connection)
+    {
+        $connectionType = $connection["type"];
+
+        if ($connectionType === "local") {
+            $path = $this->basePath . DIRECTORY_SEPARATOR . $connection["path"];
+            return new LocalConnection($path);
+        } else if ($connectionType === "ssh") {
+            $destination = $connection["destination"];
+            return new SSHConnection($connection["path"], $destination);
+        } else {
+            throw new \Exception("unknown connection type $connectionType");
+        }
     }
 }

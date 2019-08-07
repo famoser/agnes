@@ -4,15 +4,74 @@
 namespace Agnes\Services\Configuration;
 
 
+use Agnes\Models\Connections\Connection;
+
 class Server
 {
     /**
      * @var string
      */
-    private $host;
+    private $name;
 
     /**
-     * @var string
+     * @var Connection
      */
-    private $user;
+    private $connection;
+
+    /**
+     * @var int
+     */
+    private $keepReleases;
+
+    /**
+     * @var Environment[]
+     */
+    private $environments;
+
+    /**
+     * Server constructor.
+     * @param string $name
+     * @param Connection $connection
+     * @param int $keepReleases
+     * @param Environment[] $environments
+     */
+    public function __construct(string $name, Connection $connection, int $keepReleases, array $environments)
+    {
+        $this->name = $name;
+        $this->connection = $connection;
+        $this->keepReleases = $keepReleases;
+        $this->environments = $environments;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return Connection
+     */
+    public function getConnection(): Connection
+    {
+        return $this->connection;
+    }
+
+    /**
+     * @return int
+     */
+    public function getKeepReleases(): int
+    {
+        return $this->keepReleases;
+    }
+
+    /**
+     * @return Environment[]
+     */
+    public function getEnvironments(): array
+    {
+        return $this->environments;
+    }
 }

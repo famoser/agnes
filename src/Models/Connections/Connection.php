@@ -45,6 +45,12 @@ abstract class Connection
     public abstract function writeFile(string $filePath, string $content, FileService $fileService);
 
     /**
+     * @param string $dir
+     * @return string[]
+     */
+    public abstract function getFolders(string $dir): array;
+
+    /**
      * @return string
      */
     public function getWorkingFolder(): string

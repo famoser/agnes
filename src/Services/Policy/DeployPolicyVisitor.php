@@ -6,15 +6,13 @@ namespace Agnes\Services\Policy;
 
 use Agnes\Deploy\Deployment;
 use Agnes\Models\Policies\EnvironmentWriteUpPolicy;
-use Agnes\Models\Policies\Policy;
 use Agnes\Models\Tasks\Filter;
-use Agnes\Services\Configuration\Installation;
-use Agnes\Services\InstallationService;
+use Agnes\Services\InstanceService;
 
 class DeployPolicyVisitor extends PolicyVisitor
 {
     /**
-     * @var InstallationService
+     * @var InstanceService
      */
     private $installationService;
 
@@ -25,10 +23,10 @@ class DeployPolicyVisitor extends PolicyVisitor
 
     /**
      * DeployPolicyVisitor constructor.
-     * @param InstallationService $installationService
+     * @param InstanceService $installationService
      * @param Deployment $deployment
      */
-    public function __construct(InstallationService $installationService, Deployment $deployment)
+    public function __construct(InstanceService $installationService, Deployment $deployment)
     {
         $this->installationService = $installationService;
         $this->deployment = $deployment;
@@ -41,7 +39,7 @@ class DeployPolicyVisitor extends PolicyVisitor
     public function visitEnvironmentWriteUp(EnvironmentWriteUpPolicy $environmentWriteUpPolicy)
     {
         $filter = new Filter([], [$this->deployment->getTarget()->getEnvironment()], []);
-        $installations = $this->installationService->getInstallations($filter);
+        $installations = $this->installationService->getInstances($filter);
 
         return false;
     }
@@ -52,6 +50,6 @@ class DeployPolicyVisitor extends PolicyVisitor
      */
     protected function filterApplies(?Filter $filter)
     {
-        return $filter === null || $filter->installationMatches($this->deployment->getTarget());
+        return $filter === null || $filter->instanceMatches($this->deployment->getTarget());
     }
 }
