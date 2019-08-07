@@ -94,7 +94,7 @@ class GithubService
         $body = '
         {
           "tag_name": "' . $release->getName() . '",
-          "target_commitish": "' . $release->getTargetCommitish() . '",
+          "target_commitish": "' . $release->getCommitish() . '",
           "name": "' . $release->getName() . '",
           "body": "Release of ' . $release->getName() . '",
           "draft": false,

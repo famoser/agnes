@@ -24,19 +24,16 @@ abstract class Policy
     }
 
     /**
-     * @param string $server
-     * @param string $environment
-     * @param string $stage
-     * @return bool
-     */
-    public function isApplicable(string $server, string $environment, string $stage)
-    {
-        return $this->filter === null || $this->filter->isMatch($server, $environment, $stage);
-    }
-
-    /**
      * @param PolicyVisitor $visitor
      * @return bool
      */
     public abstract function accept(PolicyVisitor $visitor);
+
+    /**
+     * @return Filter|null
+     */
+    public function getFilter(): ?Filter
+    {
+        return $this->filter;
+    }
 }

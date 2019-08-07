@@ -111,7 +111,7 @@ class ReleaseCommand extends ConfigurationAwareCommand
 
         // clone repo, checkout correct commit & then remove git folder
         $task->addPreCommand("git clone git@github.com:" . $githubConfig->getRepository() . " .");
-        $task->addPreCommand("git checkout " . $release->getTargetCommitish());
+        $task->addPreCommand("git checkout " . $release->getCommitish());
         $task->addPreCommand("rm -rf .git");
 
         // after release has been build, compress it to a single folder

@@ -3,6 +3,8 @@
 
 namespace Agnes\Services;
 
+use Agnes\Release\Release;
+use Agnes\Services\Policy\ReleasePolicyVisitor;
 
 class PolicyService
 {
@@ -21,10 +23,18 @@ class PolicyService
     }
 
     /**
-     * @param string|null $commitish
+     * @param Release $release
+     * @throws \Exception
      */
-    public function ensureCanRelease(?string $commitish)
+    public function ensureCanRelease(Release $release)
     {
-        $this->configurationService->getPolicies("release");
+        $releasePolicyVisitor = new ReleasePolicyVisitor($release);
+        $policies = $this->configurationService->getPolicies("release");
+
+        foreach ($policies as $policy) {
+            if (!$policy->accept($releasePolicyVisitor)) {
+                throw new \Exception("policy denied execution: " . get_class($policy));
+            }
+        }
     }
 }

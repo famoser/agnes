@@ -4,6 +4,11 @@
 namespace Agnes\Services;
 
 use Agnes\Models\Connections\Connection;
+use Agnes\Models\Policies\EnvironmentWriteDownPolicy;
+use Agnes\Models\Policies\EnvironmentWriteUpPolicy;
+use Agnes\Models\Policies\Policy;
+use Agnes\Models\Policies\ReleaseWhitelistPolicy;
+use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Task;
 use Agnes\Models\Connections\LocalConnection;
 use Agnes\Models\Connections\SSHConnection;
@@ -89,25 +94,42 @@ class ConfigurationService
 
     /**
      * @param string[] ...$key
-     * @return string|string[]
+     * @return string|string[]|string[][]|string[][][]
      * @throws \Exception
      */
     private function getConfigEntry(...$key)
     {
-        return $this->getValue($this->config, ...$key);
+        return $this->getValue($this->config, true, null, ...$key);
+    }
+
+    /**
+     * @param $default
+     * @param string[] ...$key
+     * @return string|string[]|string[][]|string[][][]
+     * @throws \Exception
+     */
+    private function getConfigEntryOrDefault($default, ...$key)
+    {
+        return $this->getValue($this->config, false, $default, ...$key);
     }
 
     /**
      * @param array $config
+     * @param bool $throwOnMissing
+     * @param $default
      * @param string $first
      * @param string[] ...$additionalDept
-     * @return string|string[]
+     * @return string|string[]|string[][]|string[][][]
      * @throws \Exception
      */
-    private function getValue(array $config, string $first, ...$additionalDept)
+    private function getValue(array $config, bool $throwOnMissing, $default, string $first, ...$additionalDept)
     {
         if (!isset($config[$first])) {
-            throw new \Exception("key " . $first . " does not exist.");
+            if ($throwOnMissing) {
+                throw new \Exception("key " . $first . " does not exist.");
+            } else {
+                return $default;
+            }
         }
 
         $value = $config[$first];
@@ -140,9 +162,50 @@ class ConfigurationService
         }
     }
 
-    public function getPolicies(string $string)
+    /**
+     * @param string $type
+     * @return Policy[]
+     * @throws \Exception
+     */
+    public function getPolicies(string $type)
     {
+        $policies = $this->getConfigEntryOrDefault([], "policies", $type);
 
+        /** @var Policy[] $parsedPolicies */
+        $parsedPolicies = [];
+        foreach ($policies as $policy) {
+            $filter = $this->getFilter($policy["filter"]);
+
+            $policyType = $policy["type"];
+            switch ($policyType) {
+                case "environment_write_up":
+                    $parsedPolicies[] = new EnvironmentWriteUpPolicy($filter, $policy["layers"]);
+                    break;
+                case "environment_write_down":
+                    $parsedPolicies[] = new EnvironmentWriteDownPolicy($filter, $policy["layers"]);
+                    break;
+                case "release_whitelist":
+                    $parsedPolicies[] = new ReleaseWhitelistPolicy($filter, $policy["commitishes"]);
+                    break;
+                default:
+                    throw new \Exception("Unknown policy type: " . $policyType);
+            }
+        }
+
+        return $parsedPolicies;
+    }
+
+    /**
+     * @param string[] $filter
+     * @return Filter
+     */
+    private function getFilter(array $filter)
+    {
+        $servers = isset($filter["servers"]) ? $filter["servers"] : [];
+        $environments = isset($filter["environments"]) ? $filter["environments"] : [];
+        $stages = isset($filter["stages"]) ? $filter["stages"] : [];
+
+        return new Filter($servers, $environments, $stages);
 
     }
 }

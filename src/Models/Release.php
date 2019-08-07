@@ -9,7 +9,7 @@ class Release
     /**
      * @var string
      */
-    private $targetCommitish;
+    private $commitish;
 
     /**
      * @var string
@@ -23,16 +23,16 @@ class Release
      */
     public function __construct(string $name, string $targetCommitish)
     {
-        $this->targetCommitish = $targetCommitish;
+        $this->commitish = $targetCommitish;
         $this->name = $name;
     }
 
     /**
      * @return string
      */
-    public function getTargetCommitish(): string
+    public function getCommitish(): string
     {
-        return $this->targetCommitish;
+        return $this->commitish;
     }
 
     /**

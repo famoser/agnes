@@ -58,10 +58,10 @@ policies:
         1: [staging]
         2: [dev]
 
-    - type: branch_whitelist
+    - type: release_whitelist
       filter:
         stages: [production, education, staging]
-      branch: [master]
+      commitishes: [master]
 
   copy_shared:
     - type: environment_write_down

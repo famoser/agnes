@@ -4,6 +4,8 @@
 namespace Agnes\Models\Tasks;
 
 
+use Agnes\Services\Configuration\Installation;
+
 class Filter
 {
     /**
@@ -32,6 +34,15 @@ class Filter
         $this->servers = $servers;
         $this->environments = $environments;
         $this->stages = $stages;
+    }
+
+    /**
+     * @param Installation $installation
+     * @return bool
+     */
+    public function installationMatches(Installation $installation)
+    {
+        return $this->isMatch($installation->getServer(), $installation->getEnvironment(), $installation->getStage());
     }
 
     /**
