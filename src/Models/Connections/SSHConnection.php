@@ -74,4 +74,14 @@ class SSHConnection extends Connection
     {
         return $fileService->getFoldersSSH($this, $dir);
     }
+
+    /**
+     * @param string $filePath
+     * @param FileService $fileService
+     * @return bool
+     */
+    public function checkFileExists(string $filePath, FileService $fileService): bool
+    {
+        return $fileService->checkFileExistsSSH($this, $filePath);
+    }
 }

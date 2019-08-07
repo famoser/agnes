@@ -19,11 +19,11 @@ class Release
     /**
      * Release constructor.
      * @param string $name
-     * @param string $targetCommitish
+     * @param string $commitish
      */
-    public function __construct(string $name, string $targetCommitish)
+    public function __construct(string $name, string $commitish)
     {
-        $this->commitish = $targetCommitish;
+        $this->commitish = $commitish;
         $this->name = $name;
     }
 

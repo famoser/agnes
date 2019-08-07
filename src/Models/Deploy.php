@@ -6,8 +6,9 @@ namespace Agnes\Deploy;
 
 use Agnes\Models\Tasks\Instance;
 use Agnes\Release\Release;
+use Agnes\Services\Github\ReleaseWithAsset;
 
-class Deployment
+class Deploy
 {
     /**
      * @var Instance
@@ -15,16 +16,16 @@ class Deployment
     private $target;
 
     /**
-     * @var Release
+     * @var ReleaseWithAsset
      */
     private $release;
 
     /**
      * Deployment constructor.
-     * @param Instance $target
      * @param Release $release
+     * @param Instance $target
      */
-    public function __construct(Instance $target, Release $release)
+    public function __construct(ReleaseWithAsset $release, Instance $target)
     {
         $this->target = $target;
         $this->release = $release;
@@ -39,9 +40,9 @@ class Deployment
     }
 
     /**
-     * @return Release
+     * @return ReleaseWithAsset
      */
-    public function getRelease(): Release
+    public function getRelease(): ReleaseWithAsset
     {
         return $this->release;
     }

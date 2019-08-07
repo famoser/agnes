@@ -4,9 +4,11 @@
 namespace Agnes\Services;
 
 
+use Agnes\Models\Connections\Connection;
+use Agnes\Models\Installation;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Instance;
-use Agnes\Services\Configuration\Installation;
+use Agnes\Release\Release;
 
 class InstanceService
 {
@@ -23,7 +25,7 @@ class InstanceService
     /**
      * @var Instance[]|null
      */
-    private $installationsCache = null;
+    private $instancesCache = null;
 
     /**
      * InstallationService constructor.
@@ -43,17 +45,17 @@ class InstanceService
      */
     public function getInstances(?Filter $filter)
     {
-        if ($this->installationsCache === null) {
-            $this->installationsCache = $this->loadInstances();
+        if ($this->instancesCache === null) {
+            $this->instancesCache = $this->loadInstances();
         }
 
         if ($filter === null) {
-            return $this->installationsCache;
+            return $this->instancesCache;
         }
 
         /** @var Instance[] $filteredInstallations */
         $filteredInstallations = [];
-        foreach ($this->installationsCache as $installation) {
+        foreach ($this->instancesCache as $installation) {
             if ($filter->instanceMatches($installation)) {
                 $filteredInstallations[] = $installation;
             }
@@ -62,18 +64,37 @@ class InstanceService
         return $filteredInstallations;
     }
 
-    public function loadInstallations(Instance $instance)
+    /**
+     * @param Connection $connection
+     * @param string $releasesFolder
+     * @return array
+     * @throws \Exception
+     */
+    public function loadInstallations(Connection $connection, string $releasesFolder)
     {
-        $installationsFolder = $instance->getConnection()->getWorkingFolder() . DIRECTORY_SEPARATOR . $instance->getInstallationsFolder() . DIRECTORY_SEPARATOR . "releases";
-        $folders = $instance->getConnection()->getFolders($installationsFolder, $this->fileService);
+        $folders = $connection->getFolders($releasesFolder, $this->fileService);
+
+        $installations = [];
 
         foreach ($folders as $folder) {
-            $installation = new Installation($installationsFolder . DIRECTORY_SEPARATOR . $folder);
+            $installationPath = $releasesFolder . DIRECTORY_SEPARATOR . $folder;
+            $agnesFilePath = $installationPath . DIRECTORY_SEPARATOR . ".agnes";
+
+            if ($connection->checkFileExists($agnesFilePath, $this->fileService)) {
+                $metaJson = $connection->readFile($agnesFilePath, $this->fileService);
+                $meta = json_decode($metaJson);
+                $installationDateTime = isset($meta["installationAt"]) ? new \DateTime($meta["installationAt"]) : null;
+                $release = new Release($meta["release"]["name"], $meta["release"]["commitish"]);
+
+                $installations[] = new Installation($installationPath, $installationDateTime, $release);
+            }
         }
+
+        return $installations;
     }
 
     /**
-     * @return array
+     * @return Instance[]
      * @throws \Exception
      */
     private function loadInstances()
@@ -84,7 +105,12 @@ class InstanceService
         foreach ($servers as $server) {
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stages) {
-                    $instances[] = new Instance($server->getConnection(), $server->getName(), $environment->getName(), $stages);
+                    foreach ($stages as $stage) {
+                        $releasesFolder = $server->getConnection()->getWorkingFolder() . DIRECTORY_SEPARATOR . $environment->getName() . DIRECTORY_SEPARATOR . $stage . DIRECTORY_SEPARATOR . "releases";
+                        $installations = $this->loadInstallations($server->getConnection(), $releasesFolder);
+
+                        $instances[] = new Instance($server->getConnection(), $server->getName(), $environment->getName(), $stage, $installations);
+                    }
                 }
             }
         }

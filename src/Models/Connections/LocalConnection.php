@@ -42,10 +42,21 @@ class LocalConnection extends Connection
 
     /**
      * @param string $dir
+     * @param FileService $fileService
      * @return string[]
      */
     public function getFolders(string $dir, FileService $fileService): array
     {
         return $fileService->getFoldersLocal($dir);
+    }
+
+    /**
+     * @param string $filePath
+     * @param FileService $fileService
+     * @return bool
+     */
+    public function checkFileExists(string $filePath, FileService $fileService): bool
+    {
+        return $fileService->checkFileExistsLocal($filePath);
     }
 }

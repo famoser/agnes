@@ -5,6 +5,7 @@ namespace Agnes\Release;
 
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\Github\Client;
+use Agnes\Services\Github\ReleaseWithAsset;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
 use Psr\Http\Message\ResponseInterface;
@@ -30,7 +31,7 @@ class GithubService
     }
 
     /**
-     * @return Release[]
+     * @return ReleaseWithAsset[]
      * @throws Exception
      * @throws \Exception
      */
@@ -42,10 +43,11 @@ class GithubService
         $parsedRelease = [];
         foreach ($releases as $release) {
             $name = $release->name;
+            $commitish = $release->target_commitish;
             if (count($release->assets) > 0) {
                 $assetId = $release->assets[0]->id;
 
-                $parsedRelease[] = new Release($name, $assetId);
+                $parsedRelease[] = new ReleaseWithAsset($name, $commitish, $assetId);
             }
         }
 

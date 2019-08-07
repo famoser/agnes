@@ -4,7 +4,7 @@
 namespace Agnes\Services\Policy;
 
 
-use Agnes\Deploy\Deployment;
+use Agnes\Deploy\Deploy;
 use Agnes\Models\Policies\EnvironmentWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Services\InstanceService;
@@ -17,16 +17,16 @@ class DeployPolicyVisitor extends PolicyVisitor
     private $installationService;
 
     /**
-     * @var Deployment
+     * @var Deploy
      */
     private $deployment;
 
     /**
      * DeployPolicyVisitor constructor.
      * @param InstanceService $installationService
-     * @param Deployment $deployment
+     * @param Deploy $deployment
      */
-    public function __construct(InstanceService $installationService, Deployment $deployment)
+    public function __construct(InstanceService $installationService, Deploy $deployment)
     {
         $this->installationService = $installationService;
         $this->deployment = $deployment;

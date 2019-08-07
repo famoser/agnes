@@ -5,6 +5,7 @@ namespace Agnes\Models\Tasks;
 
 
 use Agnes\Models\Connections\Connection;
+use Agnes\Models\Installation;
 
 class Instance
 {
@@ -29,18 +30,25 @@ class Instance
     private $stage;
 
     /**
+     * @var Installation[]
+     */
+    private $installations;
+
+    /**
      * Instance constructor.
      * @param Connection $connection
      * @param string $server
      * @param string $environment
      * @param string $stage
+     * @param array $installations
      */
-    public function __construct(Connection $connection, string $server, string $environment, string $stage)
+    public function __construct(Connection $connection, string $server, string $environment, string $stage, array $installations)
     {
         $this->connection = $connection;
         $this->server = $server;
         $this->environment = $environment;
         $this->stage = $stage;
+        $this->installations = $installations;
     }
 
     /**

@@ -52,6 +52,13 @@ abstract class Connection
     public abstract function getFolders(string $dir, FileService $fileService): array;
 
     /**
+     * @param string $filePath
+     * @param FileService $fileService
+     * @return bool
+     */
+    public abstract function checkFileExists(string $filePath, FileService $fileService): bool;
+
+    /**
      * @return string
      */
     public function getWorkingFolder(): string

@@ -3,14 +3,16 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Deploy\Deployment;
-use Agnes\Release\CompressionService;
+use Agnes\Deploy\Deploy;
+use Agnes\Models\Tasks\Filter;
+use Agnes\Models\Tasks\Instance;
 use Agnes\Release\Release;
 use Agnes\Release\GithubService;
-use Agnes\Services\Configuration\GithubConfig;
-use Agnes\Services\Configuration\Task;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\FileService;
+use Agnes\Services\Github\ReleaseWithAsset;
+use Agnes\Services\InstanceService;
+use Agnes\Services\PolicyService;
 use Agnes\Services\TaskService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,19 +37,33 @@ class DeployCommand extends ConfigurationAwareCommand
     private $fileService;
 
     /**
+     * @var InstanceService
+     */
+    private $instanceService;
+
+    /**
+     * @var PolicyService
+     */
+    private $policyService;
+
+    /**
      * ReleaseCommand constructor.
      * @param ConfigurationService $configurationService
      * @param GithubService $githubService
      * @param TaskService $taskExecutionService
      * @param FileService $fileService
+     * @param InstanceService $instanceService
+     * @param PolicyService $policyService
      */
-    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskService $taskExecutionService, FileService $fileService)
+    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskService $taskExecutionService, FileService $fileService, InstanceService $instanceService, PolicyService $policyService)
     {
         parent::__construct($configurationService);
 
         $this->githubService = $githubService;
         $this->taskExecutionService = $taskExecutionService;
         $this->fileService = $fileService;
+        $this->instanceService = $instanceService;
+        $this->policyService = $policyService;
     }
 
     public function configure()
@@ -78,26 +94,34 @@ class DeployCommand extends ConfigurationAwareCommand
         $server = $input->getOption("server");
         $environment = $input->getOption("environment");
         $stage = $input->getOption("stage");
-        $installations = $this->getInstallations($server, $environment, $stage);
+        $instances = $this->getInstances($server, $environment, $stage);
 
-        $deployment = new Deployment()
+        $deploys = [];
+        foreach ($instances as $instance) {
+            $deploy = new Deploy($release, $instance);
+            if ($this->policyService->canDeploy($deploy)) {
+                $deploys[] = $deploy;
+            }
+        }
 
-        $releaseContent = $this->githubService->asset($release->getAssetId());
+        foreach ($deploys as $deploy) {
+            $this->deploy($deploy);
+        }
     }
 
     /**
      * @param string $targetReleaseName
-     * @return Release
+     * @return ReleaseWithAsset
      * @throws Exception
      * @throws \Exception
      */
-    private function getRelease(string $targetReleaseName): Release
+    private function getRelease(string $targetReleaseName): ReleaseWithAsset
     {
         $releases = $this->githubService->releases();
 
         foreach ($releases as $release) {
             if ($release->getName() === $targetReleaseName) {
-                return new Release($release->getName(), $release->getCommitish());
+                return $release;
             }
         }
 
@@ -108,9 +132,46 @@ class DeployCommand extends ConfigurationAwareCommand
      * @param string|null $server
      * @param string|null $environment
      * @param string|null $stage
+     * @return Instance[]
+     * @throws \Exception
      */
-    private function getInstallations(?string $server, ?string $environment, ?string $stage)
+    private function getInstances(?string $server, ?string $environment, ?string $stage)
     {
+        $servers = $server !== null ? [$server] : [];
+        $environments = $environment !== null ? [$environment] : [];
+        $stages = $stage !== null ? [$stage] : [];
+        $filter = new Filter($servers, $environments, $stages);
 
+        return $this->instanceService->getInstances($filter);
+    }
+
+    /**
+     * @param Deploy $deploy
+     * @throws Exception
+     * @throws \Exception
+     */
+    private function deploy(Deploy $deploy)
+    {
+        $assetContent = $this->githubService->asset($deploy->getRelease()->getAssetId());
+
+        $deployTask = $this->configurationService->getTask("deploy");
+        /**
+         * process:
+         * - make new dir for release
+         * - make dir with release
+         * - transfer archive
+         * - uncompress archive
+         * - delete archive
+         * - create .agnes file
+         * - link shared folder
+         * - create env file
+         * . fill env file (with what???)
+         * - execute deploy tasks
+         * - create atomic symlink https://unix.stackexchange.com/a/6786/278058
+         * - edit .agnes file with release time
+         */
+        $deployTask->addPreCommand("mkdir");
+
+        $deploy->getTarget()->getConnection()->executeTask($deployTask, $this->taskExecutionService);
     }
 }

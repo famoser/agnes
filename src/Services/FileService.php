@@ -89,6 +89,28 @@ class FileService
     }
 
     /**
+     * @param SSHConnection $param
+     * @param string $filePath
+     * @return int
+     */
+    public function checkFileExistsSSH(SSHConnection $param, string $filePath)
+    {
+        $command = "ssh " . $param->getDestination() . " 'test -f $filePath && echo \"yes\"'";
+        exec($command, $output);
+
+        return strlen($output === 3);
+    }
+
+    /**
+     * @param string $filePath
+     * @return bool
+     */
+    public function checkFileExistsLocal(string $filePath)
+    {
+        return is_file($filePath);
+    }
+
+    /**
      * @return string
      */
     private function getTempFile()
