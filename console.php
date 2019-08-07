@@ -7,7 +7,7 @@ use Agnes\Commands\ReleaseCommand;
 use Agnes\Release\CompressionService;
 use Agnes\Release\GithubService;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\TaskExecutionService;
+use Agnes\Services\TaskService;
 use Http\Adapter\Guzzle6\Client;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
@@ -19,7 +19,7 @@ $dotenv->loadEnv($path);
 $configService = new ConfigurationService(__DIR__);
 $client = Client::createWithConfig([]);
 $releaseService = new GithubService($client);
-$taskExecutionService = new TaskExecutionService();
+$taskExecutionService = new TaskService();
 $compressionService = new CompressionService();
 
 $app = new Application();

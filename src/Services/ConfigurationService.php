@@ -3,10 +3,10 @@
 
 namespace Agnes\Services;
 
-
-use Agnes\Models\Tasks\LocalTask;
-use Agnes\Models\Tasks\SSHTask;
+use Agnes\Models\Connections\Connection;
 use Agnes\Models\Tasks\Task;
+use Agnes\Models\Connections\LocalConnection;
+use Agnes\Models\Connections\SSHConnection;
 use Agnes\Services\Configuration\GithubConfig;
 use Symfony\Component\Yaml\Yaml;
 
@@ -58,26 +58,33 @@ class ConfigurationService
     }
 
     /**
+     * @return Connection
+     * @throws \Exception
+     */
+    public function getBuildConnection()
+    {
+        $connection = $this->getConfigEntry("agnes", "build", "connection");
+        $connectionType = $connection["type"];
+
+        if ($connectionType === "local") {
+            $path = $this->basePath . DIRECTORY_SEPARATOR . $connection["path"];
+            return new LocalConnection($path);
+        } else if ($connectionType === "ssh") {
+            $destination = $connection["destination"];
+            return new SSHConnection($connection["path"], $destination);
+        } else {
+            throw new \Exception("unknown connection type $connectionType");
+        }
+    }
+
+    /**
      * @param string $task
      * @return Task
      * @throws \Exception
      */
     public function getTaskConfig(string $task)
     {
-        $releaseScript = $this->getConfigEntry("application", "scripts", $task);
-
-        $connection = $this->getConfigEntry("agnes", "build", "connection");
-        $path = $this->basePath . DIRECTORY_SEPARATOR . $connection["path"];
-        $connectionType = $connection["type"];
-
-        if ($connectionType === "local") {
-            return new LocalTask($path, $releaseScript);
-        } else if ($connectionType === "ssh") {
-            $destination = $connection["destination"];
-            return new SSHTask($path, $releaseScript, $destination);
-        } else {
-            throw new \Exception("unknown connection type $connectionType");
-        }
+        return new Task($this->getConfigEntry("application", "scripts", $task));
     }
 
     /**

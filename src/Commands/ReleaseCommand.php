@@ -3,12 +3,13 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Models\Connections\Connection;
 use Agnes\Models\Tasks\Task;
-use Agnes\Release\CompressionService;
-use Agnes\Release\Release;
 use Agnes\Release\GithubService;
+use Agnes\Release\Release;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\TaskExecutionService;
+use Agnes\Services\FileService;
+use Agnes\Services\TaskService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -22,29 +23,29 @@ class ReleaseCommand extends ConfigurationAwareCommand
     private $githubService;
 
     /**
-     * @var TaskExecutionService
+     * @var TaskService
      */
     private $taskExecutionService;
 
     /**
-     * @var CompressionService
+     * @var FileService
      */
-    private $compressionService;
+    private $fileService;
 
     /**
      * ReleaseCommand constructor.
      * @param ConfigurationService $configurationService
      * @param GithubService $githubService
-     * @param TaskExecutionService $taskExecutionService
-     * @param CompressionService $compressionService
+     * @param TaskService $taskExecutionService
+     * @param FileService $fileService
      */
-    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskExecutionService $taskExecutionService, CompressionService $compressionService)
+    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskService $taskExecutionService, FileService $fileService)
     {
         parent::__construct($configurationService);
 
         $this->githubService = $githubService;
         $this->taskExecutionService = $taskExecutionService;
-        $this->compressionService = $compressionService;
+        $this->fileService = $fileService;
     }
 
     public function configure()
@@ -70,15 +71,12 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $release = $this->getRelease($input);
         $githubConfig = $this->configurationService->getGithubConfig();
 
-        $taskConfig = $this->configurationService->getTaskConfig("release");
-        $this->buildRelease($taskConfig, $githubConfig->getRepository(), $release->getTargetCommitish());
+        $buildConnection = $this->configurationService->getBuildConnection();
+        $task = $this->configurationService->getTaskConfig("release");
+        $releaseFilename = $this->buildRelease($buildConnection, $task, $githubConfig->getRepository(), $release->getTargetCommitish(), $release->getName());
 
-        // zip build folder
-        $fileName = "release-" . $release->getTagName() . ".zip";
-        $filePath = $taskConfig->getWorkingFolder() . "/" . $fileName;
-        $this->compressionService->compress($taskConfig->getWorkingFolder(), $filePath);
-
-        $release->setAsset($fileName, "application/zip", file_get_contents($filePath));
+        $content = $buildConnection->readFile($releaseFilename, $this->fileService);
+        $release->setAsset($releaseFilename, "application/zip", $content);
 
         $this->githubService->publish($release, $githubConfig);
     }
@@ -96,18 +94,25 @@ class ReleaseCommand extends ConfigurationAwareCommand
     }
 
     /**
-     * @param Task $taskConfig
+     * @param Connection $connection
+     * @param Task $task
      * @param string $repository
      * @param string $targetCommitish
-     * @return void
-     * @throws \Exception
+     * @param string $releaseName
+     * @return string
      */
-    private function buildRelease(Task $taskConfig, string $repository, string $targetCommitish)
+    private function buildRelease(Connection $connection, Task $task, string $repository, string $targetCommitish, string $releaseName): string
     {
-        $taskConfig->prependCommand("git clone git@github.com:" . $repository . " .");
-        $taskConfig->prependCommand("git checkout " . $targetCommitish);
-        $taskConfig->prependCommand("rm -rf .git");
+        $task->addPreCommand("git clone git@github.com:" . $repository . " .");
+        $task->addPreCommand("git checkout " . $targetCommitish);
+        $task->addPreCommand("rm -rf .git");
 
-        $taskConfig->execute($this->taskExecutionService);
+        // compress release folder
+        $fileName = "release-" . $releaseName . ".tar.gz";
+        $task->addPostCommand("tar -czvf $fileName .");
+
+        $connection->executeTask($task, $this->taskExecutionService);
+
+        return $fileName;
     }
 }

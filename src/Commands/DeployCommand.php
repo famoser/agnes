@@ -9,7 +9,8 @@ use Agnes\Release\GithubService;
 use Agnes\Services\Configuration\GithubConfig;
 use Agnes\Services\Configuration\Task;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\TaskExecutionService;
+use Agnes\Services\FileService;
+use Agnes\Services\TaskService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -23,29 +24,29 @@ class DeployCommand extends ConfigurationAwareCommand
     private $githubService;
 
     /**
-     * @var TaskExecutionService
+     * @var TaskService
      */
     private $taskExecutionService;
 
     /**
-     * @var CompressionService
+     * @var FileService
      */
-    private $compressionService;
+    private $fileService;
 
     /**
      * ReleaseCommand constructor.
      * @param ConfigurationService $configurationService
      * @param GithubService $githubService
-     * @param TaskExecutionService $taskExecutionService
-     * @param CompressionService $compressionService
+     * @param TaskService $taskExecutionService
+     * @param FileService $fileService
      */
-    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskExecutionService $taskExecutionService, CompressionService $compressionService)
+    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskService $taskExecutionService, FileService $fileService)
     {
         parent::__construct($configurationService);
 
         $this->githubService = $githubService;
         $this->taskExecutionService = $taskExecutionService;
-        $this->compressionService = $compressionService;
+        $this->fileService = $fileService;
     }
 
     public function configure()
@@ -74,6 +75,8 @@ class DeployCommand extends ConfigurationAwareCommand
 
         $targetReleaseName = $input->getOption("name");
         $release = $this->getRelease($targetReleaseName, $githubConfig);
+
+        $releaseContent = $this->githubService->asset($release->getAssetId(), $githubConfig);
     }
 
     /**

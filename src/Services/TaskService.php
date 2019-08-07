@@ -3,48 +3,50 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Tasks\LocalTask;
-use Agnes\Models\Tasks\SSHTask;
 use Agnes\Models\Tasks\Task;
+use Agnes\Models\Connections\LocalConnection;
+use Agnes\Models\Connections\SSHConnection;
 
-class TaskExecutionService
+class TaskService
 {
     /**
-     * @param LocalTask $task
+     * @param LocalConnection $connection
+     * @param Task $task
      * @throws \Exception
      */
-    public function executeLocal(LocalTask $task)
+    public function executeLocal(LocalConnection $connection, Task $task)
     {
         $commands = $this->getCommands($task);
 
         // ensure working directory exists
-        $workingFolderCommands = $this->ensureFolderExistsCommands($task->getWorkingFolder(), $task->getClearWorkingFolder());
+        $workingFolderCommands = $this->ensureFolderExistsCommands($connection->getWorkingFolder());
         $commands = array_merge($workingFolderCommands, $commands);
 
         // change working directory
-        chdir($task->getWorkingFolder());
+        chdir($connection->getWorkingFolder());
 
         // execute commands
         $this->executeCommands($commands);
     }
 
     /**
-     * @param SSHTask $task
+     * @param SSHConnection $connection
+     * @param Task $task
      * @throws \Exception
      */
-    public function executeSSH(SSHTask $task)
+    public function executeSSH(SSHConnection $connection, Task $task)
     {
         $commands = $this->getCommands($task);
 
         // prefix all commands with SSH connection
-        $workingFolder = $task->getWorkingFolder();
-        $sshPrefix = "ssh " . $task->getDestination();
+        $workingFolder = $connection->getWorkingFolder();
+        $sshPrefix = "ssh " . $connection->getDestination();
         foreach ($commands as &$command) {
             $command = $sshPrefix . " 'cd $workingFolder && $command'";
         }
 
         // ensure target dir exists
-        $workingFolderCommands = $this->ensureFolderExistsCommands($workingFolder, $task->getClearWorkingFolder());
+        $workingFolderCommands = $this->ensureFolderExistsCommands($workingFolder);
         foreach ($workingFolderCommands as &$workingFolderCommand) {
             $workingFolderCommand = $sshPrefix . " '" . $workingFolderCommand . "'";
         }
@@ -63,7 +65,7 @@ class TaskExecutionService
     {
         // execute commands
         foreach ($commands as $command) {
-            exec($command, $output, $returnVar);
+            exec($command . " 2>&1", $output, $returnVar);
 
             if ($returnVar !== 0) {
                 throw new \Exception("command execution of " . $command . " failed with " . $returnVar . ".");
@@ -78,7 +80,7 @@ class TaskExecutionService
     private function getCommands(Task $task): array
     {
         // merge all commands to single list
-        $commands = array_merge($task->getPrependCommands(), $task->getCommands());
+        $commands = array_merge($task->getPreCommands(), $task->getCommands());
 
         // replace env variables
         foreach ($task->getEnvVariables() as $key => $value) {
@@ -95,16 +97,8 @@ class TaskExecutionService
      * @param bool $clearFolder
      * @return string[]
      */
-    private function ensureFolderExistsCommands(string $workingFolder, bool $clearFolder = false): array
+    private function ensureFolderExistsCommands(string $workingFolder): array
     {
-        $commands = [];
-
-        if ($clearFolder) {
-            $commands[] = "rm -rf " . $workingFolder;
-        }
-
-        $commands[] = "mkdir -m=0777 -p " . $workingFolder;
-
-        return $commands;
+        return ["rm -rf " . $workingFolder, "mkdir -m=0777 -p " . $workingFolder];
     }
 }
