@@ -4,8 +4,10 @@
 namespace Agnes\Services;
 
 
+use Agnes\Models\Tasks\LocalTask;
+use Agnes\Models\Tasks\SSHTask;
+use Agnes\Models\Tasks\Task;
 use Agnes\Services\Configuration\GithubConfig;
-use Agnes\Services\Configuration\TaskConfig;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
@@ -57,15 +59,25 @@ class ConfigurationService
 
     /**
      * @param string $task
-     * @return TaskConfig
+     * @return Task
      * @throws \Exception
      */
     public function getTaskConfig(string $task)
     {
-        $folder = $this->basePath . DIRECTORY_SEPARATOR . $this->getConfigEntry("agnes", "build_folder");
         $releaseScript = $this->getConfigEntry("application", "scripts", $task);
 
-        return new TaskConfig($folder, $releaseScript);
+        $connection = $this->getConfigEntry("agnes", "build", "connection");
+        $path = $this->basePath . DIRECTORY_SEPARATOR . $connection["path"];
+        $connectionType = $connection["type"];
+
+        if ($connectionType === "local") {
+            return new LocalTask($path, $releaseScript);
+        } else if ($connectionType === "ssh") {
+            $destination = $connection["destination"];
+            return new SSHTask($path, $releaseScript, $destination);
+        } else {
+            throw new \Exception("unknown connection type $connectionType");
+        }
     }
 
     /**

@@ -7,7 +7,7 @@ use Agnes\Release\CompressionService;
 use Agnes\Release\Release;
 use Agnes\Release\GithubService;
 use Agnes\Services\Configuration\GithubConfig;
-use Agnes\Services\Configuration\TaskConfig;
+use Agnes\Services\Configuration\Task;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\TaskExecutionService;
 use Http\Client\Exception;

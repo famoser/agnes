@@ -3,50 +3,60 @@
 
 namespace Agnes\Services;
 
-use Agnes\Services\Configuration\TaskConfig;
+use Agnes\Models\Tasks\LocalTask;
+use Agnes\Models\Tasks\SSHTask;
+use Agnes\Models\Tasks\Task;
 
 class TaskExecutionService
 {
     /**
-     * @param TaskConfig $taskConfig
-     * @param array $envVariables
-     * @param bool $clearWorkingFolder
+     * @param LocalTask $task
      * @throws \Exception
      */
-    public function execute(TaskConfig $taskConfig, array $envVariables = [], $clearWorkingFolder = false)
+    public function executeLocal(LocalTask $task)
     {
-        $this->setEnvironmentVariables($envVariables);
+        $commands = $this->getCommands($task);
 
-        // clean target folder if already existing
-        if (is_dir($taskConfig->getWorkingFolder()) && $clearWorkingFolder) {
-            exec("rm -rf " . $taskConfig->getWorkingFolder());
-        }
-
-        // ensure target folder exists
-        if (!is_dir($taskConfig->getWorkingFolder())) {
-            mkdir($taskConfig->getWorkingFolder(), 0777, true);
-        }
+        // ensure working directory exists
+        $workingFolderCommands = $this->ensureFolderExistsCommands($task->getWorkingFolder(), $task->getClearWorkingFolder());
+        $commands = array_merge($workingFolderCommands, $commands);
 
         // change working directory
-        chdir($taskConfig->getWorkingFolder());
+        chdir($task->getWorkingFolder());
 
         // execute commands
-        $this->executeCommands($taskConfig->getPrependCommands());
-        $this->executeCommands($taskConfig->getCommands());
+        $this->executeCommands($commands);
     }
 
     /**
-     * @param array $envVariables
+     * @param SSHTask $task
+     * @throws \Exception
      */
-    private function setEnvironmentVariables(array $envVariables): void
+    public function executeSSH(SSHTask $task)
     {
-        foreach ($envVariables as $key => $entry) {
-            exec("$key=$entry");
+        $commands = $this->getCommands($task);
+
+        // prefix all commands with SSH connection
+        $workingFolder = $task->getWorkingFolder();
+        $sshPrefix = "ssh " . $task->getDestination();
+        foreach ($commands as &$command) {
+            $command = $sshPrefix . " 'cd $workingFolder && $command'";
         }
+
+        // ensure target dir exists
+        $workingFolderCommands = $this->ensureFolderExistsCommands($workingFolder, $task->getClearWorkingFolder());
+        foreach ($workingFolderCommands as &$workingFolderCommand) {
+            $workingFolderCommand = $sshPrefix . " '" . $workingFolderCommand . "'";
+        }
+
+        $commands = array_merge($workingFolderCommands, $commands);
+
+        // execute commands
+        $this->executeCommands($commands);
     }
 
     /**
-     * @param array $commands
+     * @param string[] $commands
      * @throws \Exception
      */
     private function executeCommands(array $commands): void
@@ -59,5 +69,42 @@ class TaskExecutionService
                 throw new \Exception("command execution of " . $command . " failed with " . $returnVar . ".");
             }
         }
+    }
+
+    /**
+     * @param Task $task
+     * @return string[]
+     */
+    private function getCommands(Task $task): array
+    {
+        // merge all commands to single list
+        $commands = array_merge($task->getPrependCommands(), $task->getCommands());
+
+        // replace env variables
+        foreach ($task->getEnvVariables() as $key => $value) {
+            foreach ($commands as &$command) {
+                $command = str_replace("$$key", $value, $command);
+            }
+        }
+
+        return $commands;
+    }
+
+    /**
+     * @param string $workingFolder
+     * @param bool $clearFolder
+     * @return string[]
+     */
+    private function ensureFolderExistsCommands(string $workingFolder, bool $clearFolder = false): array
+    {
+        $commands = [];
+
+        if ($clearFolder) {
+            $commands[] = "rm -rf " . $workingFolder;
+        }
+
+        $commands[] = "mkdir -m=0777 -p " . $workingFolder;
+
+        return $commands;
     }
 }

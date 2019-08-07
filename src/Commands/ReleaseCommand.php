@@ -3,11 +3,10 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Models\Tasks\Task;
 use Agnes\Release\CompressionService;
 use Agnes\Release\Release;
 use Agnes\Release\GithubService;
-use Agnes\Services\Configuration\GithubConfig;
-use Agnes\Services\Configuration\TaskConfig;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\TaskExecutionService;
 use Http\Client\Exception;
@@ -97,18 +96,18 @@ class ReleaseCommand extends ConfigurationAwareCommand
     }
 
     /**
-     * @param TaskConfig $taskConfig
+     * @param Task $taskConfig
      * @param string $repository
      * @param string $targetCommitish
      * @return void
      * @throws \Exception
      */
-    private function buildRelease(TaskConfig $taskConfig, string $repository, string $targetCommitish)
+    private function buildRelease(Task $taskConfig, string $repository, string $targetCommitish)
     {
         $taskConfig->prependCommand("git clone git@github.com:" . $repository . " .");
         $taskConfig->prependCommand("git checkout " . $targetCommitish);
         $taskConfig->prependCommand("rm -rf .git");
 
-        $this->taskExecutionService->execute($taskConfig, [], true);
+        $taskConfig->execute($this->taskExecutionService);
     }
 }

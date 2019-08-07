@@ -1,6 +1,9 @@
 agnes:
   github_api_token: '%env(GITHUB_API_TOKEN)%'
-  build_folder: .build
+  build:
+    connection:
+      type: local
+      path: .build
 
 application:
   repository: famoser/agnes
@@ -37,9 +40,8 @@ servers:
   mangel.io:
     connection:
       type: ssh
-      host: '%env(SERVER_HOST)%'
-      user: '%env(SERVER_USER)%'
-    path: '%env(SERVER_PATH)%' # the path of the installation will be $path/$environment_name/$environment
+      path: '%env(SERVER_PATH)%' # the path of the installation will be $path/$environment_name/$environment
+      destination: '%env(SERVER_DESTINATION)%'
     keep_releases: 2
     environments:
       app.mangel.io: [production, education, staging, dev]
