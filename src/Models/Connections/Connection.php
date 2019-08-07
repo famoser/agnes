@@ -46,9 +46,10 @@ abstract class Connection
 
     /**
      * @param string $dir
+     * @param FileService $fileService
      * @return string[]
      */
-    public abstract function getFolders(string $dir): array;
+    public abstract function getFolders(string $dir, FileService $fileService): array;
 
     /**
      * @return string

@@ -5,7 +5,6 @@ namespace Agnes\Release;
 
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\Github\Client;
-use GuzzleHttp\Psr7\Request;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
 use Psr\Http\Message\ResponseInterface;

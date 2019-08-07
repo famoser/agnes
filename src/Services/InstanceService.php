@@ -6,6 +6,7 @@ namespace Agnes\Services;
 
 use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Instance;
+use Agnes\Services\Configuration\Installation;
 
 class InstanceService
 {
@@ -15,6 +16,11 @@ class InstanceService
     private $configurationService;
 
     /**
+     * @var FileService
+     */
+    private $fileService;
+
+    /**
      * @var Instance[]|null
      */
     private $installationsCache = null;
@@ -22,10 +28,12 @@ class InstanceService
     /**
      * InstallationService constructor.
      * @param ConfigurationService $configurationService
+     * @param FileService $fileService
      */
-    public function __construct(ConfigurationService $configurationService)
+    public function __construct(ConfigurationService $configurationService, FileService $fileService)
     {
         $this->configurationService = $configurationService;
+        $this->fileService = $fileService;
     }
 
     /**
@@ -56,8 +64,12 @@ class InstanceService
 
     public function loadInstallations(Instance $instance)
     {
-        $installationsFolder = $instance->getConnection()->getWorkingFolder() . DIRECTORY_SEPARATOR . $instance->getInstallationsFolder();
-        $folders = $instance->getConnection()->getFolders($installationsFolder);
+        $installationsFolder = $instance->getConnection()->getWorkingFolder() . DIRECTORY_SEPARATOR . $instance->getInstallationsFolder() . DIRECTORY_SEPARATOR . "releases";
+        $folders = $instance->getConnection()->getFolders($installationsFolder, $this->fileService);
+
+        foreach ($folders as $folder) {
+            $installation = new Installation($installationsFolder . DIRECTORY_SEPARATOR . $folder);
+        }
     }
 
     /**

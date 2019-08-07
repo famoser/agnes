@@ -67,10 +67,11 @@ class SSHConnection extends Connection
 
     /**
      * @param string $dir
+     * @param FileService $fileService
      * @return string[]
      */
-    public function getFolders(string $dir): array
+    public function getFolders(string $dir, FileService $fileService): array
     {
-        
+        return $fileService->getFoldersSSH($this, $dir);
     }
 }

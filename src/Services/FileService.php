@@ -70,6 +70,25 @@ class FileService
     }
 
     /**
+     * @param SSHConnection $param
+     * @param string $dir
+     * @return array
+     */
+    public function getFoldersSSH(SSHConnection $param, string $dir)
+    {
+        $command = "ssh " . $param->getDestination() . " 'cd $dir && ls -1d */'";
+        exec($command, $content);
+
+        $dirs = [];
+        foreach (explode("\n", $content) as $line) {
+            // cut off last entry because it is /
+            $dirs[] = substr($line, 0, -1);
+        }
+
+        return $dirs;
+    }
+
+    /**
      * @return string
      */
     private function getTempFile()

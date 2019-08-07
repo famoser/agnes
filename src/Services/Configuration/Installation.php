@@ -5,33 +5,24 @@ namespace Agnes\Services\Configuration;
 
 
 use Agnes\Models\Connections\Connection;
+use Agnes\Release\Release;
 
 class Installation
 {
-    /**
-     * @var Connection
-     */
-    private $connection;
-
     /**
      * @var string
      */
     private $path;
 
     /**
-     * @var string
+     * @var
      */
-    private $server;
+    private $releaseMeta;
 
     /**
-     * @var string
+     * @var Release
      */
-    private $environment;
-
-    /**
-     * @var string
-     */
-    private $stage;
+    private $release;
 
     /**
      * Installation constructor.
@@ -41,7 +32,7 @@ class Installation
      * @param string $environment
      * @param string $stage
      */
-    public function __construct(Connection $connection, string $path, string $server, string $environment, string $stage)
+    public function __construct(string $path)
     {
         $this->connection = $connection;
         $this->path = $path;
