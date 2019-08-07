@@ -4,6 +4,7 @@
 namespace Agnes\Deploy;
 
 
+use Agnes\Release\Release;
 use Agnes\Services\Configuration\Installation;
 
 class Deployment
@@ -14,9 +15,20 @@ class Deployment
     private $target;
 
     /**
-     * @var string
+     * @var Release
      */
-    private $releaseTag;
+    private $release;
+
+    /**
+     * Deployment constructor.
+     * @param Installation $target
+     * @param Release $release
+     */
+    public function __construct(Installation $target, Release $release)
+    {
+        $this->target = $target;
+        $this->release = $release;
+    }
 
     /**
      * @return Installation
@@ -27,26 +39,10 @@ class Deployment
     }
 
     /**
-     * @param Installation $target
+     * @return Release
      */
-    public function setTarget(Installation $target): void
+    public function getRelease(): Release
     {
-        $this->target = $target;
-    }
-
-    /**
-     * @return string
-     */
-    public function getReleaseTag(): string
-    {
-        return $this->releaseTag;
-    }
-
-    /**
-     * @param string $releaseTag
-     */
-    public function setReleaseTag(string $releaseTag): void
-    {
-        $this->releaseTag = $releaseTag;
+        return $this->release;
     }
 }

@@ -76,7 +76,7 @@ class DeployCommand extends ConfigurationAwareCommand
         $targetReleaseName = $input->getOption("name");
         $release = $this->getRelease($targetReleaseName, $githubConfig);
 
-        $releaseContent = $this->githubService->asset($release->getAssetId(), $githubConfig);
+        $releaseContent = $this->githubService->asset($release->getAssetId());
     }
 
     /**

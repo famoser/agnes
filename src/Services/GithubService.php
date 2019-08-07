@@ -3,7 +3,8 @@
 
 namespace Agnes\Release;
 
-use Agnes\Services\Configuration\GithubConfig;
+use Agnes\Services\ConfigurationService;
+use Agnes\Services\Github\Client;
 use GuzzleHttp\Psr7\Request;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
@@ -12,27 +13,31 @@ use Psr\Http\Message\ResponseInterface;
 class GithubService
 {
     /**
-     * @var HttpClient
+     * @var Client
      */
-    private $httpClient;
+    private $client;
 
     /**
      * ReleaseService constructor.
      * @param HttpClient $httpClient
+     * @param ConfigurationService $configurationService
+     * @throws \Exception
      */
-    public function __construct(HttpClient $httpClient)
+    public function __construct(HttpClient $httpClient, ConfigurationService $configurationService)
     {
-        $this->httpClient = $httpClient;
+        $config = $configurationService->getGithubConfig();
+
+        $this->client = new Client($httpClient, $config);
     }
 
     /**
-     * @param GithubConfig $githubConfig
      * @return \Agnes\Services\Github\Release[]
      * @throws Exception
+     * @throws \Exception
      */
-    public function releases(GithubConfig $githubConfig)
+    public function releases()
     {
-        $response = $this->getReleases($githubConfig);
+        $response = $this->client->getReleases();
         $releases = json_decode($response);
 
         $parsedRelease = [];
@@ -50,133 +55,53 @@ class GithubService
 
     /**
      * @param string $assetId
-     * @param GithubConfig $githubConfig
      * @return string
      * @throws Exception
      */
-    public function asset(string $assetId, GithubConfig $githubConfig)
+    public function asset(string $assetId)
     {
-        $response = $this->downloadAsset($assetId, $githubConfig);
+        $response = $this->client->downloadAsset($assetId);
 
         return $response->getBody()->getContents();
     }
 
     /**
      * @param Release $release
-     * @param GithubConfig $githubConfig
+     * @param string $assetName
+     * @param string $assetContentType
+     * @param string $assetContent
      * @throws Exception
      */
-    public function publish(Release $release, GithubConfig $githubConfig)
+    public function publish(Release $release, string $assetName, string $assetContentType, string $assetContent)
     {
-        $response = $this->createRelease($release, $githubConfig);
+        $response = $this->createRelease($release);
 
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
         $releaseId = (int)$responseObject->id;
 
-        $this->addReleaseAsset($releaseId, $release, $githubConfig);
-    }
-
-    /**
-     * @param GithubConfig $config
-     * @return ResponseInterface
-     * @throws Exception
-     * @throws \Exception
-     */
-    private function getReleases(GithubConfig $config): ResponseInterface
-    {
-        $request = new Request(
-            'GET',
-            'https://api.github.com/repos/' . $config->getRepository() . '/releases',
-            ["Authorization" => "token " . $config->getApiToken()]
-        );
-
-        $response = $this->httpClient->sendRequest($request);
-        if ($response->getStatusCode() !== 200) {
-            throw new \Exception("GET of releases failed with status code " . $response->getStatusCode() . "\n" . $response->getBody());
-        }
-
-        return $response;
-    }
-
-    /**
-     * @param int $assetId
-     * @param GithubConfig $config
-     * @return ResponseInterface
-     * @throws Exception
-     */
-    private function downloadAsset(int $assetId, GithubConfig $config): ResponseInterface
-    {
-        $request = new Request(
-            'GET',
-            'https://api.github.com/repos/' . $config->getRepository() . '/releases/assets/' . $assetId,
-            [
-                "Authorization" => "token " . $config->getApiToken(),
-                "Accept" => "application/octet-stream"
-            ]
-        );
-
-        $response = $this->httpClient->sendRequest($request);
-        if ($response->getStatusCode() !== 200) {
-            throw new \Exception("GET of release failed with status code " . $response->getStatusCode() . "\n" . $response->getBody());
-        }
-
-        return $response;
+        $this->client->addReleaseAsset($releaseId, $assetName, $assetContentType, $assetContent);
     }
 
     /**
      * @param Release $release
-     * @param GithubConfig $config
      * @return ResponseInterface
      * @throws Exception
      * @throws \Exception
      */
-    private function createRelease(Release $release, GithubConfig $config): ResponseInterface
+    private function createRelease(Release $release): ResponseInterface
     {
-        $request = new Request(
-            'POST',
-            'https://api.github.com/repos/' . $config->getRepository() . '/releases',
-            ["Authorization" => "token " . $config->getApiToken()],
-            '
-            {
-              "tag_name": "' . $release->getTagName() . '",
-              "target_commitish": "' . $release->getTargetCommitish() . '",
-              "name": "' . $release->getName() . '",
-              "body": "' . $release->getDescription() . '",
-              "draft": ' . $this->booleanToString($release->getDraft()) . ',
-              "prerelease": ' . $this->booleanToString($release->getPrerelease()) . '
-            }'
-        );
+        $body = '
+        {
+          "tag_name": "' . $release->getName() . '",
+          "target_commitish": "' . $release->getTargetCommitish() . '",
+          "name": "' . $release->getName() . '",
+          "body": "Release of ' . $release->getName() . '",
+          "draft": false,
+          "prerelease": ' . $this->booleanToString(strpos($release->getName(), "-") > 0) . '
+        }';
 
-        $response = $this->httpClient->sendRequest($request);
-        if ($response->getStatusCode() !== 201) {
-            throw new \Exception("Creation of release failed with status code " . $response->getStatusCode() . "\n" . $response->getBody());
-        }
-
-        return $response;
-    }
-
-    /**
-     * @param int $releaseId
-     * @param GithubConfig $config
-     * @return ResponseInterface
-     * @throws Exception
-     * @throws \Exception
-     */
-    private function deleteRelease(int $releaseId, GithubConfig $config)
-    {
-        $request = new Request(
-            'DELETE',
-            'https://api.github.com/repos/' . $config->getRepository() . '/releases/' . $releaseId,
-            ["Authorization" => "token " . $config->getApiToken()]
-        );
-
-        $response = $this->httpClient->sendRequest($request);
-        if ($response->getStatusCode() !== 204) {
-            throw new \Exception("Removal of release failed with status code " . $response->getStatusCode() . "\n" . $response->getBody());
-        }
-
-        return $response;
+        return $this->client->createRelease($body);
     }
 
     /**
@@ -186,32 +111,5 @@ class GithubService
     private function booleanToString(bool $input)
     {
         return $input ? "true" : "false";
-    }
-
-    /**
-     * @param int $releaseId
-     * @param Release $release
-     * @param GithubConfig $config
-     * @return ResponseInterface
-     * @throws Exception
-     * @throws \Exception
-     */
-    private function addReleaseAsset(int $releaseId, Release $release, GithubConfig $config): ResponseInterface
-    {
-        $request = new Request(
-            'POST',
-            'https://uploads.github.com/repos/' . $config->getRepository() . '/releases/' . $releaseId . "/assets?name=" . $release->getAssetName(),
-            [
-                "Authorization" => "token " . $config->getApiToken(),
-                "Content-Type" => $release->getAssetContentType()
-            ],
-            $release->getAssetContent()
-        );
-        $response = $this->httpClient->sendRequest($request);
-        if ($response->getStatusCode() !== 201) {
-            throw new \Exception("Creation of release asset failed with status code " . $response->getStatusCode() . "\n" . $response->getBody());
-        }
-
-        return $response;
     }
 }

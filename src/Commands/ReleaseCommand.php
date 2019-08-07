@@ -9,6 +9,7 @@ use Agnes\Release\GithubService;
 use Agnes\Release\Release;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\FileService;
+use Agnes\Services\PolicyService;
 use Agnes\Services\TaskService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,6 +18,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ReleaseCommand extends ConfigurationAwareCommand
 {
+    /**
+     * @var PolicyService
+     */
+    private $policyService;
+
     /**
      * @var GithubService
      */
@@ -35,14 +41,16 @@ class ReleaseCommand extends ConfigurationAwareCommand
     /**
      * ReleaseCommand constructor.
      * @param ConfigurationService $configurationService
+     * @param PolicyService $policyService
      * @param GithubService $githubService
      * @param TaskService $taskExecutionService
      * @param FileService $fileService
      */
-    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskService $taskExecutionService, FileService $fileService)
+    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService, TaskService $taskExecutionService, FileService $fileService)
     {
         parent::__construct($configurationService);
 
+        $this->policyService = $policyService;
         $this->githubService = $githubService;
         $this->taskExecutionService = $taskExecutionService;
         $this->fileService = $fileService;
@@ -68,51 +76,53 @@ class ReleaseCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $release = $this->getRelease($input);
-        $githubConfig = $this->configurationService->getGithubConfig();
-
-        $buildConnection = $this->configurationService->getBuildConnection();
-        $task = $this->configurationService->getTaskConfig("release");
-        $releaseFilename = $this->buildRelease($buildConnection, $task, $githubConfig->getRepository(), $release->getTargetCommitish(), $release->getName());
-
-        $content = $buildConnection->readFile($releaseFilename, $this->fileService);
-        $release->setAsset($releaseFilename, "application/zip", $content);
-
-        $this->githubService->publish($release, $githubConfig);
-    }
-
-    /**
-     * @param InputInterface $input
-     * @return Release
-     */
-    private function getRelease(InputInterface $input): Release
-    {
         $name = $input->getOption("name");
         $commitish = $input->getOption("commitish");
+        $release = new Release($name, $commitish);
 
-        return new Release($name, $commitish);
+        $this->policyService->ensureCanRelease($release);
+
+        $content = $this->buildRelease($release);
+
+        $this->publishRelease($release, $content);
+
     }
 
     /**
-     * @param Connection $connection
-     * @param Task $task
-     * @param string $repository
-     * @param string $targetCommitish
-     * @param string $releaseName
-     * @return string
+     * @param Release $release
+     * @param string $content
+     * @throws Exception
+     * @throws \Exception
      */
-    private function buildRelease(Connection $connection, Task $task, string $repository, string $targetCommitish, string $releaseName): string
+    private function publishRelease(Release $release, string $content)
     {
-        $task->addPreCommand("git clone git@github.com:" . $repository . " .");
-        $task->addPreCommand("git checkout " . $targetCommitish);
+        $this->githubService->publish($release, $release->getArchiveName(), "application/zip", $content);
+    }
+
+    /**
+     * @param Release $release
+     * @return string
+     * @throws \Exception
+     */
+    private function buildRelease(Release $release): string
+    {
+        $githubConfig = $this->configurationService->getGithubConfig();
+        $task = $task = $this->configurationService->getTask("release");
+
+        // clone repo, checkout correct commit & then remove git folder
+        $task->addPreCommand("git clone git@github.com:" . $githubConfig->getRepository() . " .");
+        $task->addPreCommand("git checkout " . $release->getTargetCommitish());
         $task->addPreCommand("rm -rf .git");
 
-        // compress release folder
-        $fileName = "release-" . $releaseName . ".tar.gz";
+        // after release has been build, compress it to a single folder
+        $fileName = $release->getArchiveName();
         $task->addPostCommand("tar -czvf $fileName .");
 
-        $connection->executeTask($task, $this->taskExecutionService);
+        // actually execute the task
+        $buildConnection = $this->configurationService->getBuildConnection();
+        $buildConnection->executeTask($task, $this->taskExecutionService);
+        $releaseContent = $buildConnection->readFile($fileName, $this->fileService);
 
-        return $fileName;
+        return $releaseContent;
     }
 }

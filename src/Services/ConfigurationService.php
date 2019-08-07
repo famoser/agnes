@@ -82,7 +82,7 @@ class ConfigurationService
      * @return Task
      * @throws \Exception
      */
-    public function getTaskConfig(string $task)
+    public function getTask(string $task)
     {
         return new Task($this->getConfigEntry("application", "scripts", $task));
     }
@@ -138,5 +138,11 @@ class ConfigurationService
                 }
             }
         }
+    }
+
+    public function getPolicies(string $string)
+    {
+
+
     }
 }
