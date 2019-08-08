@@ -17,6 +17,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DeployCommand extends ConfigurationAwareCommand
 {
+    const INSTANCE_SPECIFICATION_EXPLANATION = "
+            Instances are specified in the form server:environment:stage (like aws:example.com:production deploys to production of example.com on the aws server). 
+            Replace entries with stars to not enforce a constraint (like *:*:production would deploy to all production stages).
+            Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).";
     /**
      * @var DeployService
      */
@@ -54,10 +58,8 @@ class DeployCommand extends ConfigurationAwareCommand
             ->setDescription('Deploy a release to a specific environment.')
             ->setHelp('This command downloads, installs & publishes a release to a specific environment.')
             ->addArgument("files", InputArgument::IS_ARRAY, "the files to deploy. Separate multiple files with a space. The file path is matched against the configured files, and the longest matching path is chosen as a target.")
-            ->addOption("name", "na", InputOption::VALUE_REQUIRED, "name of the release")
-            ->addOption("server", "se", InputOption::VALUE_OPTIONAL, "the server to install the release on")
-            ->addOption("environment", "e", InputOption::VALUE_OPTIONAL, "the environment to install the release on")
-            ->addOption("stage", "st", InputOption::VALUE_OPTIONAL, "the stage to install the release on")
+            ->addOption("release", "r", InputOption::VALUE_REQUIRED, "name of the release")
+            ->addOption("target", "t", InputOption::VALUE_REQUIRED, "the instance(s) to deploy to. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
             ->addOption("skip_file_validation", "sv", InputOption::VALUE_NONE, "if file validation should be skipped. the application no longer throws if required file is not supplied");
 
         parent::configure();
@@ -72,13 +74,11 @@ class DeployCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $targetReleaseName = $input->getOption("name");
-        $release = $this->getRelease($targetReleaseName);
+        $releaseName = $input->getOption("release");
+        $release = $this->getRelease($releaseName);
 
-        $server = $input->getOption("server");
-        $environment = $input->getOption("environment");
-        $stage = $input->getOption("stage");
-        $instances = $this->instanceService->getInstances($server, $environment, $stage);
+        $target = $input->getOption("target");
+        $instances = $this->instanceService->getInstancesFromTarget($target);
 
         $inputFiles = $input->getArgument("files");
         $skipValidation = (bool)$input->getOption("skip_file_validation");

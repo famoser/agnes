@@ -35,17 +35,21 @@ class InstanceService
     }
 
     /**
-     * @param string|null $server
-     * @param string|null $environment
-     * @param string|null $stage
+     * @param string $target
      * @return Instance[]
      * @throws Exception
      */
-    public function getInstances(?string $server, ?string $environment, ?string $stage)
+    public function getInstancesFromTarget(string $target)
     {
-        $servers = $server !== null ? [$server] : [];
-        $environments = $environment !== null ? [$environment] : [];
-        $stages = $stage !== null ? [$stage] : [];
+        $entries = explode(":", $target);
+
+        $parseToArray = function ($entry) {
+            return $entry !== "*" ? explode(",", $entry) : [];
+        };
+
+        $servers = $parseToArray($entries[0]);
+        $environments = $parseToArray($entries[1]);
+        $stages = $parseToArray($entries[2]);
         $filter = new Filter($servers, $environments, $stages);
 
         return $this->getInstancesByFilter($filter);
