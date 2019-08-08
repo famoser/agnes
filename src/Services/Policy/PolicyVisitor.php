@@ -4,30 +4,30 @@
 namespace Agnes\Services\Policy;
 
 
-use Agnes\Models\Policies\EnvironmentWriteDownPolicy;
-use Agnes\Models\Policies\EnvironmentWriteUpPolicy;
 use Agnes\Models\Policies\Policy;
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
+use Agnes\Models\Policies\StageWriteDownPolicy;
+use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
 
 abstract class PolicyVisitor
 {
     /**
-     * @param EnvironmentWriteUpPolicy $environmentWriteUpPolicy
+     * @param StageWriteUpPolicy $stageWriteUpPolicy
      * @return bool
      * @throws \Exception
      */
-    public function visitEnvironmentWriteUp(EnvironmentWriteUpPolicy $environmentWriteUpPolicy): bool
+    public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
         throw new \Exception("This policy has not been implemented for the task at hand.");
     }
 
     /**
-     * @param EnvironmentWriteDownPolicy $environmentWriteDownPolicy
+     * @param StageWriteDownPolicy $stageWriteDownPolicy
      * @return bool
      * @throws \Exception
      */
-    public function visitEnvironmentWriteDown(EnvironmentWriteDownPolicy $environmentWriteDownPolicy): bool
+    public function visitStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
     {
         throw new \Exception("This policy has not been implemented for the task at hand.");
     }

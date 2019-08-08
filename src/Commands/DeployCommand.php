@@ -6,10 +6,8 @@ namespace Agnes\Commands;
 use Agnes\Deploy\Deploy;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Instance;
-use Agnes\Release\Release;
 use Agnes\Release\GithubService;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\FileService;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
@@ -32,11 +30,6 @@ class DeployCommand extends ConfigurationAwareCommand
     private $taskExecutionService;
 
     /**
-     * @var FileService
-     */
-    private $fileService;
-
-    /**
      * @var InstanceService
      */
     private $instanceService;
@@ -51,17 +44,15 @@ class DeployCommand extends ConfigurationAwareCommand
      * @param ConfigurationService $configurationService
      * @param GithubService $githubService
      * @param TaskService $taskExecutionService
-     * @param FileService $fileService
      * @param InstanceService $instanceService
      * @param PolicyService $policyService
      */
-    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskService $taskExecutionService, FileService $fileService, InstanceService $instanceService, PolicyService $policyService)
+    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskService $taskExecutionService, InstanceService $instanceService, PolicyService $policyService)
     {
         parent::__construct($configurationService);
 
         $this->githubService = $githubService;
         $this->taskExecutionService = $taskExecutionService;
-        $this->fileService = $fileService;
         $this->instanceService = $instanceService;
         $this->policyService = $policyService;
     }

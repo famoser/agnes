@@ -18,7 +18,7 @@ class Installation
     private $installationAt;
 
     /**
-     * @var Release
+     * @var Release?
      */
     private $release;
 
@@ -26,9 +26,9 @@ class Installation
      * Installation constructor.
      * @param string $path
      * @param \DateTime|null $installationAt
-     * @param Release $release
+     * @param Release|null $release
      */
-    public function __construct(string $path, ?\DateTime $installationAt, Release $release)
+    public function __construct(string $path, ?Release $release = null, ?\DateTime $installationAt = null)
     {
         $this->path = $path;
         $this->installationAt = $installationAt;
@@ -52,9 +52,9 @@ class Installation
     }
 
     /**
-     * @return Release
+     * @return Release|null ?Release
      */
-    public function getRelease(): Release
+    public function getRelease(): ?Release
     {
         return $this->release;
     }

@@ -35,20 +35,27 @@ class Instance
     private $installations;
 
     /**
+     * @var Installation[]
+     */
+    private $currentInstallation;
+
+    /**
      * Instance constructor.
      * @param Connection $connection
      * @param string $server
      * @param string $environment
      * @param string $stage
      * @param array $installations
+     * @param Installation|null $currentInstallation
      */
-    public function __construct(Connection $connection, string $server, string $environment, string $stage, array $installations)
+    public function __construct(Connection $connection, string $server, string $environment, string $stage, array $installations, ?Installation $currentInstallation)
     {
         $this->connection = $connection;
         $this->server = $server;
         $this->environment = $environment;
         $this->stage = $stage;
         $this->installations = $installations;
+        $this->currentInstallation = $currentInstallation;
     }
 
     /**
@@ -89,5 +96,13 @@ class Instance
     public function getStage(): string
     {
         return $this->stage;
+    }
+
+    /**
+     * @return Installation[]
+     */
+    public function getCurrentInstallation(): array
+    {
+        return $this->currentInstallation;
     }
 }

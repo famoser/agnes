@@ -4,10 +4,9 @@
 namespace Agnes\Models\Policies;
 
 
-use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\PolicyVisitor;
 
-class EnvironmentWriteUpPolicy extends LayeredPolicy
+class StageWriteDownPolicy extends LayeredPolicy
 {
     /**
      * @param PolicyVisitor $visitor
@@ -15,6 +14,6 @@ class EnvironmentWriteUpPolicy extends LayeredPolicy
      */
     public function accept(PolicyVisitor $visitor)
     {
-        return $visitor->visitEnvironmentWriteUp($this);
+        return $visitor->visitStageWriteDown($this);
     }
 }

@@ -5,7 +5,7 @@ namespace Agnes\Services\Policy;
 
 
 use Agnes\Deploy\Deploy;
-use Agnes\Models\Policies\EnvironmentWriteUpPolicy;
+use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Services\InstanceService;
 
@@ -33,15 +33,43 @@ class DeployPolicyVisitor extends PolicyVisitor
     }
 
     /**
-     * @param EnvironmentWriteUpPolicy $environmentWriteUpPolicy
+     * @param StageWriteUpPolicy $stageWriteUpPolicy
      * @return bool
+     * @throws \Exception
      */
-    public function visitEnvironmentWriteUp(EnvironmentWriteUpPolicy $environmentWriteUpPolicy)
+    public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
-        $filter = new Filter([], [$this->deployment->getTarget()->getEnvironment()], []);
-        $installations = $this->installationService->getInstances($filter);
+        $stageIndex = $this->getLayerIndex($stageWriteUpPolicy->getLayers(), $this->deployment->getTarget()->getStage());
+        $checkIndex = $stageIndex - 1;
+
+        // if the stageIndex is the lowest layer, we are allowed to write
+        $availableLayers = array_keys($stageWriteUpPolicy->getLayers());
+        if (min($availableLayers) > $checkIndex) {
+            return true;
+        }
+
+        // get the next lower layer and check if this release was published there
+        $stagesToCheck = $stageWriteUpPolicy->getLayers()[$checkIndex];
+        $filter = new Filter([], [$this->deployment->getTarget()->getEnvironment()], $stagesToCheck);
+        $instances = $this->installationService->getInstances($filter);
+
+        foreach ($instances as $instance) {
+
+        }
+
 
         return false;
+    }
+
+    private function getLayerIndex(array $layers, string $targetStage)
+    {
+        foreach ($layers as $index => $stage) {
+            if ($stage === $targetStage) {
+                return $index;
+            }
+        }
+
+        throw new \Exception("Stage not found in specified layers; policy undecidable.");
     }
 
     /**

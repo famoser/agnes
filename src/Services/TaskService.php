@@ -3,9 +3,9 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Tasks\Task;
 use Agnes\Models\Connections\LocalConnection;
 use Agnes\Models\Connections\SSHConnection;
+use Agnes\Models\Tasks\Task;
 
 class TaskService
 {

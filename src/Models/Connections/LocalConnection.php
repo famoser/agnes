@@ -5,8 +5,12 @@ namespace Agnes\Models\Connections;
 
 
 use Agnes\Models\Tasks\Task;
-use Agnes\Services\FileService;
 use Agnes\Services\TaskService;
+use function file_get_contents;
+use function file_put_contents;
+use function glob;
+use function is_file;
+use const GLOB_ONLYDIR;
 
 class LocalConnection extends Connection
 {
@@ -22,41 +26,46 @@ class LocalConnection extends Connection
 
     /**
      * @param string $filePath
-     * @param FileService $fileService
      * @return string
      */
-    public function readFile(string $filePath, FileService $fileService): string
+    public function readFile(string $filePath): string
     {
-        return $fileService->readFileLocal($filePath);
+        return file_get_contents($filePath);
     }
 
     /**
      * @param string $filePath
      * @param string $content
-     * @param FileService $fileService
      */
-    public function writeFile(string $filePath, string $content, FileService $fileService)
+    public function writeFile(string $filePath, string $content)
     {
-        $fileService->writeFileLocal($filePath, $content);
+        file_put_contents($filePath, $content);
     }
 
     /**
      * @param string $dir
-     * @param FileService $fileService
      * @return string[]
      */
-    public function getFolders(string $dir, FileService $fileService): array
+    public function getFolders(string $dir): array
     {
-        return $fileService->getFoldersLocal($dir);
+        return glob("$dir/*", GLOB_ONLYDIR);
     }
 
     /**
      * @param string $filePath
-     * @param FileService $fileService
      * @return bool
      */
-    public function checkFileExists(string $filePath, FileService $fileService): bool
+    public function checkFileExists(string $filePath): bool
     {
-        return $fileService->checkFileExistsLocal($filePath);
+        return is_file($filePath);
+    }
+
+    /**
+     * @param string $folderPath
+     * @return bool
+     */
+    public function checkFolderExists(string $folderPath): bool
+    {
+        return is_dir($folderPath);
     }
 }

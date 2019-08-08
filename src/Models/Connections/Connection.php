@@ -5,7 +5,6 @@ namespace Agnes\Models\Connections;
 
 
 use Agnes\Models\Tasks\Task;
-use Agnes\Services\FileService;
 use Agnes\Services\TaskService;
 
 abstract class Connection
@@ -32,31 +31,33 @@ abstract class Connection
 
     /**
      * @param string $filePath
-     * @param FileService $fileService
      * @return string
      */
-    public abstract function readFile(string $filePath, FileService $fileService): string;
+    public abstract function readFile(string $filePath): string;
 
     /**
      * @param string $filePath
      * @param string $content
-     * @param FileService $fileService
      */
-    public abstract function writeFile(string $filePath, string $content, FileService $fileService);
+    public abstract function writeFile(string $filePath, string $content);
 
     /**
      * @param string $dir
-     * @param FileService $fileService
      * @return string[]
      */
-    public abstract function getFolders(string $dir, FileService $fileService): array;
+    public abstract function getFolders(string $dir): array;
 
     /**
      * @param string $filePath
-     * @param FileService $fileService
      * @return bool
      */
-    public abstract function checkFileExists(string $filePath, FileService $fileService): bool;
+    public abstract function checkFileExists(string $filePath): bool;
+
+    /**
+     * @param string $folderPath
+     * @return bool
+     */
+    public abstract function checkFolderExists(string $folderPath): bool;
 
     /**
      * @return string

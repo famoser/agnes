@@ -4,14 +4,14 @@
 namespace Agnes\Services;
 
 use Agnes\Models\Connections\Connection;
-use Agnes\Models\Policies\EnvironmentWriteDownPolicy;
-use Agnes\Models\Policies\EnvironmentWriteUpPolicy;
-use Agnes\Models\Policies\Policy;
-use Agnes\Models\Policies\ReleaseWhitelistPolicy;
-use Agnes\Models\Tasks\Filter;
-use Agnes\Models\Tasks\Task;
 use Agnes\Models\Connections\LocalConnection;
 use Agnes\Models\Connections\SSHConnection;
+use Agnes\Models\Policies\Policy;
+use Agnes\Models\Policies\ReleaseWhitelistPolicy;
+use Agnes\Models\Policies\StageWriteDownPolicy;
+use Agnes\Models\Policies\StageWriteUpPolicy;
+use Agnes\Models\Tasks\Filter;
+use Agnes\Models\Tasks\Task;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\GithubConfig;
 use Agnes\Services\Configuration\Server;
@@ -196,11 +196,11 @@ class ConfigurationService
 
             $policyType = $policy["type"];
             switch ($policyType) {
-                case "environment_write_up":
-                    $parsedPolicies[] = new EnvironmentWriteUpPolicy($filter, $policy["layers"]);
+                case "stage_write_up":
+                    $parsedPolicies[] = new StageWriteUpPolicy($filter, $policy["layers"]);
                     break;
-                case "environment_write_down":
-                    $parsedPolicies[] = new EnvironmentWriteDownPolicy($filter, $policy["layers"]);
+                case "stage_write_down":
+                    $parsedPolicies[] = new StageWriteDownPolicy($filter, $policy["layers"]);
                     break;
                 case "release_whitelist":
                     $parsedPolicies[] = new ReleaseWhitelistPolicy($filter, $policy["commitishes"]);

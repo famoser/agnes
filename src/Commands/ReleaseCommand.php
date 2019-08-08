@@ -3,12 +3,9 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Models\Connections\Connection;
-use Agnes\Models\Tasks\Task;
 use Agnes\Release\GithubService;
 use Agnes\Release\Release;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\FileService;
 use Agnes\Services\PolicyService;
 use Agnes\Services\TaskService;
 use Http\Client\Exception;
@@ -34,26 +31,19 @@ class ReleaseCommand extends ConfigurationAwareCommand
     private $taskExecutionService;
 
     /**
-     * @var FileService
-     */
-    private $fileService;
-
-    /**
      * ReleaseCommand constructor.
      * @param ConfigurationService $configurationService
      * @param PolicyService $policyService
      * @param GithubService $githubService
      * @param TaskService $taskExecutionService
-     * @param FileService $fileService
      */
-    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService, TaskService $taskExecutionService, FileService $fileService)
+    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService, TaskService $taskExecutionService)
     {
         parent::__construct($configurationService);
 
         $this->policyService = $policyService;
         $this->githubService = $githubService;
         $this->taskExecutionService = $taskExecutionService;
-        $this->fileService = $fileService;
     }
 
     public function configure()
@@ -121,7 +111,7 @@ class ReleaseCommand extends ConfigurationAwareCommand
         // actually execute the task
         $buildConnection = $this->configurationService->getBuildConnection();
         $buildConnection->executeTask($task, $this->taskExecutionService);
-        $releaseContent = $buildConnection->readFile($fileName, $this->fileService);
+        $releaseContent = $buildConnection->readFile($fileName);
 
         return $releaseContent;
     }

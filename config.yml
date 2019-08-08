@@ -51,24 +51,24 @@ policies:
   allow_if_all_abstain: true # if no matching policy is found, the execution is allowed
 
   deploy:
-    - type: environment_write_up
+    - type: stage_write_up
       filter: null
       layers:
-        0: [production, education]
+        0: [dev]
         1: [staging]
-        2: [dev]
+        2: [production, education]
 
-    - type: release_whitelist
+  - type: release_whitelist
       filter:
         stages: [production, education, staging]
       commitishes: [master]
 
   copy_shared:
-    - type: environment_write_down
+    - type: stage_write_down
       filter: null
       layers:
-        0: [production]
-        1: [dev, staging, education]
+        0: [dev, staging, education]
+        1: [production]
 
   fixtures:
     - type: whitelist

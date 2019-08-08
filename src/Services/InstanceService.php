@@ -18,11 +18,6 @@ class InstanceService
     private $configurationService;
 
     /**
-     * @var FileService
-     */
-    private $fileService;
-
-    /**
      * @var Instance[]|null
      */
     private $instancesCache = null;
@@ -30,12 +25,10 @@ class InstanceService
     /**
      * InstallationService constructor.
      * @param ConfigurationService $configurationService
-     * @param FileService $fileService
      */
-    public function __construct(ConfigurationService $configurationService, FileService $fileService)
+    public function __construct(ConfigurationService $configurationService)
     {
         $this->configurationService = $configurationService;
-        $this->fileService = $fileService;
     }
 
     /**
@@ -72,22 +65,13 @@ class InstanceService
      */
     public function loadInstallations(Connection $connection, string $releasesFolder)
     {
-        $folders = $connection->getFolders($releasesFolder, $this->fileService);
+        $folders = $connection->getFolders($releasesFolder);
 
         $installations = [];
 
         foreach ($folders as $folder) {
             $installationPath = $releasesFolder . DIRECTORY_SEPARATOR . $folder;
-            $agnesFilePath = $installationPath . DIRECTORY_SEPARATOR . ".agnes";
-
-            if ($connection->checkFileExists($agnesFilePath, $this->fileService)) {
-                $metaJson = $connection->readFile($agnesFilePath, $this->fileService);
-                $meta = json_decode($metaJson);
-                $installationDateTime = isset($meta["installationAt"]) ? new \DateTime($meta["installationAt"]) : null;
-                $release = new Release($meta["release"]["name"], $meta["release"]["commitish"]);
-
-                $installations[] = new Installation($installationPath, $installationDateTime, $release);
-            }
+            $installations[] = $this->getInstallationAtPath($connection, $installationPath);
         }
 
         return $installations;
@@ -106,15 +90,44 @@ class InstanceService
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stages) {
                     foreach ($stages as $stage) {
-                        $releasesFolder = $server->getConnection()->getWorkingFolder() . DIRECTORY_SEPARATOR . $environment->getName() . DIRECTORY_SEPARATOR . $stage . DIRECTORY_SEPARATOR . "releases";
+                        $stageFolder = $server->getConnection()->getWorkingFolder() . DIRECTORY_SEPARATOR . $environment->getName() . DIRECTORY_SEPARATOR . $stage;
+                        $releasesFolder = $stageFolder . DIRECTORY_SEPARATOR . "releases";
                         $installations = $this->loadInstallations($server->getConnection(), $releasesFolder);
 
-                        $instances[] = new Instance($server->getConnection(), $server->getName(), $environment->getName(), $stage, $installations);
+                        $currentReleaseFolder = $stageFolder . DIRECTORY_SEPARATOR . "current";
+                        $currentInstallation = null;
+                        if ($server->getConnection()->checkFolderExists($currentReleaseFolder)) {
+                            $currentInstallation = $this->getInstallationAtPath($server->getConnection(), $currentReleaseFolder);
+                        }
+
+                        $instances[] = new Instance($server->getConnection(), $server->getName(), $environment->getName(), $stage, $installations, $currentInstallation);
                     }
                 }
             }
         }
 
         return $instances;
+    }
+
+    /**
+     * @param Connection $connection
+     * @param string $installationPath
+     * @return Installation
+     * @throws \Exception
+     */
+    private function getInstallationAtPath(Connection $connection, string $installationPath): Installation
+    {
+        $agnesFilePath = $installationPath . DIRECTORY_SEPARATOR . ".agnes";
+
+        if (!$connection->checkFileExists($agnesFilePath)) {
+            return new Installation($installationPath);
+        }
+
+        $metaJson = $connection->readFile($agnesFilePath);
+        $meta = json_decode($metaJson);
+        $installationDateTime = isset($meta["installationAt"]) ? new \DateTime($meta["installationAt"]) : null;
+        $release = new Release($meta["release"]["name"], $meta["release"]["commitish"]);
+
+        return new Installation($installationPath, $release, $installationDateTime);
     }
 }

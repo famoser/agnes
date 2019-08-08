@@ -24,4 +24,12 @@ abstract class LayeredPolicy extends Policy
 
         $this->layers = $layers;
     }
+
+    /**
+     * @return \string[][]
+     */
+    public function getLayers(): array
+    {
+        return $this->layers;
+    }
 }

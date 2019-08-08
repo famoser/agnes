@@ -4,7 +4,6 @@
 namespace Agnes\Services\Github;
 
 
-use Agnes\Release\Release;
 use Agnes\Services\Configuration\GithubConfig;
 use GuzzleHttp\Psr7\Request;
 use Http\Client\Exception;

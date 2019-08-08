@@ -3,8 +3,6 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Release\Release;
-use Agnes\Release\GithubService;
 use Agnes\Services\ConfigurationService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
