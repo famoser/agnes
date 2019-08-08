@@ -147,6 +147,13 @@ class DeployCommand extends ConfigurationAwareCommand
 
         $deployTask = $this->configurationService->getTask("deploy");
         /**
+         * some scripts
+         * - mkdir -p RELEASE_FOLDER SHARED_FOLDER TEMP_FOLDER # create directory with parent directories, no error if already exists
+         * - curl $ARTIFACT_NAME --output $ARTIFACT_DOWNLOAD_PATH # download artifact
+         * - tar xzf $ARTIFACT_DOWNLOAD_PATH -C $RELEASE_FOLDER # extract artifact to release path
+         * - for shared_dir in "${shared_dirs[@]}"; do ln -s $RELEASE_FOLDER/$shared_dir $SHARED_FOLDER/$shared_dir; done # create shared folders
+         * - chmod -R 777
+         *
          * process:
          * - make new dir for release
          * - make dir with release
@@ -154,12 +161,14 @@ class DeployCommand extends ConfigurationAwareCommand
          * - uncompress archive
          * - delete archive
          * - create .agnes file
+         * - create shared folders
          * - link shared folder
          * - create env file
          * . fill env file (with what???)
          * - execute deploy tasks
          * - create atomic symlink https://unix.stackexchange.com/a/6786/278058
          * - edit .agnes file with release time
+         * - clean up old releases
          */
         $deployTask->addPreCommand("mkdir");
 

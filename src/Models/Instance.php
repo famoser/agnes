@@ -101,6 +101,14 @@ class Instance
     /**
      * @return Installation[]
      */
+    public function getInstallations(): array
+    {
+        return $this->installations;
+    }
+
+    /**
+     * @return Installation[]
+     */
     public function getCurrentInstallation(): array
     {
         return $this->currentInstallation;

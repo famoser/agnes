@@ -125,9 +125,10 @@ class InstanceService
 
         $metaJson = $connection->readFile($agnesFilePath);
         $meta = json_decode($metaJson);
-        $installationDateTime = isset($meta["installationAt"]) ? new \DateTime($meta["installationAt"]) : null;
         $release = new Release($meta["release"]["name"], $meta["release"]["commitish"]);
+        $installedAt = isset($meta["installedAt"]) ? new \DateTime($meta["installedAt"]) : null;
+        $releasedAt = isset($meta["releasedAt"]) ? new \DateTime($meta["releasedAt"]) : null;
 
-        return new Installation($installationPath, $release, $installationDateTime);
+        return new Installation($installationPath, $release, $installedAt, $releasedAt);
     }
 }

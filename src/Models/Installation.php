@@ -15,7 +15,12 @@ class Installation
     /**
      * @var ?\DateTime
      */
-    private $installationAt;
+    private $installedAt;
+
+    /**
+     * @var ?\DateTime
+     */
+    private $releasedAt;
 
     /**
      * @var Release?
@@ -25,14 +30,16 @@ class Installation
     /**
      * Installation constructor.
      * @param string $path
-     * @param \DateTime|null $installationAt
      * @param Release|null $release
+     * @param \DateTime|null $installedAt
+     * @param \DateTime|null $releasedAt
      */
-    public function __construct(string $path, ?Release $release = null, ?\DateTime $installationAt = null)
+    public function __construct(string $path, ?Release $release = null, ?\DateTime $installedAt = null, ?\DateTime $releasedAt = null)
     {
         $this->path = $path;
-        $this->installationAt = $installationAt;
         $this->release = $release;
+        $this->installedAt = $installedAt;
+        $this->releasedAt = $releasedAt;
     }
 
     /**
@@ -46,9 +53,9 @@ class Installation
     /**
      * @return \DateTime|null
      */
-    public function getInstallationAt(): ?\DateTime
+    public function getInstalledAt(): ?\DateTime
     {
-        return $this->installationAt;
+        return $this->installedAt;
     }
 
     /**
@@ -57,5 +64,13 @@ class Installation
     public function getRelease(): ?Release
     {
         return $this->release;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReleasedAt()
+    {
+        return $this->releasedAt;
     }
 }

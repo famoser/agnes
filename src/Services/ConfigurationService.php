@@ -82,7 +82,7 @@ class ConfigurationService
      */
     public function getTask(string $task)
     {
-        return new Task($this->getConfigEntry("application", "scripts", $task));
+        return new Task($this->getConfigEntryOrDefault([], "application", "scripts", $task));
     }
 
     /**

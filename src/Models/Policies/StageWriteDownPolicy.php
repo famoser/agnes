@@ -11,6 +11,7 @@ class StageWriteDownPolicy extends LayeredPolicy
     /**
      * @param PolicyVisitor $visitor
      * @return bool
+     * @throws \Exception
      */
     public function accept(PolicyVisitor $visitor)
     {

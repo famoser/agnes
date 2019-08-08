@@ -5,6 +5,7 @@ namespace Agnes\Services\Policy;
 
 
 use Agnes\Deploy\Deploy;
+use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Services\InstanceService;
@@ -40,6 +41,9 @@ class DeployPolicyVisitor extends PolicyVisitor
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
         $stageIndex = $this->getLayerIndex($stageWriteUpPolicy->getLayers(), $this->deployment->getTarget()->getStage());
+        if ($stageIndex === false) {
+            throw new \Exception("Stage not found in specified layers; policy undecidable.");
+        }
         $checkIndex = $stageIndex - 1;
 
         // if the stageIndex is the lowest layer, we are allowed to write
@@ -48,19 +52,27 @@ class DeployPolicyVisitor extends PolicyVisitor
             return true;
         }
 
-        // get the next lower layer and check if this release was published there
+        // get the next lower layer and check if this release was published there at any time
         $stagesToCheck = $stageWriteUpPolicy->getLayers()[$checkIndex];
         $filter = new Filter([], [$this->deployment->getTarget()->getEnvironment()], $stagesToCheck);
         $instances = $this->installationService->getInstances($filter);
 
         foreach ($instances as $instance) {
-
+            foreach ($instance->getInstallations() as $installation) {
+                if ($installation->getReleasedAt() !== null && $installation->getRelease()->getName() === $this->deployment->getRelease()->getName()) {
+                    return true;
+                }
+            }
         }
-
 
         return false;
     }
 
+    /**
+     * @param array $layers
+     * @param string $targetStage
+     * @return int|string
+     */
     private function getLayerIndex(array $layers, string $targetStage)
     {
         foreach ($layers as $index => $stage) {
@@ -69,7 +81,7 @@ class DeployPolicyVisitor extends PolicyVisitor
             }
         }
 
-        throw new \Exception("Stage not found in specified layers; policy undecidable.");
+        return false;
     }
 
     /**
