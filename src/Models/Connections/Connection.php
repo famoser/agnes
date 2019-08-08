@@ -49,12 +49,4 @@ abstract class Connection
      * @return bool
      */
     public abstract function checkFolderExists(string $folderPath): bool;
-
-    /**
-     * @return string
-     */
-    public function getWorkingFolder(): string
-    {
-        return $this->workingFolder;
-    }
 }

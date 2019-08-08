@@ -4,6 +4,7 @@
 namespace Agnes\Commands;
 
 use Agnes\Services\ConfigurationService;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -36,7 +37,7 @@ abstract class ConfigurationAwareCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int|void|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function initialize(InputInterface $input, OutputInterface $output)
     {

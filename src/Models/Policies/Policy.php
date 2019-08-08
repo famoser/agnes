@@ -6,6 +6,7 @@ namespace Agnes\Models\Policies;
 
 use Agnes\Models\Tasks\Filter;
 use Agnes\Services\Policy\PolicyVisitor;
+use Exception;
 
 abstract class Policy
 {
@@ -26,7 +27,7 @@ abstract class Policy
     /**
      * @param PolicyVisitor $visitor
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public abstract function accept(PolicyVisitor $visitor);
 

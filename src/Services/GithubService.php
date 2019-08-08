@@ -13,21 +13,43 @@ use Psr\Http\Message\ResponseInterface;
 class GithubService
 {
     /**
-     * @var Client
+     * @var HttpClient
      */
-    private $client;
+    private $httpClient;
 
     /**
-     * ReleaseService constructor.
+     * @var ConfigurationService
+     */
+    private $configurationService;
+
+    /**
+     * GithubService constructor.
      * @param HttpClient $httpClient
      * @param ConfigurationService $configurationService
-     * @throws \Exception
      */
     public function __construct(HttpClient $httpClient, ConfigurationService $configurationService)
     {
-        $config = $configurationService->getGithubConfig();
+        $this->httpClient = $httpClient;
+        $this->configurationService = $configurationService;
+    }
 
-        $this->client = new Client($httpClient, $config);
+    /**
+     * @var Client
+     */
+    private $clientCache;
+
+    /**
+     * @return Client
+     * @throws \Exception
+     */
+    private function getClient()
+    {
+        if ($this->clientCache === null) {
+            $config = $this->configurationService->getGithubConfig();
+            $this->clientCache = new Client($this->httpClient, $config);
+        }
+
+        return $this->clientCache;
     }
 
     /**
@@ -37,7 +59,7 @@ class GithubService
      */
     public function releases()
     {
-        $response = $this->client->getReleases();
+        $response = $this->getClient()->getReleases();
         $releases = json_decode($response);
 
         $parsedRelease = [];
@@ -59,10 +81,11 @@ class GithubService
      * @param string $assetId
      * @return string
      * @throws Exception
+     * @throws \Exception
      */
     public function asset(string $assetId)
     {
-        $response = $this->client->downloadAsset($assetId);
+        $response = $this->getClient()->downloadAsset($assetId);
 
         return $response->getBody()->getContents();
     }
@@ -73,6 +96,7 @@ class GithubService
      * @param string $assetContentType
      * @param string $assetContent
      * @throws Exception
+     * @throws \Exception
      */
     public function publish(Release $release, string $assetName, string $assetContentType, string $assetContent)
     {
@@ -82,7 +106,7 @@ class GithubService
         $responseObject = json_decode($responseJson);
         $releaseId = (int)$responseObject->id;
 
-        $this->client->addReleaseAsset($releaseId, $assetName, $assetContentType, $assetContent);
+        $this->getClient()->addReleaseAsset($releaseId, $assetName, $assetContentType, $assetContent);
     }
 
     /**
@@ -103,7 +127,7 @@ class GithubService
           "prerelease": ' . $this->booleanToString(strpos($release->getName(), "-") > 0) . '
         }';
 
-        return $this->client->createRelease($body);
+        return $this->getClient()->createRelease($body);
     }
 
     /**

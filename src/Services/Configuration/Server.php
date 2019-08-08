@@ -37,6 +37,7 @@ class Server
      * Server constructor.
      * @param string $name
      * @param Connection $connection
+     * @param string $path
      * @param int $keepReleases
      * @param Environment[] $environments
      */

@@ -5,6 +5,8 @@ namespace Agnes\Models;
 
 use Agnes\Models\Tasks\OnlinePeriod;
 use Agnes\Release\Release;
+use DateTime;
+use Exception;
 
 class Installation
 {
@@ -87,19 +89,19 @@ class Installation
      */
     public function takeOnline()
     {
-        $onlinePeriod = new OnlinePeriod(new \DateTime(), null);
+        $onlinePeriod = new OnlinePeriod(new DateTime(), null);
         $this->onlinePeriods[] = $onlinePeriod;
     }
 
     /**
      * persists that the installation is now taken offline
-     * @throws \Exception
+     * @throws Exception
      */
     public function takeOffline()
     {
         $lastPeriod = $this->getLastOnlinePeriod();
         if ($lastPeriod !== null) {
-            $lastPeriod->setEnd(new \DateTime());
+            $lastPeriod->setEnd(new DateTime());
         }
     }
 
@@ -112,7 +114,7 @@ class Installation
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
     public function getLastOnline()
     {

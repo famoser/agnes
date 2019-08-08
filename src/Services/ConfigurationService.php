@@ -11,11 +11,11 @@ use Agnes\Models\Policies\ReleaseWhitelistPolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
-use Agnes\Models\Tasks\Task;
-use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\EditableFile;
+use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\GithubConfig;
 use Agnes\Services\Configuration\Server;
+use Exception;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
@@ -41,7 +41,7 @@ class ConfigurationService
 
     /**
      * @param string $path
-     * @throws \Exception
+     * @throws Exception
      */
     public function loadConfig(string $path)
     {
@@ -55,7 +55,7 @@ class ConfigurationService
 
     /**
      * @return GithubConfig
-     * @throws \Exception
+     * @throws Exception
      */
     public function getGithubConfig()
     {
@@ -67,7 +67,7 @@ class ConfigurationService
 
     /**
      * @return Connection
-     * @throws \Exception
+     * @throws Exception
      */
     public function getBuildConnection()
     {
@@ -78,7 +78,7 @@ class ConfigurationService
 
     /**
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public function getBuildPath()
     {
@@ -88,7 +88,7 @@ class ConfigurationService
     /**
      * @param string $task
      * @return string[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getScripts(string $task)
     {
@@ -98,7 +98,7 @@ class ConfigurationService
     /**
      * @param string[] ...$key
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     * @throws \Exception
+     * @throws Exception
      */
     private function getConfigEntry(...$key)
     {
@@ -109,7 +109,7 @@ class ConfigurationService
      * @param $default
      * @param string[] ...$key
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     * @throws \Exception
+     * @throws Exception
      */
     private function getConfigEntryOrDefault($default, ...$key)
     {
@@ -123,13 +123,13 @@ class ConfigurationService
      * @param string $first
      * @param string[] ...$additionalDept
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     * @throws \Exception
+     * @throws Exception
      */
     private function getValue(array $config, bool $throwOnMissing, $default, string $first, ...$additionalDept)
     {
         if (!isset($config[$first])) {
             if ($throwOnMissing) {
-                throw new \Exception("key " . $first . " does not exist.");
+                throw new Exception("key " . $first . " does not exist.");
             } else {
                 return $default;
             }
@@ -145,7 +145,7 @@ class ConfigurationService
 
     /**
      * @param array $config
-     * @throws \Exception
+     * @throws Exception
      */
     private function replaceEnvVariables(array &$config)
     {
@@ -157,7 +157,7 @@ class ConfigurationService
                 if (substr_compare($envPart, ")%", -2) === 0) {
                     $envName = substr($envPart, 0, -2);
                     if (!isset($_ENV[$envName])) {
-                        throw new \Exception("The requested environment value " . $envName . " is not set.");
+                        throw new Exception("The requested environment value " . $envName . " is not set.");
                     }
                     $item = $_ENV[$envName];
                 }
@@ -168,7 +168,7 @@ class ConfigurationService
 
     /**
      * @return Server[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getServers(): array
     {
@@ -194,7 +194,7 @@ class ConfigurationService
     /**
      * @param string $type
      * @return Policy[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPolicies(string $type)
     {
@@ -217,7 +217,7 @@ class ConfigurationService
                     $parsedPolicies[] = new ReleaseWhitelistPolicy($filter, $policy["commitishes"]);
                     break;
                 default:
-                    throw new \Exception("Unknown policy type: " . $policyType);
+                    throw new Exception("Unknown policy type: " . $policyType);
             }
         }
 
@@ -240,7 +240,7 @@ class ConfigurationService
     /**
      * @param $connection
      * @return LocalConnection|SSHConnection
-     * @throws \Exception
+     * @throws Exception
      */
     private function getConnection($connection)
     {
@@ -252,13 +252,13 @@ class ConfigurationService
             $destination = $connection["destination"];
             return new SSHConnection($destination);
         } else {
-            throw new \Exception("unknown connection type $connectionType");
+            throw new Exception("unknown connection type $connectionType");
         }
     }
 
     /**
      * @return string[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getSharedFolders()
     {
@@ -267,7 +267,7 @@ class ConfigurationService
 
     /**
      * @return EditableFile[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getEditableFiles()
     {

@@ -3,15 +3,14 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Connections\LocalConnection;
-use Agnes\Models\Connections\SSHConnection;
 use Agnes\Models\Tasks\Task;
+use Exception;
 
 class TaskService
 {
     /**
      * @param string[] $commands
-     * @throws \Exception
+     * @throws Exception
      */
     public function executeCommands(array $commands): void
     {
@@ -20,7 +19,7 @@ class TaskService
             exec($command . " 2>&1", $output, $returnVar);
 
             if ($returnVar !== 0) {
-                throw new \Exception("command execution of " . $command . " failed with " . $returnVar . ".");
+                throw new Exception("command execution of " . $command . " failed with " . $returnVar . ".");
             }
         }
     }

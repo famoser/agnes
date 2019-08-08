@@ -6,6 +6,7 @@ namespace Agnes\Models\Policies;
 
 use Agnes\Models\Tasks\Filter;
 use Agnes\Services\Policy\PolicyVisitor;
+use Exception;
 
 class ReleaseWhitelistPolicy extends Policy
 {
@@ -29,7 +30,7 @@ class ReleaseWhitelistPolicy extends Policy
     /**
      * @param PolicyVisitor $visitor
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function accept(PolicyVisitor $visitor)
     {

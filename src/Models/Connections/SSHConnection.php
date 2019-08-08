@@ -6,6 +6,7 @@ namespace Agnes\Models\Connections;
 
 use Agnes\Models\Tasks\Task;
 use Agnes\Services\TaskService;
+use Exception;
 use function exec;
 use function explode;
 use function file_get_contents;
@@ -13,7 +14,6 @@ use function file_put_contents;
 use function strlen;
 use function substr;
 use function unlink;
-use const DIRECTORY_SEPARATOR;
 
 class SSHConnection extends Connection
 {
@@ -53,12 +53,12 @@ class SSHConnection extends Connection
     /**
      * @param Task $task
      * @param TaskService $service
-     * @throws \Exception
+     * @throws Exception
      */
     public function executeTask(Task $task, TaskService $service)
     {
         $commands = $service->getCommands($task);
-        $workingFolder = $this->getWorkingFolder();
+        $workingFolder = $task->getWorkingFolder();
 
         // ensure target dir exists
         $workingFolderCommands = $service->ensureFolderExistsCommands($workingFolder);
@@ -90,7 +90,7 @@ class SSHConnection extends Connection
         $tempFile = self::getTempFile();
 
         // download file
-        $source = $this->getDestination() . ":" . $this->getWorkingFolder() . DIRECTORY_SEPARATOR . $filePath;
+        $source = $this->getRsyncPath($filePath);
         exec("rsync -chavzP $source $tempFile");
 
         $content = file_get_contents($filePath);
@@ -162,13 +162,12 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @param SSHConnection $SSHConnection
      * @param string $filePath
      * @return string
      */
     private function getRsyncPath(string $filePath)
     {
-        return $this->getDestination() . ":" . $this->getWorkingFolder() . DIRECTORY_SEPARATOR . $filePath;
+        return $this->getDestination() . ":" . $filePath;
     }
 
     /**

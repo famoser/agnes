@@ -7,6 +7,7 @@ use Agnes\Deploy\Deploy;
 use Agnes\Release\Release;
 use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\ReleasePolicyVisitor;
+use Exception;
 
 class PolicyService
 {
@@ -33,7 +34,7 @@ class PolicyService
 
     /**
      * @param Release $release
-     * @throws \Exception
+     * @throws Exception
      */
     public function ensureCanRelease(Release $release)
     {
@@ -42,7 +43,7 @@ class PolicyService
 
         foreach ($policies as $policy) {
             if (!$policy->accept($releasePolicyVisitor)) {
-                throw new \Exception("policy denied execution: " . get_class($policy));
+                throw new Exception("policy denied execution: " . get_class($policy));
             }
         }
     }
@@ -50,7 +51,7 @@ class PolicyService
     /**
      * @param Deploy $deploy
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function canDeploy(Deploy $deploy): bool
     {

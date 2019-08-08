@@ -3,12 +3,7 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Agnes\Commands\ReleaseCommand;
-use Agnes\Release\CompressionService;
-use Agnes\Release\GithubService;
-use Agnes\Services\ConfigurationService;
-use Agnes\Services\TaskService;
-use Http\Adapter\Guzzle6\Client;
+use Agnes\CommandFactory;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
 
@@ -16,12 +11,9 @@ $path = __DIR__ . '/.env';
 $dotenv = new Dotenv(false);
 $dotenv->loadEnv($path);
 
-$configService = new ConfigurationService(__DIR__);
-$client = Client::createWithConfig([]);
-$releaseService = new GithubService($client);
-$taskExecutionService = new TaskService();
-$compressionService = new CompressionService();
-
 $app = new Application();
-$app->add(new ReleaseCommand($configService, $releaseService, $taskExecutionService, $compressionService));
+
+$commandFactory = new CommandFactory(__DIR__);
+$app->addCommands($commandFactory->getCommands());
+
 $app->run();

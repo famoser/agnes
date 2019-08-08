@@ -4,49 +4,51 @@
 namespace Agnes\Models\Tasks;
 
 
+use DateTime;
+
 class OnlinePeriod
 {
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     private $start;
 
     /**
-     * @var \DateTime|null
+     * @var DateTime|null
      */
     private $end;
 
     /**
      * OnlinePeriod constructor.
-     * @param \DateTime $start
-     * @param \DateTime|null $end
+     * @param DateTime $start
+     * @param DateTime|null $end
      */
-    public function __construct(\DateTime $start, ?\DateTime $end)
+    public function __construct(DateTime $start, ?DateTime $end)
     {
         $this->start = $start;
         $this->end = $end;
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getStart(): \DateTime
+    public function getStart(): DateTime
     {
         return $this->start;
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getEnd(): ?\DateTime
+    public function getEnd(): ?DateTime
     {
         return $this->end;
     }
 
     /**
-     * @param \DateTime|null $end
+     * @param DateTime|null $end
      */
-    public function setEnd(?\DateTime $end): void
+    public function setEnd(?DateTime $end): void
     {
         $this->end = $end;
     }

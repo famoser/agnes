@@ -5,10 +5,10 @@ namespace Agnes\Services\Policy;
 
 
 use Agnes\Deploy\Deploy;
-use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Services\InstanceService;
+use Exception;
 
 class DeployPolicyVisitor extends PolicyVisitor
 {
@@ -36,13 +36,13 @@ class DeployPolicyVisitor extends PolicyVisitor
     /**
      * @param StageWriteUpPolicy $stageWriteUpPolicy
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
         $stageIndex = $this->getLayerIndex($stageWriteUpPolicy->getLayers(), $this->deployment->getTarget()->getStage());
         if ($stageIndex === false) {
-            throw new \Exception("Stage not found in specified layers; policy undecidable.");
+            throw new Exception("Stage not found in specified layers; policy undecidable.");
         }
         $checkIndex = $stageIndex - 1;
 

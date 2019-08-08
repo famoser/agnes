@@ -10,6 +10,8 @@ use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Instance;
 use Agnes\Models\Tasks\OnlinePeriod;
 use Agnes\Release\Release;
+use DateTime;
+use Exception;
 
 class InstanceService
 {
@@ -35,7 +37,7 @@ class InstanceService
     /**
      * @param Filter|null $filter
      * @return Instance[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getInstances(?Filter $filter)
     {
@@ -62,7 +64,7 @@ class InstanceService
      * @param Connection $connection
      * @param string $releasesFolder
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function loadInstallations(Connection $connection, string $releasesFolder)
     {
@@ -80,7 +82,7 @@ class InstanceService
 
     /**
      * @return Instance[]
-     * @throws \Exception
+     * @throws Exception
      */
     private function loadInstances()
     {
@@ -113,7 +115,7 @@ class InstanceService
      * @param Connection $connection
      * @param string $installationPath
      * @param Release $release
-     * @throws \Exception
+     * @throws Exception
      */
     public function onReleaseInstalled(Connection $connection, string $installationPath, Release $release)
     {
@@ -126,7 +128,7 @@ class InstanceService
     /**
      * @param Connection $connection
      * @param string $installationPath
-     * @throws \Exception
+     * @throws Exception
      */
     public function onReleaseOnline(Connection $connection, string $installationPath)
     {
@@ -139,7 +141,7 @@ class InstanceService
     /**
      * @param Connection $connection
      * @param string $installationPath
-     * @throws \Exception
+     * @throws Exception
      */
     public function onReleaseOffline(Connection $connection, string $installationPath)
     {
@@ -153,7 +155,7 @@ class InstanceService
      * @param Connection $connection
      * @param string $installationPath
      * @return Installation
-     * @throws \Exception
+     * @throws Exception
      */
     private function getInstallationFromPath(Connection $connection, string $installationPath): Installation
     {
@@ -169,8 +171,8 @@ class InstanceService
 
         $onlinePeriods = [];
         foreach ($meta["online_periods"] as $onlinePeriod) {
-            $start = new \DateTime($onlinePeriod["start"]);
-            $end = $onlinePeriod["end"] !== null ? new \DateTime($onlinePeriod["end"]) : null;
+            $start = new DateTime($onlinePeriod["start"]);
+            $end = $onlinePeriod["end"] !== null ? new DateTime($onlinePeriod["end"]) : null;
             $onlinePeriods[] = new OnlinePeriod($start, $end);
         }
 
@@ -214,7 +216,6 @@ class InstanceService
 
     /**
      * @param Instance $target
-     * @param Release $release
      * @return string
      */
     public function getCurrentReleaseSymlinkPath(Instance $target)
