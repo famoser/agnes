@@ -4,8 +4,10 @@
 namespace Agnes\Services;
 
 use Agnes\Deploy\Deploy;
+use Agnes\Models\Policies\Policy;
 use Agnes\Release\Release;
 use Agnes\Services\Policy\DeployPolicyVisitor;
+use Agnes\Services\Policy\PolicyVisitor;
 use Agnes\Services\Policy\ReleasePolicyVisitor;
 use Exception;
 
@@ -39,12 +41,8 @@ class PolicyService
     public function ensureCanRelease(Release $release)
     {
         $releasePolicyVisitor = new ReleasePolicyVisitor($release);
-        $policies = $this->configurationService->getPolicies("release");
-
-        foreach ($policies as $policy) {
-            if (!$policy->accept($releasePolicyVisitor)) {
-                throw new Exception("policy denied execution: " . get_class($policy));
-            }
+        if (($policy = $this->canExecute($releasePolicyVisitor, "release"))) {
+            throw new Exception("policy denied execution: " . get_class($policy));
         }
     }
 
@@ -56,14 +54,26 @@ class PolicyService
     public function canDeploy(Deploy $deploy): bool
     {
         $deployPolicyVisitor = new DeployPolicyVisitor($this->instanceService, $deploy);
-        $policies = $this->configurationService->getPolicies("deploy");
+
+        return $this->canExecute($deployPolicyVisitor, "deploy") === null;
+    }
+
+    /**
+     * @param PolicyVisitor $visitor
+     * @param string $task
+     * @return bool
+     * @throws Exception
+     */
+    public function canExecute(PolicyVisitor $visitor, string $task): ?Policy
+    {
+        $policies = $this->configurationService->getPolicies($task);
 
         foreach ($policies as $policy) {
-            if (!$policy->accept($deployPolicyVisitor)) {
-                return false;
+            if ($visitor->isApplicable($policy) && !$policy->accept($visitor)) {
+                return $policy;
             }
         }
 
-        return true;
+        return null;
     }
 }
