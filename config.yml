@@ -3,10 +3,19 @@ agnes:
   build:
     connection:
       type: local
-      path: .build
+    path: .build
 
 application:
   repository: famoser/agnes
+  shared_folders:
+    - var/persistent
+  editable_files:
+    - path: .env.local
+      required: true
+    - path: var/transient/domainOverrides.json
+      required: false
+    - path: var/transient/authorization/whitelists/developers.txt
+      required: false
   scripts:
     release:
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
@@ -26,22 +35,13 @@ application:
       - composer install --no-interaction --optimize-autoloader --no-scripts
       - php bin/console doctrine:fixtures:load -n
 
-  paths:
-    shared:
-      - var/persistent
-
-    env: .env.local
-
-    files:
-      - var/transient/domainOverrides.json
-      - var/transient/authorization/whitelists/developers.txt
 
 servers:
   mangel.io:
     connection:
       type: ssh
-      path: '%env(SERVER_PATH)%' # the path of the installation will be $path/$environment_name/$environment
       destination: '%env(SERVER_DESTINATION)%'
+    path: '%env(SERVER_PATH)%' # the path of the installation will be $path/$environment_name/$environment
     keep_releases: 2
     environments:
       app.mangel.io: [production, education, staging, dev]
@@ -58,10 +58,10 @@ policies:
         1: [staging]
         2: [production, education]
 
-  - type: release_whitelist
-      filter:
-        stages: [production, education, staging]
-      commitishes: [master]
+    - type: release_whitelist
+        filter:
+          stages: [production, education, staging]
+        commitishes: [master]
 
   copy_shared:
     - type: stage_write_down

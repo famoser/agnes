@@ -19,6 +19,11 @@ class Server
     private $connection;
 
     /**
+     * @var string
+     */
+    private $path;
+
+    /**
      * @var int
      */
     private $keepReleases;
@@ -35,10 +40,11 @@ class Server
      * @param int $keepReleases
      * @param Environment[] $environments
      */
-    public function __construct(string $name, Connection $connection, int $keepReleases, array $environments)
+    public function __construct(string $name, Connection $connection, string $path, int $keepReleases, array $environments)
     {
         $this->name = $name;
         $this->connection = $connection;
+        $this->path = $path;
         $this->keepReleases = $keepReleases;
         $this->environments = $environments;
     }
@@ -73,5 +79,13 @@ class Server
     public function getEnvironments(): array
     {
         return $this->environments;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPath(): string
+    {
+        return $this->path;
     }
 }

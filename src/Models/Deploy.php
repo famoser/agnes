@@ -5,7 +5,6 @@ namespace Agnes\Deploy;
 
 
 use Agnes\Models\Tasks\Instance;
-use Agnes\Release\Release;
 use Agnes\Services\Github\ReleaseWithAsset;
 
 class Deploy
@@ -21,14 +20,21 @@ class Deploy
     private $release;
 
     /**
-     * Deployment constructor.
-     * @param Release $release
-     * @param Instance $target
+     * @var string[]
      */
-    public function __construct(ReleaseWithAsset $release, Instance $target)
+    private $files;
+
+    /**
+     * Deployment constructor.
+     * @param ReleaseWithAsset $release
+     * @param Instance $target
+     * @param array $files
+     */
+    public function __construct(ReleaseWithAsset $release, Instance $target, array $files)
     {
         $this->target = $target;
         $this->release = $release;
+        $this->files = $files;
     }
 
     /**
@@ -45,5 +51,13 @@ class Deploy
     public function getRelease(): ReleaseWithAsset
     {
         return $this->release;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getFiles(): array
+    {
+        return $this->files;
     }
 }

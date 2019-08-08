@@ -6,6 +6,7 @@ namespace Agnes\Models\Connections;
 
 use Agnes\Models\Tasks\Task;
 use Agnes\Services\TaskService;
+use function chdir;
 use function file_get_contents;
 use function file_put_contents;
 use function glob;
@@ -15,13 +16,33 @@ use const GLOB_ONLYDIR;
 class LocalConnection extends Connection
 {
     /**
+     * @param array $commands
+     */
+    public function executeCommands(...$commands)
+    {
+        foreach ($commands as $command) {
+            exec($command);
+        }
+    }
+
+    /**
      * @param Task $task
      * @param TaskService $service
      * @throws \Exception
      */
     public function executeTask(Task $task, TaskService $service)
     {
-        $service->executeLocal($this, $task);
+        $commands = $service->getCommands($task);
+
+        // ensure working directory exists
+        $workingFolderCommands = $service->ensureFolderExistsCommands($this->getWorkingFolder());
+        $this->executeCommands(...$workingFolderCommands);
+
+        // change working directory
+        chdir($this->getWorkingFolder());
+
+        // execute commands
+        $service->executeCommands($commands);
     }
 
     /**

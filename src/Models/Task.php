@@ -26,11 +26,18 @@ class Task
     private $postCommands = [];
 
     /**
+     * @var string
+     */
+    private $workingFolder;
+
+    /**
      * ReleaseBuildConfig constructor.
+     * @param string $workingFolder
      * @param string[] $commands
      */
-    public function __construct(array $commands)
+    public function __construct(string $workingFolder, array $commands)
     {
+        $this->workingFolder = $workingFolder;
         $this->commands = $commands;
     }
 
@@ -89,5 +96,13 @@ class Task
     public function getPostCommands(): array
     {
         return $this->postCommands;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWorkingFolder(): string
+    {
+        return $this->workingFolder;
     }
 }

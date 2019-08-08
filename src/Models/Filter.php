@@ -39,7 +39,7 @@ class Filter
      */
     public function instanceMatches(Instance $installation)
     {
-        return $this->isMatch($installation->getServer(), $installation->getEnvironment(), $installation->getStage());
+        return $this->isMatch($installation->getServerName(), $installation->getEnvironmentName(), $installation->getStage());
     }
 
     /**

@@ -6,21 +6,18 @@ namespace Agnes\Models\Tasks;
 
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
+use Agnes\Services\Configuration\Environment;
+use Agnes\Services\Configuration\Server;
 
 class Instance
 {
     /**
-     * @var Connection
-     */
-    private $connection;
-
-    /**
-     * @var string
+     * @var Server
      */
     private $server;
 
     /**
-     * @var string
+     * @var Environment
      */
     private $environment;
 
@@ -35,22 +32,20 @@ class Instance
     private $installations;
 
     /**
-     * @var Installation[]
+     * @var Installation
      */
     private $currentInstallation;
 
     /**
      * Instance constructor.
-     * @param Connection $connection
-     * @param string $server
-     * @param string $environment
+     * @param Server $server
+     * @param Environment $environment
      * @param string $stage
      * @param array $installations
      * @param Installation|null $currentInstallation
      */
-    public function __construct(Connection $connection, string $server, string $environment, string $stage, array $installations, ?Installation $currentInstallation)
+    public function __construct(Server $server, Environment $environment, string $stage, array $installations, ?Installation $currentInstallation)
     {
-        $this->connection = $connection;
         $this->server = $server;
         $this->environment = $environment;
         $this->stage = $stage;
@@ -59,11 +54,19 @@ class Instance
     }
 
     /**
-     * @return string
+     * @return Server
      */
-    public function getInstallationsFolder()
+    public function getServer(): Server
     {
-        return $this->environment . DIRECTORY_SEPARATOR . $this->stage;
+        return $this->server;
+    }
+
+    /**
+     * @return Environment
+     */
+    public function getEnvironment(): Environment
+    {
+        return $this->environment;
     }
 
     /**
@@ -71,23 +74,23 @@ class Instance
      */
     public function getConnection(): Connection
     {
-        return $this->connection;
+        return $this->server->getConnection();
     }
 
     /**
      * @return string
      */
-    public function getServer(): string
+    public function getServerName(): string
     {
-        return $this->server;
+        return $this->server->getName();
     }
 
     /**
      * @return string
      */
-    public function getEnvironment(): string
+    public function getEnvironmentName(): string
     {
-        return $this->environment;
+        return $this->environment->getName();
     }
 
     /**
@@ -107,9 +110,9 @@ class Instance
     }
 
     /**
-     * @return Installation[]
+     * @return Installation
      */
-    public function getCurrentInstallation(): array
+    public function getCurrentInstallation(): Installation
     {
         return $this->currentInstallation;
     }

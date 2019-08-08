@@ -46,8 +46,9 @@ class GithubService
             $commitish = $release->target_commitish;
             if (count($release->assets) > 0) {
                 $assetId = $release->assets[0]->id;
+                $assetName = $release->assets[0]->name;
 
-                $parsedRelease[] = new ReleaseWithAsset($name, $commitish, $assetId);
+                $parsedRelease[] = new ReleaseWithAsset($name, $commitish, $assetId, $assetName);
             }
         }
 

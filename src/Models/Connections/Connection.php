@@ -10,18 +10,9 @@ use Agnes\Services\TaskService;
 abstract class Connection
 {
     /**
-     * @var string
+     * @param array $commands
      */
-    private $workingFolder;
-
-    /**
-     * Connection constructor.
-     * @param string $workingFolder
-     */
-    public function __construct(string $workingFolder)
-    {
-        $this->workingFolder = $workingFolder;
-    }
+    public abstract function executeCommands(...$commands);
 
     /**
      * @param Task $task

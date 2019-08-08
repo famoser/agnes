@@ -6,6 +6,7 @@ namespace Agnes\Commands;
 use Agnes\Deploy\Deploy;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Instance;
+use Agnes\Models\Tasks\Task;
 use Agnes\Release\GithubService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\Github\ReleaseWithAsset;
@@ -13,6 +14,7 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Agnes\Services\TaskService;
 use Http\Client\Exception;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -62,10 +64,12 @@ class DeployCommand extends ConfigurationAwareCommand
         $this->setName('deploy')
             ->setDescription('Deploy a release to a specific environment.')
             ->setHelp('This command downloads, installs & publishes a release to a specific environment.')
+            ->addArgument("files", InputArgument::IS_ARRAY, "the files to deploy. Separate multiple files with a space. The file path is matched against the configured files, and the longest matching path is chosen as a target.")
             ->addOption("name", "na", InputOption::VALUE_REQUIRED, "name of the release")
             ->addOption("server", "se", InputOption::VALUE_OPTIONAL, "the server to install the release on")
             ->addOption("environment", "e", InputOption::VALUE_OPTIONAL, "the environment to install the release on")
-            ->addOption("stage", "st", InputOption::VALUE_OPTIONAL, "the stage to install the release on");
+            ->addOption("stage", "st", InputOption::VALUE_OPTIONAL, "the stage to install the release on")
+            ->addOption("skip_file_validation", "sv", InputOption::VALUE_NONE, "if file validation should be skipped. the application no longer throws if required file is not supplied");
 
         parent::configure();
     }
@@ -87,16 +91,23 @@ class DeployCommand extends ConfigurationAwareCommand
         $stage = $input->getOption("stage");
         $instances = $this->getInstances($server, $environment, $stage);
 
+        $inputFiles = $input->getArgument("files");
+        $skipValidation = (bool)$input->getOption("skip_file_validation");
+        $fileContents = $this->getFileContents($inputFiles, $skipValidation);
+
         $deploys = [];
         foreach ($instances as $instance) {
-            $deploy = new Deploy($release, $instance);
+            $deploy = new Deploy($release, $instance, $fileContents);
             if ($this->policyService->canDeploy($deploy)) {
                 $deploys[] = $deploy;
             }
         }
 
         foreach ($deploys as $deploy) {
-            $this->deploy($deploy);
+            $currentInstallation = $deploy->getTarget()->getCurrentInstallation();
+            if ($currentInstallation === null || $currentInstallation->getRelease()->getName() !== $deploy->getRelease()->getName()) {
+                $this->deploy($deploy);
+            }
         }
     }
 
@@ -143,35 +154,120 @@ class DeployCommand extends ConfigurationAwareCommand
      */
     private function deploy(Deploy $deploy)
     {
-        $assetContent = $this->githubService->asset($deploy->getRelease()->getAssetId());
+        $release = $deploy->getRelease();
+        $target = $deploy->getTarget();
+        $connection = $target->getConnection();
 
-        $deployTask = $this->configurationService->getTask("deploy");
+        // make dir for new release
+        $releaseFolder = $this->instanceService->getReleasePath($target, $release);
+        $currentReleaseSymlink = $this->instanceService->getCurrentReleaseSymlinkPath($target);
+        $commands = $this->taskExecutionService->ensureFolderExistsCommands($releaseFolder);
+        $connection->executeCommands($commands);
+
+        // transfer release packet
+        $assetContent = $this->githubService->asset($release->getAssetId());
+        $assetPath = $releaseFolder . DIRECTORY_SEPARATOR . $release->getAssetName();
+        $connection->writeFile($assetPath, $assetContent);
+
+        // unpack release packet
+        $connection->executeCommands("tar -xzf $assetPath $releaseFolder");
+
+        // remove release packet
+        $connection->executeCommands("rm $assetPath");
+
+        // register which release is installed there
+        $this->instanceService->onReleaseInstalled($connection, $releaseFolder, $release);
+
+        // create shared folders
+        $sharedPath = $this->instanceService->getSharedPath($target);
+        $sharedFolders = $this->configurationService->getSharedFolders();
+        foreach ($sharedFolders as $sharedFolder) {
+            $sharedFolderSource = $sharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
+            $releaseFolderTarget = $releaseFolder . DIRECTORY_SEPARATOR . $sharedFolder;
+
+            // use content of shared folder as template if it is created for the first time
+            if (!$connection->checkFolderExists($sharedFolderSource)) {
+                $connection->executeCommands("mv $releaseFolderTarget $sharedFolderSource");
+            }
+
+            // remove folder if it exists from release path
+            $connection->executeCommands("rm -rf $releaseFolderTarget");
+
+            // create symlink from release path to shared path
+            $connection->executeCommands("ln -s $sharedFolderSource $releaseFolderTarget");
+        }
+
+        // submit files
+        foreach ($deploy->getFiles() as $targetPath => $content) {
+            $fullPath = $releaseFolder . DIRECTORY_SEPARATOR . $targetPath;
+            $connection->writeFile($fullPath, $content);
+        }
+
+        // execute deploy task
+        $deployScripts = $this->configurationService->getScripts("deploy");
+        $task = new Task($releaseFolder, $deployScripts);
+        $connection->executeTask($task, $this->taskExecutionService);
+
+        // create new symlink
+        $tempCurrentReleaseSymlink = $currentReleaseSymlink . "_";
+        $connection->executeCommands("ln -s $releaseFolder $tempCurrentReleaseSymlink");
+
+        // switch active release
+        $this->instanceService->onReleaseOffline($connection, $currentReleaseSymlink);
+        $connection->executeCommands("mv -T $tempCurrentReleaseSymlink $currentReleaseSymlink");
+        $this->instanceService->onReleaseOnline($connection, $currentReleaseSymlink);
+
         /**
-         * some scripts
-         * - mkdir -p RELEASE_FOLDER SHARED_FOLDER TEMP_FOLDER # create directory with parent directories, no error if already exists
-         * - curl $ARTIFACT_NAME --output $ARTIFACT_DOWNLOAD_PATH # download artifact
-         * - tar xzf $ARTIFACT_DOWNLOAD_PATH -C $RELEASE_FOLDER # extract artifact to release path
-         * - for shared_dir in "${shared_dirs[@]}"; do ln -s $RELEASE_FOLDER/$shared_dir $SHARED_FOLDER/$shared_dir; done # create shared folders
-         * - chmod -R 777
-         *
-         * process:
-         * - make new dir for release
-         * - make dir with release
-         * - transfer archive
-         * - uncompress archive
-         * - delete archive
-         * - create .agnes file
-         * - create shared folders
-         * - link shared folder
-         * - create env file
-         * . fill env file (with what???)
-         * - execute deploy tasks
-         * - create atomic symlink https://unix.stackexchange.com/a/6786/278058
-         * - edit .agnes file with release time
+         * pending:
          * - clean up old releases
          */
-        $deployTask->addPreCommand("mkdir");
+    }
 
-        $deploy->getTarget()->getConnection()->executeTask($deployTask, $this->taskExecutionService);
+    /**
+     * @param array $inputFiles
+     * @param bool $skipValidation
+     * @return array
+     * @throws \Exception
+     */
+    private function getFileContents(array $inputFiles, bool $skipValidation): array
+    {
+        $configuredFiles = $this->configurationService->getEditableFiles();
+        $fileContents = [];
+        foreach ($inputFiles as $file) {
+            $matchFound = false;
+            foreach ($configuredFiles as $configuredFile) {
+                $configuredFilePath = $configuredFile->getPath();
+                $matchPosition = stripos($configuredFilePath, $file);
+
+                // we have a match if it starts at the end; so ride.json matches to var/trans/override.json
+                $matchSize = strlen($file);
+                $matchAtTheEnd = $matchPosition + $matchSize === strlen($configuredFile->getPath());
+                if ($matchAtTheEnd) {
+                    if (isset($fileContent[$configuredFilePath])) {
+                        throw new \Exception("no unique match for $file");
+                    }
+
+                    $filePath = $this->configurationService->getBasePath() . DIRECTORY_SEPARATOR . $file;
+                    $fileContent = file_get_contents($filePath);
+                    $fileContents[$configuredFilePath] = $fileContent;
+                    $matchFound = true;
+                }
+            }
+
+            // add the file content to the mapping
+            if (!$matchFound) {
+                throw new \Exception("no match found for file $file");
+            }
+        }
+
+        // ensure all required files have their match
+        foreach ($configuredFiles as $configuredFile) {
+            $path = $configuredFile->getPath();
+            if ($configuredFile->getIsRequired() && !$skipValidation && !isset($fileContents[$path])) {
+                throw new \Exception("you must pass a file which matches $path");
+            }
+        }
+
+        return $fileContents;
     }
 }

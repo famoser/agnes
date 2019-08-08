@@ -7,9 +7,6 @@ namespace Agnes\Models\Connections;
 use Agnes\Models\Tasks\Task;
 use Agnes\Services\TaskService;
 use function exec;
-use function exec as exec1;
-use function exec as exec2;
-use function exec as exec3;
 use function explode;
 use function file_get_contents;
 use function file_put_contents;
@@ -27,14 +24,30 @@ class SSHConnection extends Connection
 
     /**
      * SSHConnection constructor.
-     * @param string $workingFolder
      * @param string $destination
      */
-    public function __construct(string $workingFolder, string $destination)
+    public function __construct(string $destination)
     {
-        parent::__construct($workingFolder);
-
         $this->destination = $destination;
+    }
+
+    /**
+     * @param string[] $commands
+     */
+    public function executeCommands(...$commands)
+    {
+        foreach ($commands as $command) {
+            exec($this->prepareCommand($command));
+        }
+    }
+
+    /**
+     * @param string $command
+     * @return string
+     */
+    private function prepareCommand(string $command)
+    {
+        return "ssh " . $this->getDestination() . " '$command'";
     }
 
     /**
@@ -44,7 +57,20 @@ class SSHConnection extends Connection
      */
     public function executeTask(Task $task, TaskService $service)
     {
-        $service->executeSSH($this, $task);
+        $commands = $service->getCommands($task);
+        $workingFolder = $this->getWorkingFolder();
+
+        // ensure target dir exists
+        $workingFolderCommands = $service->ensureFolderExistsCommands($workingFolder);
+        $this->executeCommands(...$workingFolderCommands);
+
+        // prepare commands for execution
+        foreach ($commands as &$command) {
+            $command = $this->prepareCommand("cd $workingFolder && $command");
+        }
+
+        // execute commands
+        $service->executeCommands($commands);
     }
 
     /**
@@ -65,7 +91,7 @@ class SSHConnection extends Connection
 
         // download file
         $source = $this->getDestination() . ":" . $this->getWorkingFolder() . DIRECTORY_SEPARATOR . $filePath;
-        exec1("rsync -chavzP $source $tempFile");
+        exec("rsync -chavzP $source $tempFile");
 
         $content = file_get_contents($filePath);
         unlink($tempFile);
@@ -83,8 +109,8 @@ class SSHConnection extends Connection
         file_put_contents($tempFile, $content);
 
         // download file
-        $destination = self::getRsyncPath($this, $filePath);
-        exec2("rsync -chavzP $tempFile $destination");
+        $destination = $this->getRsyncPath($filePath);
+        exec("rsync -chavzP $tempFile $destination");
     }
 
     /**
@@ -94,7 +120,7 @@ class SSHConnection extends Connection
     public function getFolders(string $dir): array
     {
         $command = "ssh " . $this->getDestination() . " 'cd $dir && ls -1d */'";
-        exec3($command, $content);
+        exec($command, $content);
 
         $dirs = [];
         foreach (explode("\n", $content) as $line) {
@@ -140,9 +166,9 @@ class SSHConnection extends Connection
      * @param string $filePath
      * @return string
      */
-    private static function getRsyncPath(SSHConnection $SSHConnection, string $filePath)
+    private function getRsyncPath(string $filePath)
     {
-        return $SSHConnection->getDestination() . ":" . $SSHConnection->getWorkingFolder() . DIRECTORY_SEPARATOR . $filePath;
+        return $this->getDestination() . ":" . $this->getWorkingFolder() . DIRECTORY_SEPARATOR . $filePath;
     }
 
     /**

@@ -3,6 +3,7 @@
 
 namespace Agnes\Models;
 
+use Agnes\Models\Tasks\OnlinePeriod;
 use Agnes\Release\Release;
 
 class Installation
@@ -13,33 +14,26 @@ class Installation
     private $path;
 
     /**
-     * @var ?\DateTime
-     */
-    private $installedAt;
-
-    /**
-     * @var ?\DateTime
-     */
-    private $releasedAt;
-
-    /**
      * @var Release?
      */
     private $release;
 
     /**
+     * @var OnlinePeriod[]
+     */
+    private $onlinePeriods;
+
+    /**
      * Installation constructor.
      * @param string $path
      * @param Release|null $release
-     * @param \DateTime|null $installedAt
-     * @param \DateTime|null $releasedAt
+     * @param array $onlinePeriods
      */
-    public function __construct(string $path, ?Release $release = null, ?\DateTime $installedAt = null, ?\DateTime $releasedAt = null)
+    public function __construct(string $path, ?Release $release = null, array $onlinePeriods = [])
     {
         $this->path = $path;
         $this->release = $release;
-        $this->installedAt = $installedAt;
-        $this->releasedAt = $releasedAt;
+        $this->onlinePeriods = $onlinePeriods;
     }
 
     /**
@@ -51,14 +45,6 @@ class Installation
     }
 
     /**
-     * @return \DateTime|null
-     */
-    public function getInstalledAt(): ?\DateTime
-    {
-        return $this->installedAt;
-    }
-
-    /**
      * @return Release|null ?Release
      */
     public function getRelease(): ?Release
@@ -67,10 +53,47 @@ class Installation
     }
 
     /**
-     * @return mixed
+     * if this installation was online at some time
+     *
+     * @return bool
      */
-    public function getReleasedAt()
+    public function hasOnlinePeriods()
     {
-        return $this->releasedAt;
+        return count($this->onlinePeriods) > 0;
+    }
+
+    /**
+     * @return OnlinePeriod[]
+     */
+    public function getOnlinePeriods(): array
+    {
+        return $this->onlinePeriods;
+    }
+
+    /**
+     * persists that the installation is now taken online
+     */
+    public function takeOnline()
+    {
+        $onlinePeriod = new OnlinePeriod(new \DateTime(), null);
+        $this->onlinePeriods[] = $onlinePeriod;
+    }
+
+    /**
+     * persists that the installation is now taken offline
+     * @throws \Exception
+     */
+    public function takeOffline()
+    {
+        $lastPeriod = $this->onlinePeriods[count($this->onlinePeriods) - 1];
+        $lastPeriod->setEnd(new \DateTime());
+    }
+
+    /**
+     * @param Release $release
+     */
+    public function setRelease(Release $release)
+    {
+        $this->release = $release;
     }
 }

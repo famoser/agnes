@@ -3,6 +3,7 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Models\Tasks\Task;
 use Agnes\Release\GithubService;
 use Agnes\Release\Release;
 use Agnes\Services\ConfigurationService;
@@ -97,7 +98,10 @@ class ReleaseCommand extends ConfigurationAwareCommand
     private function buildRelease(Release $release): string
     {
         $githubConfig = $this->configurationService->getGithubConfig();
-        $task = $task = $this->configurationService->getTask("release");
+        $scripts = $this->configurationService->getScripts("release");
+        $buildPath = $this->configurationService->getBuildPath();
+
+        $task = new Task($buildPath, $scripts);
 
         // clone repo, checkout correct commit & then remove git folder
         $task->addPreCommand("git clone git@github.com:" . $githubConfig->getRepository() . " .");

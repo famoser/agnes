@@ -13,6 +13,7 @@ use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Task;
 use Agnes\Services\Configuration\Environment;
+use Agnes\Services\Configuration\EditableFile;
 use Agnes\Services\Configuration\GithubConfig;
 use Agnes\Services\Configuration\Server;
 use Symfony\Component\Yaml\Yaml;
@@ -76,13 +77,22 @@ class ConfigurationService
     }
 
     /**
-     * @param string $task
-     * @return Task
+     * @return string
      * @throws \Exception
      */
-    public function getTask(string $task)
+    public function getBuildPath()
     {
-        return new Task($this->getConfigEntryOrDefault([], "application", "scripts", $task));
+        return $this->basePath . DIRECTORY_SEPARATOR . $this->getConfigEntry("agnes", "build", "path");
+    }
+
+    /**
+     * @param string $task
+     * @return string[]
+     * @throws \Exception
+     */
+    public function getScripts(string $task)
+    {
+        return $this->getConfigEntryOrDefault([], "application", "scripts", $task);
     }
 
     /**
@@ -167,6 +177,7 @@ class ConfigurationService
         $servers = [];
         foreach ($serverConfigs as $serverName => $serverConfig) {
             $connection = $this->getConnection($serverConfig["connection"]);
+            $path = $serverConfig["path"];
             $keepReleases = (int)$serverConfig["keep_releases"];
 
             $environments = [];
@@ -174,7 +185,7 @@ class ConfigurationService
                 $environments[] = new Environment($environmentName, $stages);
             }
 
-            $servers[] = new Server($serverName, $connection, $keepReleases, $environments);
+            $servers[] = new Server($serverName, $connection, $path, $keepReleases, $environments);
         }
 
         return $servers;
@@ -236,13 +247,46 @@ class ConfigurationService
         $connectionType = $connection["type"];
 
         if ($connectionType === "local") {
-            $path = $this->basePath . DIRECTORY_SEPARATOR . $connection["path"];
-            return new LocalConnection($path);
+            return new LocalConnection();
         } else if ($connectionType === "ssh") {
             $destination = $connection["destination"];
-            return new SSHConnection($connection["path"], $destination);
+            return new SSHConnection($destination);
         } else {
             throw new \Exception("unknown connection type $connectionType");
         }
+    }
+
+    /**
+     * @return string[]
+     * @throws \Exception
+     */
+    public function getSharedFolders()
+    {
+        return $this->getConfigEntryOrDefault([], "application", "shared_folders");
+    }
+
+    /**
+     * @return EditableFile[]
+     * @throws \Exception
+     */
+    public function getEditableFiles()
+    {
+        $files = $this->getConfigEntryOrDefault([], "application", "editable_files");
+
+        /** @var EditableFile[] $editableFiles */
+        $editableFiles = [];
+        foreach ($files as $file) {
+            $editableFiles[] = new EditableFile((bool)$file["required"], $file["path"]);
+        }
+
+        return $editableFiles;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBasePath(): string
+    {
+        return $this->basePath;
     }
 }
