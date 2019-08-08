@@ -16,6 +16,11 @@ class RollbackService
     private $configurationService;
 
     /**
+     * @var PolicyService
+     */
+    private $policyService;
+
+    /**
      * @var TaskService
      */
     private $taskService;
@@ -31,9 +36,10 @@ class RollbackService
      * @param TaskService $taskService
      * @param InstanceService $instanceService
      */
-    public function __construct(ConfigurationService $configurationService, TaskService $taskService, InstanceService $instanceService)
+    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, TaskService $taskService, InstanceService $instanceService)
     {
         $this->configurationService = $configurationService;
+        $this->policyService = $policyService;
         $this->taskService = $taskService;
         $this->instanceService = $instanceService;
     }
@@ -55,6 +61,10 @@ class RollbackService
      */
     private function rollback(Rollback $rollback)
     {
+        if (!$this->policyService->canRollback($rollback)) {
+            return;
+        }
+
         $previousReleasePath = $rollback->getTarget()->getPath();
         $releaseFolder = $rollback->getInstance()->getCurrentInstallation()->getPath();
 

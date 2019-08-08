@@ -7,8 +7,10 @@ agnes:
 
 application:
   repository: famoser/agnes
+
   shared_folders:
     - var/persistent
+
   editable_files:
     - path: .env.local
       required: true
@@ -16,6 +18,7 @@ application:
       required: false
     - path: var/transient/authorization/whitelists/developers.txt
       required: false
+
   scripts:
     release:
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
@@ -52,23 +55,22 @@ policies:
 
   deploy:
     - type: stage_write_up
-      filter: null
       layers:
         0: [dev]
         1: [staging]
         2: [production, education]
 
     - type: release_whitelist
-        filter:
-          stages: [production, education, staging]
-        commitishes: [master]
+      filter:
+        stages: [production, education, staging]
+      commitishes: [master]
 
   copy_shared:
     - type: stage_write_down
-      filter: null
       layers:
         0: [dev, staging, education]
         1: [production]
+    - type: same_release
 
   fixtures:
     - type: whitelist

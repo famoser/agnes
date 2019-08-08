@@ -8,6 +8,7 @@ use Agnes\Models\Connections\LocalConnection;
 use Agnes\Models\Connections\SSHConnection;
 use Agnes\Models\Policies\Policy;
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
+use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
@@ -215,6 +216,9 @@ class ConfigurationService
                     break;
                 case "release_whitelist":
                     $parsedPolicies[] = new ReleaseWhitelistPolicy($filter, $policy["commitishes"]);
+                    break;
+                case "same_release":
+                    $parsedPolicies[] = new SameReleasePolicy($filter);
                     break;
                 default:
                     throw new Exception("Unknown policy type: " . $policyType);

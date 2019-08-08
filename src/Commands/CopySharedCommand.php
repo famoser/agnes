@@ -5,6 +5,7 @@ namespace Agnes\Commands;
 
 use Agnes\Models\Tasks\Instance;
 use Agnes\Services\ConfigurationService;
+use Agnes\Services\CopyShared\CopyShared;
 use Agnes\Services\CopySharedService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\Rollback\Rollback;
@@ -66,11 +67,32 @@ class CopySharedCommand extends ConfigurationAwareCommand
         $target = $input->getOption("target");
         $targetInstances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
-        /**
-         * for each target, find matching source (same environment, single result)
-         * then copy
-         */
+        /** @var CopyShared[] $copyShareds */
+        $copyShareds = [];
+        foreach ($targetInstances as $targetInstance) {
+            $source = $this->getMatch($sourceInstances, $targetInstance->getServerName(), $targetInstance->getEnvironmentName());
+            if ($source !== null) {
+                $copyShareds[] = new CopyShared($source, $targetInstance);
+            }
+        }
 
-        $this->copySharedService->copySharedMultiple([]);
+        $this->copySharedService->copySharedMultiple($copyShareds);
+    }
+
+    /**
+     * @param Instance[] $instances
+     * @param string $serverName
+     * @param string $environmentName
+     * @return Instance|null
+     */
+    private function getMatch(array $instances, string $serverName, string $environmentName)
+    {
+        foreach ($instances as $instance) {
+            if ($instance->getServerName() === $serverName && $instance->getEnvironmentName() === $environmentName) {
+                return $instance;
+            }
+        }
+
+        return null;
     }
 }

@@ -6,9 +6,13 @@ namespace Agnes\Services;
 use Agnes\Deploy\Deploy;
 use Agnes\Models\Policies\Policy;
 use Agnes\Release\Release;
+use Agnes\Services\CopyShared\CopyShared;
+use Agnes\Services\Policy\CopySharedPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\PolicyVisitor;
 use Agnes\Services\Policy\ReleasePolicyVisitor;
+use Agnes\Services\Policy\RollbackPolicyVisitor;
+use Agnes\Services\Rollback\Rollback;
 use Exception;
 
 class PolicyService
@@ -59,12 +63,36 @@ class PolicyService
     }
 
     /**
+     * @param Rollback $rollback
+     * @return bool
+     * @throws Exception
+     */
+    public function canRollback(Rollback $rollback): bool
+    {
+        $roollbackPolicyVisitor = new RollbackPolicyVisitor($rollback);
+
+        return $this->canExecute($roollbackPolicyVisitor, "rollback") === null;
+    }
+
+    /**
+     * @param CopyShared $copyShared
+     * @return bool
+     * @throws Exception
+     */
+    public function canCopyShared(CopyShared $copyShared): bool
+    {
+        $copySharedPolicyVisitor = new CopySharedPolicyVisitor($copyShared);
+
+        return $this->canExecute($copySharedPolicyVisitor, "copy_shared") === null;
+    }
+
+    /**
      * @param PolicyVisitor $visitor
      * @param string $task
      * @return Policy|null
      * @throws Exception
      */
-    public function canExecute(PolicyVisitor $visitor, string $task): ?Policy
+    private function canExecute(PolicyVisitor $visitor, string $task): ?Policy
     {
         $policies = $this->configurationService->getPolicies($task);
 

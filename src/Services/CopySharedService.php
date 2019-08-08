@@ -10,6 +10,20 @@ use Exception;
 class CopySharedService
 {
     /**
+     * @var PolicyService
+     */
+    private $policyService;
+
+    /**
+     * CopySharedService constructor.
+     * @param PolicyService $policyService
+     */
+    public function __construct(PolicyService $policyService)
+    {
+        $this->policyService = $policyService;
+    }
+
+    /**
      * @param CopyShared[] $copyShareds
      * @throws Exception
      */
@@ -22,9 +36,16 @@ class CopySharedService
 
     /**
      * @param CopyShared $copyShared
+     * @throws Exception
      */
     private function copyShared(CopyShared $copyShared)
     {
+        if (!$this->policyService->canCopyShared($copyShared)) {
+            return;
+        }
 
+        if ($copyShared->getSource()->getServerName() === $copyShared->getTarget()->getServerName()) {
+            // or either source or target are local
+        }
     }
 }

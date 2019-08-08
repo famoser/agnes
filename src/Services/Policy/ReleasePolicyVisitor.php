@@ -36,10 +36,10 @@ class ReleasePolicyVisitor extends PolicyVisitor
     /**
      * checks if the policy has to be checked for
      *
-     * @param Filter $policy
+     * @param Filter $filter
      * @return bool
      */
-    protected function filterApplies(?Filter $policy)
+    protected function filterApplies(?Filter $filter)
     {
         return true;
     }

@@ -6,6 +6,7 @@ namespace Agnes\Services\Policy;
 
 use Agnes\Models\Policies\Policy;
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
+use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Models\Tasks\Filter;
@@ -20,7 +21,7 @@ abstract class PolicyVisitor
      */
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
-        throw new Exception("This policy has not been implemented for the task at hand.");
+        return $this->visitDefault($stageWriteUpPolicy);
     }
 
     /**
@@ -30,7 +31,7 @@ abstract class PolicyVisitor
      */
     public function visitStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
     {
-        throw new Exception("This policy has not been implemented for the task at hand.");
+        return $this->visitDefault($stageWriteDownPolicy);
     }
 
     /**
@@ -40,7 +41,17 @@ abstract class PolicyVisitor
      */
     public function visitReleaseWhitelist(ReleaseWhitelistPolicy $releaseWhitelistPolicy): bool
     {
-        throw new Exception("This policy has not been implemented for the task at hand.");
+        return $this->visitDefault($releaseWhitelistPolicy);
+    }
+
+    /**
+     * @param SameReleasePolicy $sameReleasePolicy
+     * @return bool
+     * @throws Exception
+     */
+    public function visitSameRelease(SameReleasePolicy $sameReleasePolicy)
+    {
+        return $this->visitDefault($sameReleasePolicy);
     }
 
     /**
@@ -55,8 +66,18 @@ abstract class PolicyVisitor
     /**
      * checks if the policy has to be checked for
      *
-     * @param Filter $policy
+     * @param Filter $filter
      * @return bool
      */
-    protected abstract function filterApplies(?Filter $policy);
+    protected abstract function filterApplies(?Filter $filter);
+
+    /**
+     * @param Policy $stageWriteDownPolicy
+     * @return bool
+     * @throws Exception
+     */
+    private function visitDefault(Policy $stageWriteDownPolicy): bool
+    {
+        throw new Exception("The policy " . get_class($stageWriteDownPolicy) . " has not been implemented for the executing task.");
+    }
 }
