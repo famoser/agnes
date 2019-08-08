@@ -42,4 +42,12 @@ class OnlinePeriod
     {
         return $this->end;
     }
+
+    /**
+     * @param \DateTime|null $end
+     */
+    public function setEnd(?\DateTime $end): void
+    {
+        $this->end = $end;
+    }
 }

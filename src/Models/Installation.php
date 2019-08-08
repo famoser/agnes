@@ -63,6 +63,18 @@ class Installation
     }
 
     /**
+     * if this installation is online right now
+     *
+     * @return bool
+     */
+    public function isOnline()
+    {
+        $lastPeriod = $this->getLastOnlinePeriod();
+
+        return $lastPeriod !== null && $lastPeriod->getEnd() === null;
+    }
+
+    /**
      * @return OnlinePeriod[]
      */
     public function getOnlinePeriods(): array
@@ -85,8 +97,10 @@ class Installation
      */
     public function takeOffline()
     {
-        $lastPeriod = $this->onlinePeriods[count($this->onlinePeriods) - 1];
-        $lastPeriod->setEnd(new \DateTime());
+        $lastPeriod = $this->getLastOnlinePeriod();
+        if ($lastPeriod !== null) {
+            $lastPeriod->setEnd(new \DateTime());
+        }
     }
 
     /**
@@ -95,5 +109,31 @@ class Installation
     public function setRelease(Release $release)
     {
         $this->release = $release;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getLastOnline()
+    {
+        $lastPeriod = $this->getLastOnlinePeriod();
+
+        if ($lastPeriod === null) {
+            return null;
+        }
+
+        return $lastPeriod->getEnd() !== null ? $lastPeriod->getEnd() : $lastPeriod->getStart();
+    }
+
+    /**
+     * @return OnlinePeriod|null
+     */
+    private function getLastOnlinePeriod()
+    {
+        if (count($this->onlinePeriods) === 0) {
+            return null;
+        }
+
+        return $this->onlinePeriods[count($this->onlinePeriods) - 1];
     }
 }

@@ -4,6 +4,8 @@
 namespace Agnes\Commands;
 
 use Agnes\Deploy\Deploy;
+use Agnes\Models\Connections\Connection;
+use Agnes\Models\Installation;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Instance;
 use Agnes\Models\Tasks\Task;
@@ -158,46 +160,17 @@ class DeployCommand extends ConfigurationAwareCommand
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
-        // make dir for new release
         $releaseFolder = $this->instanceService->getReleasePath($target, $release);
         $currentReleaseSymlink = $this->instanceService->getCurrentReleaseSymlinkPath($target);
-        $commands = $this->taskExecutionService->ensureFolderExistsCommands($releaseFolder);
-        $connection->executeCommands($commands);
 
-        // transfer release packet
-        $assetContent = $this->githubService->asset($release->getAssetId());
-        $assetPath = $releaseFolder . DIRECTORY_SEPARATOR . $release->getAssetName();
-        $connection->writeFile($assetPath, $assetContent);
+        $this->uploadRelease($releaseFolder, $connection, $release);
 
-        // unpack release packet
-        $connection->executeCommands("tar -xzf $assetPath $releaseFolder");
-
-        // remove release packet
-        $connection->executeCommands("rm $assetPath");
-
-        // register which release is installed there
         $this->instanceService->onReleaseInstalled($connection, $releaseFolder, $release);
 
         // create shared folders
-        $sharedPath = $this->instanceService->getSharedPath($target);
-        $sharedFolders = $this->configurationService->getSharedFolders();
-        foreach ($sharedFolders as $sharedFolder) {
-            $sharedFolderSource = $sharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
-            $releaseFolderTarget = $releaseFolder . DIRECTORY_SEPARATOR . $sharedFolder;
+        $this->createAndLinkSharedFolders($connection, $target, $releaseFolder);
 
-            // use content of shared folder as template if it is created for the first time
-            if (!$connection->checkFolderExists($sharedFolderSource)) {
-                $connection->executeCommands("mv $releaseFolderTarget $sharedFolderSource");
-            }
-
-            // remove folder if it exists from release path
-            $connection->executeCommands("rm -rf $releaseFolderTarget");
-
-            // create symlink from release path to shared path
-            $connection->executeCommands("ln -s $sharedFolderSource $releaseFolderTarget");
-        }
-
-        // submit files
+        // upload files
         foreach ($deploy->getFiles() as $targetPath => $content) {
             $fullPath = $releaseFolder . DIRECTORY_SEPARATOR . $targetPath;
             $connection->writeFile($fullPath, $content);
@@ -217,10 +190,8 @@ class DeployCommand extends ConfigurationAwareCommand
         $connection->executeCommands("mv -T $tempCurrentReleaseSymlink $currentReleaseSymlink");
         $this->instanceService->onReleaseOnline($connection, $currentReleaseSymlink);
 
-        /**
-         * pending:
-         * - clean up old releases
-         */
+        // clear old releases
+        $this->clearOldReleases($deploy, $connection);
     }
 
     /**
@@ -269,5 +240,85 @@ class DeployCommand extends ConfigurationAwareCommand
         }
 
         return $fileContents;
+    }
+
+    /**
+     * @param Deploy $deploy
+     * @param Connection $connection
+     */
+    private function clearOldReleases(Deploy $deploy, Connection $connection)
+    {
+        /** @var Installation[] $offlineInstallationsByLastOnlineTimestamp */
+        $offlineInstallationsByLastOnlineTimestamp = [];
+        foreach ($deploy->getTarget()->getInstallations() as $installation) {
+            $lastOnline = $installation->getLastOnline();
+            if ($lastOnline !== null && !$installation->isOnline()) {
+                $offlineInstallationsByLastOnlineTimestamp[$lastOnline->getTimestamp()] = $installation;
+            }
+        }
+
+        ksort($offlineInstallationsByLastOnlineTimestamp);
+
+        // remove excess releases
+        $releasesToDelete = count($offlineInstallationsByLastOnlineTimestamp) - $deploy->getTarget()->getKeepReleases();
+        foreach ($offlineInstallationsByLastOnlineTimestamp as $installation) {
+            if ($releasesToDelete-- <= 0) {
+                break;
+            }
+
+            $path = $installation->getPath();
+            $connection->executeCommands("rm -rf $path");
+        }
+    }
+
+    /**
+     * @param Connection $connection
+     * @param Instance $target
+     * @param string $releaseFolder
+     * @throws \Exception
+     */
+    private function createAndLinkSharedFolders(Connection $connection, Instance $target, string $releaseFolder): void
+    {
+        $sharedPath = $this->instanceService->getSharedPath($target);
+        $sharedFolders = $this->configurationService->getSharedFolders();
+        foreach ($sharedFolders as $sharedFolder) {
+            $sharedFolderSource = $sharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
+            $releaseFolderTarget = $releaseFolder . DIRECTORY_SEPARATOR . $sharedFolder;
+
+            // use content of shared folder as template if it is created for the first time
+            if (!$connection->checkFolderExists($sharedFolderSource)) {
+                $connection->executeCommands("mv $releaseFolderTarget $sharedFolderSource");
+            }
+
+            // remove folder if it exists from release path
+            $connection->executeCommands("rm -rf $releaseFolderTarget");
+
+            // create symlink from release path to shared path
+            $connection->executeCommands("ln -s $sharedFolderSource $releaseFolderTarget");
+        }
+    }
+
+    /**
+     * @param string $releaseFolder
+     * @param Connection $connection
+     * @param ReleaseWithAsset $release
+     * @throws Exception
+     */
+    private function uploadRelease(string $releaseFolder, Connection $connection, ReleaseWithAsset $release): void
+    {
+// make dir for new release
+        $commands = $this->taskExecutionService->ensureFolderExistsCommands($releaseFolder);
+        $connection->executeCommands($commands);
+
+        // transfer release packet
+        $assetContent = $this->githubService->asset($release->getAssetId());
+        $assetPath = $releaseFolder . DIRECTORY_SEPARATOR . $release->getAssetName();
+        $connection->writeFile($assetPath, $assetContent);
+
+        // unpack release packet
+        $connection->executeCommands("tar -xzf $assetPath $releaseFolder");
+
+        // remove release packet
+        $connection->executeCommands("rm $assetPath");
     }
 }

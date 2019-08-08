@@ -116,4 +116,12 @@ class Instance
     {
         return $this->currentInstallation;
     }
+
+    /**
+     * @return int
+     */
+    public function getKeepReleases()
+    {
+        return $this->server->getKeepReleases();
+    }
 }
