@@ -65,14 +65,7 @@ class DeployService
     public function deployMultiple(array $deploys): void
     {
         foreach ($deploys as $deploy) {
-            if (!$this->policyService->canDeploy($deploy)) {
-                continue;
-            }
-
-            $currentInstallation = $deploy->getTarget()->getCurrentInstallation();
-            if ($currentInstallation === null || $currentInstallation->getRelease()->getName() !== $deploy->getRelease()->getName()) {
-                $this->deploy($deploy);
-            }
+            $this->deploy($deploy);
         }
     }
 
@@ -83,16 +76,26 @@ class DeployService
      */
     private function deploy(Deploy $deploy)
     {
+        // check policies
+        if (!$this->policyService->canDeploy($deploy)) {
+            return;
+        }
+
+        // block if this installation is active
+        $installation = $deploy->getTarget()->getInstallation($deploy->getRelease()->getName());
+        if ($installation !== null && $installation->isOnline()) {
+            return;
+        }
+
         $release = $deploy->getRelease();
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
         $releaseFolder = $this->instanceService->getReleasePath($target, $release);
-        $currentReleaseSymlink = $this->instanceService->getCurrentReleaseSymlinkPath($target);
 
         $this->uploadRelease($releaseFolder, $connection, $release);
 
-        $this->instanceService->onReleaseInstalled($connection, $releaseFolder, $release);
+        $this->instanceService->onReleaseInstalled($target, $releaseFolder, $release);
 
         // create shared folders
         $this->createAndLinkSharedFolders($connection, $target, $releaseFolder);
@@ -104,18 +107,13 @@ class DeployService
         }
 
         // execute deploy task
+        $previousReleasePath = $deploy->getTarget()->getCurrentInstallation()->getPath();
         $deployScripts = $this->configurationService->getScripts("deploy");
-        $task = new Task($releaseFolder, $deployScripts);
+        $task = new Task($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
         $connection->executeTask($task, $this->taskService);
 
-        // create new symlink
-        $tempCurrentReleaseSymlink = $currentReleaseSymlink . "_";
-        $connection->executeCommands("ln -s $releaseFolder $tempCurrentReleaseSymlink");
-
-        // switch active release
-        $this->instanceService->onReleaseOffline($connection, $currentReleaseSymlink);
-        $connection->executeCommands("mv -T $tempCurrentReleaseSymlink $currentReleaseSymlink");
-        $this->instanceService->onReleaseOnline($connection, $currentReleaseSymlink);
+        // publish new version
+        $this->instanceService->switchRelease($target, $release);
 
         // clear old releases
         $this->clearOldReleases($deploy, $connection);

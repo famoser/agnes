@@ -34,11 +34,13 @@ class Task
      * ReleaseBuildConfig constructor.
      * @param string $workingFolder
      * @param string[] $commands
+     * @param array $envVariables
      */
-    public function __construct(string $workingFolder, array $commands)
+    public function __construct(string $workingFolder, array $commands, array $envVariables = [])
     {
         $this->workingFolder = $workingFolder;
         $this->commands = $commands;
+        $this->envVariables = $envVariables;
     }
 
     /**

@@ -16,6 +16,11 @@ class Installation
     private $path;
 
     /**
+     * @var int|null
+     */
+    private $number;
+
+    /**
      * @var Release?
      */
     private $release;
@@ -28,12 +33,14 @@ class Installation
     /**
      * Installation constructor.
      * @param string $path
+     * @param int $number
      * @param Release|null $release
      * @param array $onlinePeriods
      */
-    public function __construct(string $path, ?Release $release = null, array $onlinePeriods = [])
+    public function __construct(string $path, ?int $number = null, ?Release $release = null, array $onlinePeriods = [])
     {
         $this->path = $path;
+        $this->number = $number;
         $this->release = $release;
         $this->onlinePeriods = $onlinePeriods;
     }
@@ -44,6 +51,14 @@ class Installation
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getNumber(): ?int
+    {
+        return $this->number;
     }
 
     /**
@@ -106,10 +121,12 @@ class Installation
     }
 
     /**
+     * @param int $number
      * @param Release $release
      */
-    public function setRelease(Release $release)
+    public function setRelease(int $number, Release $release)
     {
+        $this->number = $number;
         $this->release = $release;
     }
 

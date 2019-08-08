@@ -35,11 +35,28 @@ class InstanceService
     }
 
     /**
+     * @param string|null $server
+     * @param string|null $environment
+     * @param string|null $stage
+     * @return Instance[]
+     * @throws Exception
+     */
+    public function getInstances(?string $server, ?string $environment, ?string $stage)
+    {
+        $servers = $server !== null ? [$server] : [];
+        $environments = $environment !== null ? [$environment] : [];
+        $stages = $stage !== null ? [$stage] : [];
+        $filter = new Filter($servers, $environments, $stages);
+
+        return $this->getInstancesByFilter($filter);
+    }
+
+    /**
      * @param Filter|null $filter
      * @return Instance[]
      * @throws Exception
      */
-    public function getInstances(?Filter $filter)
+    public function getInstancesByFilter(?Filter $filter)
     {
         if ($this->instancesCache === null) {
             $this->instancesCache = $this->loadInstances();
@@ -92,6 +109,27 @@ class InstanceService
     }
 
     /**
+     * @param Instance $target
+     * @param Release $release
+     * @throws Exception
+     */
+    public function switchRelease(Instance $target, Release $release): void
+    {
+        $currentSymlink = $this->getCurrentReleaseSymlinkPath($target);
+        $targetFolder = $this->getReleasePath($target, $release);
+        $connection = $target->getConnection();
+
+        // create new symlink
+        $tempCurrentSymlink = $currentSymlink . "_";
+        $connection->executeCommands("ln -s $targetFolder $tempCurrentSymlink");
+
+        // switch active release
+        $this->onReleaseOffline($connection, $currentSymlink);
+        $connection->executeCommands("mv -T $tempCurrentSymlink $currentSymlink");
+        $this->onReleaseOnline($connection, $currentSymlink);
+    }
+
+    /**
      * @param Connection $connection
      * @param string $releasesFolder
      * @return array
@@ -112,15 +150,21 @@ class InstanceService
     }
 
     /**
-     * @param Connection $connection
+     * @param Instance $instance
      * @param string $installationPath
      * @param Release $release
      * @throws Exception
      */
-    public function onReleaseInstalled(Connection $connection, string $installationPath, Release $release)
+    public function onReleaseInstalled(Instance $instance, string $installationPath, Release $release)
     {
+        $connection = $instance->getConnection();
+        $maxReleaseNumber = 0;
+        foreach ($instance->getInstallations() as $installation) {
+            $maxReleaseNumber = max($installation->getNumber(), $maxReleaseNumber);
+        }
+
         $installation = $this->getInstallationFromPath($connection, $installationPath);
-        $installation->setRelease($release);
+        $installation->setRelease($maxReleaseNumber, $release);
 
         $this->saveInstallationToPath($connection, $installationPath, $installation);
     }
@@ -167,6 +211,7 @@ class InstanceService
 
         $metaJson = $connection->readFile($agnesFilePath);
         $meta = json_decode($metaJson);
+        $number = $meta["number"];
         $release = new Release($meta["release"]["name"], $meta["release"]["commitish"]);
 
         $onlinePeriods = [];
@@ -176,7 +221,7 @@ class InstanceService
             $onlinePeriods[] = new OnlinePeriod($start, $end);
         }
 
-        return new Installation($installationPath, $release, $onlinePeriods);
+        return new Installation($installationPath, $number, $release, $onlinePeriods);
     }
 
     /**
@@ -187,6 +232,7 @@ class InstanceService
     private function saveInstallationToPath(Connection $connection, string $installationPath, Installation $installation)
     {
         $meta = [];
+        $meta["number"] = $installation->getNumber();
         $meta["release"] = ["name" => $installation->getRelease()->getName(), "commitish" => $installation->getRelease()->getCommitish()];
 
         $onlinePeriods = [];

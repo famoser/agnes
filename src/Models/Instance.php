@@ -41,7 +41,7 @@ class Instance
      * @param Server $server
      * @param Environment $environment
      * @param string $stage
-     * @param array $installations
+     * @param Installation[] $installations
      * @param Installation|null $currentInstallation
      */
     public function __construct(Server $server, Environment $environment, string $stage, array $installations, ?Installation $currentInstallation)
@@ -49,7 +49,12 @@ class Instance
         $this->server = $server;
         $this->environment = $environment;
         $this->stage = $stage;
-        $this->installations = $installations;
+
+        foreach ($installations as $installation) {
+            $this->installations[$installation->getNumber()] = $installation;
+        }
+        ksort($this->installations);
+
         $this->currentInstallation = $currentInstallation;
     }
 
@@ -118,10 +123,55 @@ class Instance
     }
 
     /**
+     * @param string $releaseName
+     * @return bool
+     */
+    public function isCurrentInstallation(string $releaseName): bool
+    {
+        return $this->currentInstallation->getRelease()->getName() === $releaseName;
+    }
+
+    /**
+     * @param string $releaseName
+     * @return Installation|null
+     */
+    public function getInstallation(string $releaseName): ?Installation
+    {
+        foreach ($this->installations as $installation) {
+            if ($installation->getRelease()->getName() === $releaseName) {
+                return $installation;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return int
      */
     public function getKeepReleases()
     {
         return $this->server->getKeepReleases();
+    }
+
+    /**
+     * get previous installation
+     */
+    public function getPreviousInstallation(): ?Installation
+    {
+        $currentReleaseNumber = $this->getCurrentInstallation()->getNumber();
+
+        /** @var Installation|null $upperBoundRelease */
+        $upperBoundRelease = null;
+
+        foreach ($this->getInstallations() as $installation) {
+            if ($installation->getNumber() !== null &&
+                $installation->getNumber() < $currentReleaseNumber &&
+                ($upperBoundRelease === null || $upperBoundRelease->getNumber() < $installation->getNumber())) {
+                $upperBoundRelease = $installation;
+            }
+        }
+
+        return $upperBoundRelease;
     }
 }

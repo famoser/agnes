@@ -1,0 +1,162 @@
+<?php
+
+
+namespace Agnes\Commands;
+
+use Agnes\Models\Tasks\Instance;
+use Agnes\Services\ConfigurationService;
+use Agnes\Services\InstanceService;
+use Agnes\Services\Rollback\Rollback;
+use Agnes\Services\RollbackService;
+use Http\Client\Exception;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+
+class RollbackCommand extends ConfigurationAwareCommand
+{
+    /**
+     * @var RollbackService
+     */
+    private $rollbackService;
+
+    /**
+     * @var InstanceService
+     */
+    private $instanceService;
+
+    /**
+     * DeployCommand constructor.
+     * @param ConfigurationService $configurationService
+     * @param RollbackService $rollbackService
+     * @param InstanceService $instanceService
+     */
+    public function __construct(ConfigurationService $configurationService, RollbackService $rollbackService, InstanceService $instanceService)
+    {
+        parent::__construct($configurationService);
+
+        $this->rollbackService = $rollbackService;
+        $this->instanceService = $instanceService;
+    }
+
+    public function configure()
+    {
+        $this->setName('rollback')
+            ->setDescription('Rollback a release to a previous version. 
+            If target is supplied, it will only rollback instances which had that release active at some time.
+            If source is supplied, it will only rollback instances with that release version active.
+            If neither target nor source is supplied, it will rollback to the last release which was active.')
+            ->setHelp('This command executes the rollback scripts & switches to the old release in specific environment(s).')
+            ->addOption("target", "na", InputOption::VALUE_OPTIONAL, "name of the release to rollback to")
+            ->addOption("source", "na", InputOption::VALUE_OPTIONAL, "name of the release to rollback from")
+            ->addOption("server", "se", InputOption::VALUE_OPTIONAL, "the server to rollback on")
+            ->addOption("environment", "e", InputOption::VALUE_OPTIONAL, "the environment to rollback on")
+            ->addOption("stage", "st", InputOption::VALUE_OPTIONAL, "the stage to rollback on");
+
+        parent::configure();
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|void|null
+     * @throws \Exception
+     */
+    public function execute(InputInterface $input, OutputInterface $output)
+    {
+        $targetReleaseName = $input->getOption("target");
+        $sourceReleaseName = $input->getOption("source");
+
+        $server = $input->getOption("server");
+        $environment = $input->getOption("environment");
+        $stage = $input->getOption("stage");
+        $instances = $this->instanceService->getInstances($server, $environment, $stage);
+
+        $instances = $this->filterByCanRollbackToAny($instances);
+
+        if ($targetReleaseName !== null) {
+            $instances = $this->filterByCanRollbackTo($instances, $targetReleaseName);
+        }
+
+        if ($sourceReleaseName !== null) {
+            $instances = $this->filterByCanRollbackFrom($instances, $sourceReleaseName);
+        }
+
+        /** @var Rollback[] $rollbacks */
+        $rollbacks = [];
+        foreach ($instances as $instance) {
+            if ($targetReleaseName) {
+                $installation = $instance->getInstallation($targetReleaseName);
+                $rollbacks[] = new Rollback($instance, $installation);
+            } else {
+                $installation = $instance->getPreviousInstallation();
+                $rollbacks[] = new Rollback($instance, $installation);
+            }
+        }
+
+
+        $this->rollbackService->rollbackMultiple($rollbacks);
+    }
+
+    /**
+     * @param Instance[] $instances
+     * @param string|null $releaseName
+     * @return Instance[]
+     */
+    private function filterByCanRollbackTo(array $instances, ?string $releaseName)
+    {
+        /** @var Instance[] $result */
+        $result = [];
+
+        foreach ($instances as $instance) {
+            if ($instance->isCurrentInstallation($releaseName)) {
+                continue;
+            }
+
+            $installation = $instance->getInstallation($releaseName);
+            if ($installation !== null && $installation->getNumber() < $instance->getCurrentInstallation()->getNumber()) {
+                $result[] = $installation;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Instance[] $instances
+     * @param string|null $releaseName
+     *
+     * @return Instance[]
+     */
+    private function filterByCanRollbackFrom(array $instances, ?string $releaseName)
+    {
+        /** @var Instance[] $result */
+        $result = [];
+
+        foreach ($instances as $instance) {
+            if ($instance->isCurrentInstallation($releaseName)) {
+                $result[] = $instance;
+            }
+        }
+
+        return $instances;
+    }
+
+    /**
+     * @param Instance[] $instances
+     * @return Instance[]
+     */
+    private function filterByCanRollbackToAny(array $instances)
+    {
+        /** @var Instance[] $result */
+        $result = [];
+
+        foreach ($instances as $instance) {
+            if ($instance->getPreviousInstallation() !== null) {
+                $result[] = $instance;
+            }
+        }
+
+        return $instances;
+    }
+}

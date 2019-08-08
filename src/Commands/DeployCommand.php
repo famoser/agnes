@@ -4,8 +4,6 @@
 namespace Agnes\Commands;
 
 use Agnes\Deploy\Deploy;
-use Agnes\Models\Tasks\Filter;
-use Agnes\Models\Tasks\Instance;
 use Agnes\Release\GithubService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\DeployService;
@@ -80,7 +78,7 @@ class DeployCommand extends ConfigurationAwareCommand
         $server = $input->getOption("server");
         $environment = $input->getOption("environment");
         $stage = $input->getOption("stage");
-        $instances = $this->getInstances($server, $environment, $stage);
+        $instances = $this->instanceService->getInstances($server, $environment, $stage);
 
         $inputFiles = $input->getArgument("files");
         $skipValidation = (bool)$input->getOption("skip_file_validation");
@@ -112,23 +110,6 @@ class DeployCommand extends ConfigurationAwareCommand
         }
 
         throw new \Exception("release with name " . $targetReleaseName . " not found.");
-    }
-
-    /**
-     * @param string|null $server
-     * @param string|null $environment
-     * @param string|null $stage
-     * @return Instance[]
-     * @throws \Exception
-     */
-    private function getInstances(?string $server, ?string $environment, ?string $stage)
-    {
-        $servers = $server !== null ? [$server] : [];
-        $environments = $environment !== null ? [$environment] : [];
-        $stages = $stage !== null ? [$stage] : [];
-        $filter = new Filter($servers, $environments, $stages);
-
-        return $this->instanceService->getInstances($filter);
     }
 
     /**

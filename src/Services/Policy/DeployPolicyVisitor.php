@@ -55,7 +55,7 @@ class DeployPolicyVisitor extends PolicyVisitor
         // get the next lower layer and check if this release was published there at any time
         $stagesToCheck = $stageWriteUpPolicy->getLayers()[$checkIndex];
         $filter = new Filter([], [$this->deployment->getTarget()->getEnvironmentName()], $stagesToCheck);
-        $instances = $this->installationService->getInstances($filter);
+        $instances = $this->installationService->getInstancesByFilter($filter);
 
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {
