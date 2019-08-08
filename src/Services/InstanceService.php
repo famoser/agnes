@@ -61,26 +61,6 @@ class InstanceService
     }
 
     /**
-     * @param Connection $connection
-     * @param string $releasesFolder
-     * @return array
-     * @throws Exception
-     */
-    public function loadInstallations(Connection $connection, string $releasesFolder)
-    {
-        $folders = $connection->getFolders($releasesFolder);
-
-        $installations = [];
-
-        foreach ($folders as $folder) {
-            $installationPath = $releasesFolder . DIRECTORY_SEPARATOR . $folder;
-            $installations[] = $this->getInstallationFromPath($connection, $installationPath);
-        }
-
-        return $installations;
-    }
-
-    /**
      * @return Instance[]
      * @throws Exception
      */
@@ -109,6 +89,26 @@ class InstanceService
         }
 
         return $instances;
+    }
+
+    /**
+     * @param Connection $connection
+     * @param string $releasesFolder
+     * @return array
+     * @throws Exception
+     */
+    private function loadInstallations(Connection $connection, string $releasesFolder)
+    {
+        $folders = $connection->getFolders($releasesFolder);
+
+        $installations = [];
+
+        foreach ($folders as $folder) {
+            $installationPath = $releasesFolder . DIRECTORY_SEPARATOR . $folder;
+            $installations[] = $this->getInstallationFromPath($connection, $installationPath);
+        }
+
+        return $installations;
     }
 
     /**

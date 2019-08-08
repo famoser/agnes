@@ -61,7 +61,7 @@ class PolicyService
     /**
      * @param PolicyVisitor $visitor
      * @param string $task
-     * @return bool
+     * @return Policy|null
      * @throws Exception
      */
     public function canExecute(PolicyVisitor $visitor, string $task): ?Policy

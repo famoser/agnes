@@ -4,17 +4,13 @@
 namespace Agnes\Commands;
 
 use Agnes\Deploy\Deploy;
-use Agnes\Models\Connections\Connection;
-use Agnes\Models\Installation;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Instance;
-use Agnes\Models\Tasks\Task;
 use Agnes\Release\GithubService;
 use Agnes\Services\ConfigurationService;
+use Agnes\Services\DeployService;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\InstanceService;
-use Agnes\Services\PolicyService;
-use Agnes\Services\TaskService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,14 +20,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DeployCommand extends ConfigurationAwareCommand
 {
     /**
-     * @var GithubService
+     * @var DeployService
      */
-    private $githubService;
-
-    /**
-     * @var TaskService
-     */
-    private $taskExecutionService;
+    private $deployService;
 
     /**
      * @var InstanceService
@@ -39,26 +30,24 @@ class DeployCommand extends ConfigurationAwareCommand
     private $instanceService;
 
     /**
-     * @var PolicyService
+     * @var GithubService
      */
-    private $policyService;
+    private $githubService;
 
     /**
-     * ReleaseCommand constructor.
+     * DeployCommand constructor.
      * @param ConfigurationService $configurationService
-     * @param GithubService $githubService
-     * @param TaskService $taskExecutionService
+     * @param DeployService $deployService
      * @param InstanceService $instanceService
-     * @param PolicyService $policyService
+     * @param GithubService $githubService
      */
-    public function __construct(ConfigurationService $configurationService, GithubService $githubService, TaskService $taskExecutionService, InstanceService $instanceService, PolicyService $policyService)
+    public function __construct(ConfigurationService $configurationService, DeployService $deployService, InstanceService $instanceService, GithubService $githubService)
     {
         parent::__construct($configurationService);
 
-        $this->githubService = $githubService;
-        $this->taskExecutionService = $taskExecutionService;
+        $this->deployService = $deployService;
         $this->instanceService = $instanceService;
-        $this->policyService = $policyService;
+        $this->githubService = $githubService;
     }
 
     public function configure()
@@ -97,20 +86,13 @@ class DeployCommand extends ConfigurationAwareCommand
         $skipValidation = (bool)$input->getOption("skip_file_validation");
         $fileContents = $this->getFileContents($inputFiles, $skipValidation);
 
+        /** @var Deploy[] $deploys */
         $deploys = [];
         foreach ($instances as $instance) {
-            $deploy = new Deploy($release, $instance, $fileContents);
-            if ($this->policyService->canDeploy($deploy)) {
-                $deploys[] = $deploy;
-            }
+            $deploys[] = new Deploy($release, $instance, $fileContents);
         }
 
-        foreach ($deploys as $deploy) {
-            $currentInstallation = $deploy->getTarget()->getCurrentInstallation();
-            if ($currentInstallation === null || $currentInstallation->getRelease()->getName() !== $deploy->getRelease()->getName()) {
-                $this->deploy($deploy);
-            }
-        }
+        $this->deployService->deployMultiple($deploys);
     }
 
     /**
@@ -147,51 +129,6 @@ class DeployCommand extends ConfigurationAwareCommand
         $filter = new Filter($servers, $environments, $stages);
 
         return $this->instanceService->getInstances($filter);
-    }
-
-    /**
-     * @param Deploy $deploy
-     * @throws Exception
-     * @throws \Exception
-     */
-    private function deploy(Deploy $deploy)
-    {
-        $release = $deploy->getRelease();
-        $target = $deploy->getTarget();
-        $connection = $target->getConnection();
-
-        $releaseFolder = $this->instanceService->getReleasePath($target, $release);
-        $currentReleaseSymlink = $this->instanceService->getCurrentReleaseSymlinkPath($target);
-
-        $this->uploadRelease($releaseFolder, $connection, $release);
-
-        $this->instanceService->onReleaseInstalled($connection, $releaseFolder, $release);
-
-        // create shared folders
-        $this->createAndLinkSharedFolders($connection, $target, $releaseFolder);
-
-        // upload files
-        foreach ($deploy->getFiles() as $targetPath => $content) {
-            $fullPath = $releaseFolder . DIRECTORY_SEPARATOR . $targetPath;
-            $connection->writeFile($fullPath, $content);
-        }
-
-        // execute deploy task
-        $deployScripts = $this->configurationService->getScripts("deploy");
-        $task = new Task($releaseFolder, $deployScripts);
-        $connection->executeTask($task, $this->taskExecutionService);
-
-        // create new symlink
-        $tempCurrentReleaseSymlink = $currentReleaseSymlink . "_";
-        $connection->executeCommands("ln -s $releaseFolder $tempCurrentReleaseSymlink");
-
-        // switch active release
-        $this->instanceService->onReleaseOffline($connection, $currentReleaseSymlink);
-        $connection->executeCommands("mv -T $tempCurrentReleaseSymlink $currentReleaseSymlink");
-        $this->instanceService->onReleaseOnline($connection, $currentReleaseSymlink);
-
-        // clear old releases
-        $this->clearOldReleases($deploy, $connection);
     }
 
     /**
@@ -240,85 +177,5 @@ class DeployCommand extends ConfigurationAwareCommand
         }
 
         return $fileContents;
-    }
-
-    /**
-     * @param Deploy $deploy
-     * @param Connection $connection
-     */
-    private function clearOldReleases(Deploy $deploy, Connection $connection)
-    {
-        /** @var Installation[] $offlineInstallationsByLastOnlineTimestamp */
-        $offlineInstallationsByLastOnlineTimestamp = [];
-        foreach ($deploy->getTarget()->getInstallations() as $installation) {
-            $lastOnline = $installation->getLastOnline();
-            if ($lastOnline !== null && !$installation->isOnline()) {
-                $offlineInstallationsByLastOnlineTimestamp[$lastOnline->getTimestamp()] = $installation;
-            }
-        }
-
-        ksort($offlineInstallationsByLastOnlineTimestamp);
-
-        // remove excess releases
-        $releasesToDelete = count($offlineInstallationsByLastOnlineTimestamp) - $deploy->getTarget()->getKeepReleases();
-        foreach ($offlineInstallationsByLastOnlineTimestamp as $installation) {
-            if ($releasesToDelete-- <= 0) {
-                break;
-            }
-
-            $path = $installation->getPath();
-            $connection->executeCommands("rm -rf $path");
-        }
-    }
-
-    /**
-     * @param Connection $connection
-     * @param Instance $target
-     * @param string $releaseFolder
-     * @throws \Exception
-     */
-    private function createAndLinkSharedFolders(Connection $connection, Instance $target, string $releaseFolder): void
-    {
-        $sharedPath = $this->instanceService->getSharedPath($target);
-        $sharedFolders = $this->configurationService->getSharedFolders();
-        foreach ($sharedFolders as $sharedFolder) {
-            $sharedFolderSource = $sharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
-            $releaseFolderTarget = $releaseFolder . DIRECTORY_SEPARATOR . $sharedFolder;
-
-            // use content of shared folder as template if it is created for the first time
-            if (!$connection->checkFolderExists($sharedFolderSource)) {
-                $connection->executeCommands("mv $releaseFolderTarget $sharedFolderSource");
-            }
-
-            // remove folder if it exists from release path
-            $connection->executeCommands("rm -rf $releaseFolderTarget");
-
-            // create symlink from release path to shared path
-            $connection->executeCommands("ln -s $sharedFolderSource $releaseFolderTarget");
-        }
-    }
-
-    /**
-     * @param string $releaseFolder
-     * @param Connection $connection
-     * @param ReleaseWithAsset $release
-     * @throws Exception
-     */
-    private function uploadRelease(string $releaseFolder, Connection $connection, ReleaseWithAsset $release): void
-    {
-// make dir for new release
-        $commands = $this->taskExecutionService->ensureFolderExistsCommands($releaseFolder);
-        $connection->executeCommands($commands);
-
-        // transfer release packet
-        $assetContent = $this->githubService->asset($release->getAssetId());
-        $assetPath = $releaseFolder . DIRECTORY_SEPARATOR . $release->getAssetName();
-        $connection->writeFile($assetPath, $assetContent);
-
-        // unpack release packet
-        $connection->executeCommands("tar -xzf $assetPath $releaseFolder");
-
-        // remove release packet
-        $connection->executeCommands("rm $assetPath");
     }
 }
