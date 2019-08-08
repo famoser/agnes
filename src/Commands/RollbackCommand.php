@@ -63,7 +63,7 @@ class RollbackCommand extends ConfigurationAwareCommand
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $target = $input->getOption("target");
-        $instances = $this->instanceService->getInstancesFromTarget($target);
+        $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
         $instances = $this->filterByCanRollbackToAny($instances);
 
         $rollbackTo = $input->getOption("rollback_to");

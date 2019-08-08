@@ -4,11 +4,13 @@
 namespace Agnes;
 
 
+use Agnes\Commands\CopySharedCommand;
 use Agnes\Commands\DeployCommand;
 use Agnes\Commands\ReleaseCommand;
 use Agnes\Commands\RollbackCommand;
 use Agnes\Release\GithubService;
 use Agnes\Services\ConfigurationService;
+use Agnes\Services\CopySharedService;
 use Agnes\Services\DeployService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
@@ -49,11 +51,13 @@ class CommandFactory
         $releaseService = new ReleaseService($configurationService, $policyService, $taskService, $githubService);
         $deployService = new DeployService($configurationService, $policyService, $taskService, $instanceService, $githubService);
         $rollbackService = new RollbackService($configurationService, $taskService, $instanceService);
+        $copySharedService = new CopySharedService();
 
         return [
             new ReleaseCommand($configurationService, $releaseService),
             new DeployCommand($configurationService, $deployService, $instanceService, $githubService),
-            new RollbackCommand($configurationService, $rollbackService, $instanceService)
+            new RollbackCommand($configurationService, $rollbackService, $instanceService),
+            new CopySharedCommand($configurationService, $copySharedService, $instanceService)
         ];
     }
 }

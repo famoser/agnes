@@ -78,7 +78,7 @@ class DeployCommand extends ConfigurationAwareCommand
         $release = $this->getRelease($releaseName);
 
         $target = $input->getOption("target");
-        $instances = $this->instanceService->getInstancesFromTarget($target);
+        $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
         $inputFiles = $input->getArgument("files");
         $skipValidation = (bool)$input->getOption("skip_file_validation");

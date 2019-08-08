@@ -39,7 +39,7 @@ class InstanceService
      * @return Instance[]
      * @throws Exception
      */
-    public function getInstancesFromTarget(string $target)
+    public function getInstancesFromInstanceSpecification(string $target)
     {
         $entries = explode(":", $target);
 
