@@ -4,6 +4,7 @@
 namespace Agnes\Services\Policy;
 
 
+use Agnes\Models\Instance;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Filter;
@@ -32,8 +33,8 @@ class CopySharedPolicyVisitor extends PolicyVisitor
      */
     public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
     {
-        $sourceRelease = $this->copyShared->getSource()->getCurrentInstallation()->getRelease()->getName();
-        $targetRelease = $this->copyShared->getTarget()->getCurrentInstallation()->getRelease()->getName();
+        $sourceRelease = $this->copyShared->getSource()->getCurrentRelease();
+        $targetRelease = $this->copyShared->getTarget()->getCurrentRelease();
 
         return $sourceRelease === $targetRelease;
     }

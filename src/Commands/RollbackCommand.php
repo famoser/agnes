@@ -104,7 +104,7 @@ class RollbackCommand extends ConfigurationAwareCommand
         $result = [];
 
         foreach ($instances as $instance) {
-            if ($instance->isCurrentInstallation($releaseName)) {
+            if ($instance->isCurrentRelease($releaseName)) {
                 continue;
             }
 
@@ -129,7 +129,7 @@ class RollbackCommand extends ConfigurationAwareCommand
         $result = [];
 
         foreach ($instances as $instance) {
-            if ($instance->isCurrentInstallation($releaseName)) {
+            if ($instance->isCurrentRelease($releaseName)) {
                 $result[] = $instance;
             }
         }

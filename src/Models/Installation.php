@@ -155,4 +155,13 @@ class Installation
 
         return $this->onlinePeriods[count($this->onlinePeriods) - 1];
     }
+
+    /**
+     * @param string $releaseName
+     * @return bool
+     */
+    public function isSameRelease(string $releaseName)
+    {
+        return $this->getRelease() != null && $this->getRelease()->getName() === $releaseName;
+    }
 }

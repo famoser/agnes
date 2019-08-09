@@ -18,6 +18,9 @@ use Agnes\Services\ReleaseService;
 use Agnes\Services\RollbackService;
 use Agnes\Services\TaskService;
 use Http\Adapter\Guzzle6\Client;
+use Http\Client\Common\Plugin\RedirectPlugin;
+use Http\Client\Common\PluginClient;
+use Http\Discovery\HttpClientDiscovery;
 use Symfony\Component\Console\Command\Command;
 
 class CommandFactory
@@ -42,8 +45,11 @@ class CommandFactory
     public function getCommands()
     {
         $configurationService = new ConfigurationService($this->basePath);
-        $client = new Client();
-        $githubService = new GithubService($client, $configurationService);
+
+        $redirectPlugin = new RedirectPlugin(["preserve_header" => false]);
+
+        $pluginClient = new PluginClient(HttpClientDiscovery::find(), [$redirectPlugin]);
+        $githubService = new GithubService($pluginClient, $configurationService);
         $taskService = new TaskService();
         $instanceService = new InstanceService($configurationService);
         $policyService = new PolicyService($configurationService, $instanceService);

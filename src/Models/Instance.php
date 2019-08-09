@@ -126,9 +126,9 @@ class Instance
      * @param string $releaseName
      * @return bool
      */
-    public function isCurrentInstallation(string $releaseName): bool
+    public function isCurrentRelease(string $releaseName): bool
     {
-        return $this->currentInstallation->getRelease()->getName() === $releaseName;
+        return $this->getCurrentInstallation()->isSameRelease($releaseName);
     }
 
     /**
@@ -138,7 +138,7 @@ class Instance
     public function getInstallation(string $releaseName): ?Installation
     {
         foreach ($this->installations as $installation) {
-            if ($installation->getRelease()->getName() === $releaseName) {
+            if ($installation->isSameRelease($releaseName)) {
                 return $installation;
             }
         }
@@ -173,5 +173,13 @@ class Instance
         }
 
         return $upperBoundRelease;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentRelease()
+    {
+        return $this->getCurrentInstallation()->getRelease()->getName();
     }
 }

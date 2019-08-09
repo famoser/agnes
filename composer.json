@@ -5,7 +5,9 @@
     "symfony/dotenv": "^4.3",
     "php-http/guzzle6-adapter": "^2.0",
     "ext-json": "*",
-    "ext-zip": "*"
+    "ext-zip": "*",
+    "php-http/client-common": "^2.0",
+    "php-http/curl-client": "^2.0"
   },
   "autoload": {
     "psr-4": {

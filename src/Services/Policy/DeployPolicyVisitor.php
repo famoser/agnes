@@ -58,7 +58,7 @@ class DeployPolicyVisitor extends PolicyVisitor
 
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {
-                if ($installation->hasOnlinePeriods() !== null && $installation->getRelease()->getName() === $this->deployment->getRelease()->getName()) {
+                if ($installation->hasOnlinePeriods() !== null && $installation->isSameRelease($this->deployment->getRelease()->getName())) {
                     return true;
                 }
             }
