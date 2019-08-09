@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Agnes\Models\Tasks;
+namespace Agnes\Models;
 
 
 use Agnes\Models\Connections\Connection;
@@ -29,7 +29,7 @@ class Instance
     /**
      * @var Installation[]
      */
-    private $installations;
+    private $installations = [];
 
     /**
      * @var Installation

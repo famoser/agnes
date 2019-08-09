@@ -3,7 +3,7 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Models\Tasks\Instance;
+use Agnes\Models\Instance;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\Rollback\Rollback;

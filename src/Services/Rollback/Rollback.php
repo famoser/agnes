@@ -4,7 +4,7 @@
 namespace Agnes\Services\Rollback;
 
 use Agnes\Models\Installation;
-use Agnes\Models\Tasks\Instance;
+use Agnes\Models\Instance;
 
 class Rollback
 {

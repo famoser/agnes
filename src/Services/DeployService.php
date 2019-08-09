@@ -4,10 +4,10 @@
 namespace Agnes\Services;
 
 
-use Agnes\Deploy\Deploy;
+use Agnes\Services\Deploy\Deploy;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
-use Agnes\Models\Tasks\Instance;
+use Agnes\Models\Instance;
 use Agnes\Models\Task;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\GithubService;
@@ -72,6 +72,7 @@ class DeployService
     /**
      * @param Deploy $deploy
      * @throws \Exception
+     * @throws Exception
      */
     private function deploy(Deploy $deploy)
     {
@@ -143,7 +144,7 @@ class DeployService
             }
 
             $path = $installation->getPath();
-            $connection->executeCommands("rm -rf $path");
+            $connection->execute("rm -rf $path");
         }
     }
 
@@ -163,14 +164,14 @@ class DeployService
 
             // use content of shared folder as template if it is created for the first time
             if (!$connection->checkFolderExists($sharedFolderSource)) {
-                $connection->executeCommands("mv $releaseFolderTarget $sharedFolderSource");
+                $connection->execute("mv $releaseFolderTarget $sharedFolderSource");
             }
 
             // remove folder if it exists from release path
-            $connection->executeCommands("rm -rf $releaseFolderTarget");
+            $connection->execute("rm -rf $releaseFolderTarget");
 
             // create symlink from release path to shared path
-            $connection->executeCommands("ln -s $sharedFolderSource $releaseFolderTarget");
+            $connection->execute("ln -s $sharedFolderSource $releaseFolderTarget");
         }
     }
 
@@ -185,7 +186,7 @@ class DeployService
     {
         // make dir for new release
         $commands = $this->taskService->ensureFolderExistsCommands($releaseFolder);
-        $connection->executeCommands($commands);
+        $connection->execute(...$commands);
 
         // transfer release packet
         $assetContent = $this->githubService->asset($release->getAssetId());
@@ -193,9 +194,9 @@ class DeployService
         $connection->writeFile($assetPath, $assetContent);
 
         // unpack release packet
-        $connection->executeCommands("tar -xzf $assetPath $releaseFolder");
+        $connection->execute("tar -xzf $assetPath $releaseFolder");
 
         // remove release packet
-        $connection->executeCommands("rm $assetPath");
+        $connection->execute("rm $assetPath");
     }
 }

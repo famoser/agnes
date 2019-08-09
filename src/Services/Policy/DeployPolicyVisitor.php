@@ -4,9 +4,9 @@
 namespace Agnes\Services\Policy;
 
 
-use Agnes\Deploy\Deploy;
+use Agnes\Services\Deploy\Deploy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
-use Agnes\Models\Tasks\Filter;
+use Agnes\Models\Filter;
 use Agnes\Services\InstanceService;
 use Exception;
 
@@ -40,9 +40,10 @@ class DeployPolicyVisitor extends PolicyVisitor
      */
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
-        $stageIndex = $stageWriteUpPolicy->getLayerIndex($this->deployment->getTarget()->getStage());
+        $targetStage = $this->deployment->getTarget()->getStage();
+        $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
         if ($stageIndex === false) {
-            throw new Exception("Stage not found in specified layers; policy undecidable.");
+            throw new Exception("Stage $targetStage not found in specified layers; policy undecidable.");
         }
 
         // if the stageIndex is the lowest layer, we are allowed to write

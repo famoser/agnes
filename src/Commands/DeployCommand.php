@@ -3,7 +3,7 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Deploy\Deploy;
+use Agnes\Services\Deploy\Deploy;
 use Agnes\Services\GithubService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\DeployService;
@@ -82,7 +82,7 @@ class DeployCommand extends ConfigurationAwareCommand
 
         $inputFiles = $input->getArgument("files");
         $skipValidation = (bool)$input->getOption("skip-file-validation");
-        $fileContents = $this->getFileContents($inputFiles, $skipValidation);
+        $fileContents = $this->getFileContents($inputFiles, !$skipValidation);
 
         /** @var Deploy[] $deploys */
         $deploys = [];
@@ -115,49 +115,70 @@ class DeployCommand extends ConfigurationAwareCommand
 
     /**
      * @param array $inputFiles
-     * @param bool $skipValidation
+     * @param bool $validate
      * @return array
      * @throws \Exception
      */
-    private function getFileContents(array $inputFiles, bool $skipValidation): array
+    private function getFileContents(array $inputFiles, bool $validate): array
     {
         $configuredFiles = $this->configurationService->getEditableFiles();
         $fileContents = [];
-        foreach ($inputFiles as $file) {
-            $matchFound = false;
-            foreach ($configuredFiles as $configuredFile) {
-                $configuredFilePath = $configuredFile->getPath();
-                $matchPosition = stripos($configuredFilePath, $file);
+        foreach ($configuredFiles as $configuredFile) {
+            $configuredFilePath = $configuredFile->getPath();
 
-                // we have a match if it starts at the end; so ride.json matches to var/trans/override.json
-                $matchSize = strlen($file);
-                $matchAtTheEnd = $matchPosition + $matchSize === strlen($configuredFile->getPath());
-                if ($matchAtTheEnd) {
-                    if (isset($fileContent[$configuredFilePath])) {
-                        throw new \Exception("no unique match for $file");
-                    }
-
-                    $filePath = $this->configurationService->getBasePath() . DIRECTORY_SEPARATOR . $file;
-                    $fileContent = file_get_contents($filePath);
-                    $fileContents[$configuredFilePath] = $fileContent;
-                    $matchFound = true;
+            $highestMatch = null;
+            $highestMatchSize = 0;
+            foreach ($inputFiles as $inputFile) {
+                $matchSize = $this->getMatchingSizeFromEnd($configuredFilePath, $inputFile);
+                if ($matchSize > $highestMatchSize) {
+                    $highestMatchSize = $matchSize;
+                    $highestMatch = $inputFile;
                 }
             }
 
             // add the file content to the mapping
-            if (!$matchFound) {
-                throw new \Exception("no match found for file $file");
+            if ($highestMatch === null) {
+                if ($configuredFile->getIsRequired() && $validate) {
+                    throw new \Exception("no match found for file " . $configuredFile->getPath());
+                }
+            } else {
+                $filePath = $this->configurationService->getBasePath() . DIRECTORY_SEPARATOR . $highestMatch;
+                $fileContent = file_get_contents($filePath);
+                $fileContents[$configuredFilePath] = $fileContent;
+
+                $indexOfFile = array_search($highestMatch, $inputFiles);
+                unset($inputFiles[$indexOfFile]);
             }
+        }
+
+        if (count($inputFiles) > 0) {
+            throw new \Exception("the file(s) " . implode($inputFiles) . " have no match");
         }
 
         // ensure all required files have their match
         foreach ($configuredFiles as $configuredFile) {
             $path = $configuredFile->getPath();
-            if ($configuredFile->getIsRequired() && !$skipValidation && !isset($fileContents[$path])) {
+            if ($configuredFile->getIsRequired() && !isset($fileContents[$path])) {
                 throw new \Exception("you must pass a file which matches $path");
             }
         }
 
         return $fileContents;
+    }
+
+    private function getMatchingSizeFromEnd(string $string1, string $string2)
+    {
+        $sizeString1 = strlen($string1);
+        $sizeString2 = strlen($string2);
+
+        $minSize = min($sizeString1, $sizeString2);
+
+        for ($i = 0; $i < $minSize; $i++) {
+            if ($string1[$sizeString1 - $i - 1] !== $string2[$sizeString2 - $i - 1]) {
+                return $i;
+            }
+        }
+
+        return $minSize - 1;
     }
 }

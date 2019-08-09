@@ -60,7 +60,7 @@ class GithubService
     public function releases()
     {
         $response = $this->getClient()->getReleases();
-        $releases = json_decode($response);
+        $releases = json_decode($response->getBody()->getContents());
 
         $parsedRelease = [];
         foreach ($releases as $release) {

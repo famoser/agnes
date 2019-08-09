@@ -11,7 +11,7 @@ use Agnes\Models\Policies\ReleaseWhitelistPolicy;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
-use Agnes\Models\Tasks\Filter;
+use Agnes\Models\Filter;
 use Agnes\Services\Configuration\EditableFile;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\GithubConfig;
@@ -219,7 +219,7 @@ class ConfigurationService
         /** @var Policy[] $parsedPolicies */
         $parsedPolicies = [];
         foreach ($policies as $policy) {
-            $filter = $this->getFilter($policy["filter"]);
+            $filter = isset($policy["filter"]) ? $this->getFilter($policy["filter"]) : null;
 
             $policyType = $policy["type"];
             switch ($policyType) {

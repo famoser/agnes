@@ -40,7 +40,7 @@ application:
 
 
 servers:
-  mangel.io:
+  local:
     connection:
       type: local
       # type: ssh
@@ -48,7 +48,7 @@ servers:
     path: .release
     keep_releases: 2
     environments:
-      app.mangel.io: [production, education, staging, dev]
+      agnes.ch: [production, education, staging, dev]
 
 policies:
   strategy: unanimous # all matching policies must be valid

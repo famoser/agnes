@@ -9,7 +9,7 @@ use Agnes\Models\Policies\ReleaseWhitelistPolicy;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
-use Agnes\Models\Tasks\Filter;
+use Agnes\Models\Filter;
 use Exception;
 
 abstract class PolicyVisitor

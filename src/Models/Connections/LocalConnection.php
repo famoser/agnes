@@ -19,7 +19,7 @@ class LocalConnection extends Connection
     /**
      * @param array $commands
      */
-    public function executeCommands(...$commands)
+    public function execute(...$commands)
     {
         foreach ($commands as $command) {
             exec($command);
@@ -37,7 +37,7 @@ class LocalConnection extends Connection
 
         // ensure working directory exists
         $workingFolderCommands = $service->ensureFolderExistsCommands($task->getWorkingFolder());
-        $this->executeCommands(...$workingFolderCommands);
+        $this->execute(...$workingFolderCommands);
 
         // change working directory
         chdir($task->getWorkingFolder());

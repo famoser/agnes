@@ -6,7 +6,7 @@ namespace Agnes\Services\Policy;
 
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
-use Agnes\Models\Tasks\Filter;
+use Agnes\Models\Filter;
 use Agnes\Services\CopyShared\CopyShared;
 use Exception;
 

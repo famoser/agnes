@@ -34,7 +34,7 @@ class SSHConnection extends Connection
     /**
      * @param string[] $commands
      */
-    public function executeCommands(...$commands)
+    public function execute(...$commands)
     {
         foreach ($commands as $command) {
             exec($this->prepareCommand($command));
@@ -62,7 +62,7 @@ class SSHConnection extends Connection
 
         // ensure target dir exists
         $workingFolderCommands = $service->ensureFolderExistsCommands($workingFolder);
-        $this->executeCommands(...$workingFolderCommands);
+        $this->execute(...$workingFolderCommands);
 
         // prepare commands for execution
         foreach ($commands as &$command) {

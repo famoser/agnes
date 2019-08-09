@@ -4,7 +4,7 @@
 namespace Agnes\Models\Policies;
 
 
-use Agnes\Models\Tasks\Filter;
+use Agnes\Models\Filter;
 use Agnes\Services\Policy\PolicyVisitor;
 use Exception;
 

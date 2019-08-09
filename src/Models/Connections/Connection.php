@@ -12,7 +12,7 @@ abstract class Connection
     /**
      * @param array $commands
      */
-    public abstract function executeCommands(...$commands);
+    public abstract function execute(...$commands);
 
     /**
      * @param Task $task

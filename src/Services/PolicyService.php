@@ -3,7 +3,7 @@
 
 namespace Agnes\Services;
 
-use Agnes\Deploy\Deploy;
+use Agnes\Services\Deploy\Deploy;
 use Agnes\Models\Policies\Policy;
 use Agnes\Services\Release\Release;
 use Agnes\Services\CopyShared\CopyShared;

@@ -4,19 +4,19 @@
 namespace Agnes\Models\Policies;
 
 
-use Agnes\Models\Tasks\Filter;
+use Agnes\Models\Filter;
 
 abstract class LayeredPolicy extends Policy
 {
     /**
-     * @var string[]
+     * @var string[][]
      */
-    private $layers;
+    private $layers = [];
 
     /**
      * LayeredPolicy constructor.
      * @param Filter|null $filter
-     * @param string[] $layers
+     * @param string[][] $layers
      */
     public function __construct(?Filter $filter, array $layers)
     {
@@ -30,16 +30,20 @@ abstract class LayeredPolicy extends Policy
     }
 
     /**
-     * @param string $targetStage
+     * @param string $value
      * @return int|string
      */
-    public function getLayerIndex(string $targetStage)
+    public function getLayerIndex(string $value)
     {
-        foreach ($this->layers as $index => $stage) {
-            if ($stage === $targetStage) {
-                return $index;
+        foreach ($this->layers as $index => $entries) {
+            foreach ($entries as $entry) {
+                if ($entry === $value) {
+                    return $index;
+                }
             }
         }
+
+        var_dump($this->layers);
 
         return false;
     }

@@ -4,7 +4,7 @@
 namespace Agnes\Services\CopyShared;
 
 
-use Agnes\Models\Tasks\Instance;
+use Agnes\Models\Instance;
 
 class CopyShared
 {

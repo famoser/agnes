@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Agnes\Models\Tasks;
+namespace Agnes\Models;
 
 
 use DateTime;

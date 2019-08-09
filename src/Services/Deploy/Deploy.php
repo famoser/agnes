@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Agnes\Deploy;
+namespace Agnes\Services\Deploy;
 
 
-use Agnes\Models\Tasks\Instance;
+use Agnes\Models\Instance;
 use Agnes\Services\Github\ReleaseWithAsset;
 
 class Deploy

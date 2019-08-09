@@ -6,9 +6,9 @@ namespace Agnes\Services;
 
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
-use Agnes\Models\Tasks\Filter;
-use Agnes\Models\Tasks\Instance;
-use Agnes\Models\Tasks\OnlinePeriod;
+use Agnes\Models\Filter;
+use Agnes\Models\Instance;
+use Agnes\Models\OnlinePeriod;
 use Agnes\Services\Release\Release;
 use DateTime;
 use Exception;
@@ -92,19 +92,17 @@ class InstanceService
         $instances = [];
         foreach ($servers as $server) {
             foreach ($server->getEnvironments() as $environment) {
-                foreach ($environment->getStages() as $stages) {
-                    foreach ($stages as $stage) {
-                        $releasesFolder = $this->getReleasesFolder($server, $environment, $stage);
-                        $installations = $this->loadInstallations($server->getConnection(), $releasesFolder);
+                foreach ($environment->getStages() as $stage) {
+                    $releasesFolder = $this->getReleasesFolder($server, $environment, $stage);
+                    $installations = $this->loadInstallations($server->getConnection(), $releasesFolder);
 
-                        $currentReleaseFolder = $this->getCurrentReleaseSymlink($server, $environment, $stage);;
-                        $currentInstallation = null;
-                        if ($server->getConnection()->checkFolderExists($currentReleaseFolder)) {
-                            $currentInstallation = $this->getInstallationFromPath($server->getConnection(), $currentReleaseFolder);
-                        }
-
-                        $instances[] = new Instance($server, $environment, $stage, $installations, $currentInstallation);
+                    $currentReleaseFolder = $this->getCurrentReleaseSymlink($server, $environment, $stage);;
+                    $currentInstallation = null;
+                    if ($server->getConnection()->checkFolderExists($currentReleaseFolder)) {
+                        $currentInstallation = $this->getInstallationFromPath($server->getConnection(), $currentReleaseFolder);
                     }
+
+                    $instances[] = new Instance($server, $environment, $stage, $installations, $currentInstallation);
                 }
             }
         }
@@ -125,11 +123,11 @@ class InstanceService
 
         // create new symlink
         $tempCurrentSymlink = $currentSymlink . "_";
-        $connection->executeCommands("ln -s $targetFolder $tempCurrentSymlink");
+        $connection->execute("ln -s $targetFolder $tempCurrentSymlink");
 
         // switch active release
         $this->onReleaseOffline($connection, $currentSymlink);
-        $connection->executeCommands("mv -T $tempCurrentSymlink $currentSymlink");
+        $connection->execute("mv -T $tempCurrentSymlink $currentSymlink");
         $this->onReleaseOnline($connection, $currentSymlink);
     }
 
