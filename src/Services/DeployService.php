@@ -107,7 +107,8 @@ class DeployService
         }
 
         // execute deploy task
-        $previousReleasePath = $deploy->getTarget()->getCurrentInstallation()->getPath();
+        $currentInstallation = $deploy->getTarget()->getCurrentInstallation();
+        $previousReleasePath = $currentInstallation ? $currentInstallation->getPath() : null;
         $deployScripts = $this->configurationService->getScripts("deploy");
         $task = new Task($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
         $connection->executeTask($task, $this->taskService);

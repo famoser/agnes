@@ -162,7 +162,7 @@ class InstanceService
         $connection = $instance->getConnection();
         $maxReleaseNumber = 0;
         foreach ($instance->getInstallations() as $installation) {
-            $maxReleaseNumber = max($installation->getNumber(), $maxReleaseNumber);
+            $maxReleaseNumber = max((int)$installation->getNumber(), $maxReleaseNumber);
         }
 
         $installation = $this->getInstallationFromPath($connection, $installationPath);
