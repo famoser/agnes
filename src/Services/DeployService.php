@@ -163,16 +163,24 @@ class DeployService
             $sharedFolderSource = $sharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
             $releaseFolderTarget = $releaseFolder . DIRECTORY_SEPARATOR . $sharedFolder;
 
-            // use content of shared folder as template if it is created for the first time
+            // if created for the first time...
             if (!$connection->checkFolderExists($sharedFolderSource)) {
-                $connection->execute("mv $releaseFolderTarget $sharedFolderSource");
+                // use content of current shared folder
+                if ($connection->checkFolderExists($releaseFolderTarget)) {
+                    $connection->execute("mv $releaseFolderTarget $sharedFolderSource");
+                } else {
+                    $connection->execute("mkdir -m=0777 -p $sharedFolderSource");
+                }
             }
 
             // remove folder if it exists from release path
+            $connection->execute("mkdir -m=0777 -p $releaseFolderTarget");
             $connection->execute("rm -rf $releaseFolderTarget");
 
             // create symlink from release path to shared path
-            $connection->execute("ln -s $sharedFolderSource $releaseFolderTarget");
+            $levels = substr_count($sharedFolder, DIRECTORY_SEPARATOR) + 1; // + 1 because the if its var/persistent we need to go back two levels ../../
+            $relativeSharedFolder = str_repeat(".." . DIRECTORY_SEPARATOR, $levels) . $this->instanceService->getRelativePathFromReleaseToSharedFolder() . DIRECTORY_SEPARATOR . $sharedFolder;
+            $connection->execute("ln -s $relativeSharedFolder $releaseFolderTarget");
         }
     }
 
@@ -195,7 +203,7 @@ class DeployService
         $connection->writeFile($assetPath, $assetContent);
 
         // unpack release packet
-        $connection->execute("tar -xzf $assetPath $releaseFolder");
+        $connection->execute("tar -xzf $assetPath -C $releaseFolder");
 
         // remove release packet
         $connection->execute("rm $assetPath");

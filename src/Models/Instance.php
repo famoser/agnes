@@ -117,7 +117,7 @@ class Instance
     /**
      * @return Installation
      */
-    public function getCurrentInstallation(): Installation
+    public function getCurrentInstallation(): ?Installation
     {
         return $this->currentInstallation;
     }
@@ -128,6 +128,10 @@ class Instance
      */
     public function isCurrentRelease(string $releaseName): bool
     {
+        if ($this->getCurrentInstallation() === null) {
+            return false;
+        }
+
         return $this->getCurrentInstallation()->isSameRelease($releaseName);
     }
 
@@ -159,6 +163,10 @@ class Instance
      */
     public function getPreviousInstallation(): ?Installation
     {
+        if ($this->getCurrentInstallation() === null) {
+            return null;
+        }
+
         $currentReleaseNumber = $this->getCurrentInstallation()->getNumber();
 
         /** @var Installation|null $upperBoundRelease */
@@ -180,6 +188,10 @@ class Instance
      */
     public function getCurrentRelease()
     {
-        return $this->getCurrentInstallation()->getRelease()->getName();
+        if ($this->getCurrentInstallation() != null && $this->getCurrentInstallation()->getRelease() !== null) {
+            return $this->getCurrentInstallation()->getRelease()->getName();
+        }
+
+        return null;
     }
 }

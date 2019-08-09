@@ -22,6 +22,7 @@ class LocalConnection extends Connection
     public function execute(...$commands)
     {
         foreach ($commands as $command) {
+            var_dump("executing $command");
             exec($command);
         }
     }

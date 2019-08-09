@@ -192,6 +192,11 @@ class InstanceService
     public function onReleaseOffline(Connection $connection, string $installationPath)
     {
         $installation = $this->getInstallationFromPath($connection, $installationPath);
+        // no release at that path; hence lets not save
+        if ($installation->getRelease() === null) {
+            return;
+        }
+
         $installation->takeOffline();
 
         $this->saveInstallationToPath($connection, $installationPath, $installation);
@@ -278,6 +283,14 @@ class InstanceService
     public function getSharedPath(Instance $target)
     {
         return $this->getSharedFolder($target->getServer(), $target->getEnvironment(), $target->getStage());
+    }
+
+    /**
+     * @return string
+     */
+    public function getRelativePathFromReleaseToSharedFolder()
+    {
+        return ".." . DIRECTORY_SEPARATOR . "shared";
     }
 
     /**

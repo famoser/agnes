@@ -36,7 +36,7 @@ class CopySharedPolicyVisitor extends PolicyVisitor
         $sourceRelease = $this->copyShared->getSource()->getCurrentRelease();
         $targetRelease = $this->copyShared->getTarget()->getCurrentRelease();
 
-        return $sourceRelease === $targetRelease;
+        return $sourceRelease !== null && $sourceRelease === $targetRelease;
     }
 
     /**

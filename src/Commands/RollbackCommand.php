@@ -109,7 +109,7 @@ class RollbackCommand extends ConfigurationAwareCommand
             }
 
             $installation = $instance->getInstallation($releaseName);
-            if ($installation !== null && $installation->getNumber() < $instance->getCurrentInstallation()->getNumber()) {
+            if ($installation !== null && $instance->getCurrentInstallation() !== null && $installation->getNumber() < $instance->getCurrentInstallation()->getNumber()) {
                 $result[] = $installation;
             }
         }

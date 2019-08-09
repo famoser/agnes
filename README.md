@@ -28,3 +28,9 @@ Host *
   ControlMaster auto
   ControlPersist yes
 ```
+
+
+further work:
+    - remove the TaskService? -> no need to prepend / postbend commands
+    - ensure the working folder is only cleared once; refactor the "ensureFolderExists" function
+    - abstract the github service (later)

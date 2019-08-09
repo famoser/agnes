@@ -16,6 +16,7 @@ class TaskService
     {
         // execute commands
         foreach ($commands as $command) {
+            var_dump("executing $command");
             exec($command . " 2>&1", $output, $returnVar);
 
             if ($returnVar !== 0) {
@@ -34,11 +35,15 @@ class TaskService
         // merge all commands to single list
         $commands = array_merge($task->getPreCommands(), $task->getCommands(), $task->getPostCommands());
 
-        // replace env variables
+        // create env definition
+        $envPrefix = "";
         foreach ($task->getEnvVariables() as $key => $value) {
-            foreach ($commands as &$command) {
-                $command = str_replace("$$key", $value, $command);
-            }
+            $envPrefix .= "$key=$value ";
+        }
+
+        // prefix env definition
+        foreach ($commands as &$command) {
+            $command = $envPrefix . $command;
         }
 
         return $commands;
