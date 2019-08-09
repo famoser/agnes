@@ -4,7 +4,7 @@
 namespace Agnes\Services\Github;
 
 
-use Agnes\Release\Release;
+use Agnes\Services\Release\Release;
 
 class ReleaseWithAsset extends Release
 {

@@ -1,9 +1,9 @@
 <?php
 
 
-namespace Agnes\Release;
+namespace Agnes\Services;
 
-use Agnes\Services\ConfigurationService;
+use Agnes\Services\Release\Release;
 use Agnes\Services\Github\Client;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Http\Client\Exception;

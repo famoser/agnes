@@ -5,8 +5,8 @@ namespace Agnes\Services;
 
 
 use Agnes\Models\Tasks\Task;
-use Agnes\Release\GithubService;
-use Agnes\Release\Release;
+use Agnes\Services\GithubService;
+use Agnes\Services\Release\Release;
 use Http\Client\Exception;
 
 class ReleaseService
@@ -48,8 +48,9 @@ class ReleaseService
 
     /**
      * @param Release $release
-     * @throws Exception
      * @throws \Exception
+     * @throws Exception
+     * @throws Exception
      */
     public function publish(Release $release): void
     {

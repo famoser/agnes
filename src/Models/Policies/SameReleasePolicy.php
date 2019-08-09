@@ -16,6 +16,6 @@ class SameReleasePolicy extends Policy
      */
     public function accept(PolicyVisitor $visitor)
     {
-        return $visitor->visitSameRelease();
+        return $visitor->visitSameRelease($this);
     }
 }

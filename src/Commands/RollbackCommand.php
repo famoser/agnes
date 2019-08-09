@@ -48,8 +48,8 @@ class RollbackCommand extends ConfigurationAwareCommand
             If neither target nor source is supplied, it will rollback to the last release which was active.')
             ->setHelp('This command executes the rollback scripts & switches to the old release in specific environment(s).')
             ->addOption("target", "t", InputOption::VALUE_REQUIRED, "the instance(s) to rollback. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addOption("rollback_to", "na", InputOption::VALUE_OPTIONAL, "name of the release to rollback to")
-            ->addOption("rollback_from", "na", InputOption::VALUE_OPTIONAL, "name of the release to rollback from");
+            ->addOption("rollback-to", "rt", InputOption::VALUE_OPTIONAL, "name of the release to rollback to")
+            ->addOption("rollback-from", "rs", InputOption::VALUE_OPTIONAL, "name of the release to rollback from");
 
         parent::configure();
     }
@@ -66,12 +66,12 @@ class RollbackCommand extends ConfigurationAwareCommand
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
         $instances = $this->filterByCanRollbackToAny($instances);
 
-        $rollbackTo = $input->getOption("rollback_to");
+        $rollbackTo = $input->getOption("rollback-to");
         if ($rollbackTo !== null) {
             $instances = $this->filterByCanRollbackTo($instances, $rollbackTo);
         }
 
-        $rollbackFrom = $input->getOption("rollback_from");
+        $rollbackFrom = $input->getOption("rollback-from");
         if ($rollbackFrom !== null) {
             $instances = $this->filterByCanRollbackFrom($instances, $rollbackFrom);
         }

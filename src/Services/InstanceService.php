@@ -9,7 +9,7 @@ use Agnes\Models\Installation;
 use Agnes\Models\Tasks\Filter;
 use Agnes\Models\Tasks\Instance;
 use Agnes\Models\Tasks\OnlinePeriod;
-use Agnes\Release\Release;
+use Agnes\Services\Release\Release;
 use DateTime;
 use Exception;
 

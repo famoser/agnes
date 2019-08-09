@@ -5,7 +5,7 @@ namespace Agnes\Services;
 
 use Agnes\Deploy\Deploy;
 use Agnes\Models\Policies\Policy;
-use Agnes\Release\Release;
+use Agnes\Services\Release\Release;
 use Agnes\Services\CopyShared\CopyShared;
 use Agnes\Services\Policy\CopySharedPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;

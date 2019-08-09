@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Agnes\Release;
+namespace Agnes\Services\Release;
 
 
 class Release

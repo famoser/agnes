@@ -6,7 +6,7 @@ namespace Agnes\Services\Policy;
 
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
 use Agnes\Models\Tasks\Filter;
-use Agnes\Release\Release;
+use Agnes\Services\Release\Release;
 
 class ReleasePolicyVisitor extends PolicyVisitor
 {

@@ -3,7 +3,7 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Release\Release;
+use Agnes\Services\Release\Release;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\ReleaseService;
 use Http\Client\Exception;
@@ -35,7 +35,7 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $this->setName('release')
             ->setDescription('Create a new release.')
             ->setHelp('This command compiles & publishes a new release according to the passed configuration.')
-            ->addOption("name", "na", InputOption::VALUE_REQUIRED, "name of the release")
+            ->addOption("release", "r", InputOption::VALUE_REQUIRED, "name of the release")
             ->addOption("commitish", "b", InputOption::VALUE_REQUIRED, "branch or commit of the release");
 
         parent::configure();
@@ -50,7 +50,7 @@ class ReleaseCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $name = $input->getOption("name");
+        $name = $input->getOption("release");
         $commitish = $input->getOption("commitish");
         $release = new Release($name, $commitish);
 

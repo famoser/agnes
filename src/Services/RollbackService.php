@@ -33,6 +33,7 @@ class RollbackService
     /**
      * RollbackService constructor.
      * @param ConfigurationService $configurationService
+     * @param PolicyService $policyService
      * @param TaskService $taskService
      * @param InstanceService $instanceService
      */

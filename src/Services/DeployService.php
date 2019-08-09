@@ -9,8 +9,8 @@ use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Tasks\Instance;
 use Agnes\Models\Tasks\Task;
-use Agnes\Release\GithubService;
 use Agnes\Services\Github\ReleaseWithAsset;
+use Agnes\Services\GithubService;
 use Http\Client\Exception;
 
 class DeployService
@@ -71,7 +71,6 @@ class DeployService
 
     /**
      * @param Deploy $deploy
-     * @throws Exception
      * @throws \Exception
      */
     private function deploy(Deploy $deploy)
@@ -179,6 +178,7 @@ class DeployService
      * @param string $releaseFolder
      * @param Connection $connection
      * @param ReleaseWithAsset $release
+     * @throws Exception
      * @throws Exception
      */
     private function uploadRelease(string $releaseFolder, Connection $connection, ReleaseWithAsset $release): void

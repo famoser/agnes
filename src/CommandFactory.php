@@ -8,7 +8,7 @@ use Agnes\Commands\CopySharedCommand;
 use Agnes\Commands\DeployCommand;
 use Agnes\Commands\ReleaseCommand;
 use Agnes\Commands\RollbackCommand;
-use Agnes\Release\GithubService;
+use Agnes\Services\GithubService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\CopySharedService;
 use Agnes\Services\DeployService;

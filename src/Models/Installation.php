@@ -4,7 +4,7 @@
 namespace Agnes\Models;
 
 use Agnes\Models\Tasks\OnlinePeriod;
-use Agnes\Release\Release;
+use Agnes\Services\Release\Release;
 use DateTime;
 use Exception;
 

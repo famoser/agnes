@@ -41,7 +41,7 @@ class CopySharedPolicyVisitor extends PolicyVisitor
     /**
      * @param StageWriteDownPolicy $stageWriteDownPolicy
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function visitStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
     {
