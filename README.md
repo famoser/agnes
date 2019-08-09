@@ -4,7 +4,7 @@ releases safely to various environments, and allows to perform other common task
 
 ## config
 
-look in `config.yml` for a complete example.
+look in `agnes.yml` for a complete example.
 
 ## commands
 
