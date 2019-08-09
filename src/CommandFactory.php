@@ -42,7 +42,7 @@ class CommandFactory
     public function getCommands()
     {
         $configurationService = new ConfigurationService($this->basePath);
-        $client = Client::createWithConfig([]);
+        $client = new Client();
         $githubService = new GithubService($client, $configurationService);
         $taskService = new TaskService();
         $instanceService = new InstanceService($configurationService);
