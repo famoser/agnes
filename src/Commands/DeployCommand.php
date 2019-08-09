@@ -57,10 +57,10 @@ class DeployCommand extends ConfigurationAwareCommand
         $this->setName('deploy')
             ->setDescription('Deploy a release to a specific environment.')
             ->setHelp('This command downloads, installs & publishes a release to a specific environment.')
+            ->addArgument("release", InputArgument::REQUIRED, "name of the release")
+            ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to deploy to. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
             ->addArgument("files", InputArgument::IS_ARRAY, "the files to deploy. Separate multiple files with a space. The file path is matched against the configured files, and the longest matching path is chosen as a target.")
-            ->addOption("release", "r", InputOption::VALUE_REQUIRED, "name of the release")
-            ->addOption("target", "t", InputOption::VALUE_REQUIRED, "the instance(s) to deploy to. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addOption("skip-file-validation", "sv", InputOption::VALUE_NONE, "if file validation should be skipped. the application no longer throws if required file is not supplied");
+            ->addOption("skip-file-validation", "sfv", InputOption::VALUE_NONE, "if file validation should be skipped. the application no longer throws if required file is not supplied.");
 
         parent::configure();
     }
@@ -74,10 +74,10 @@ class DeployCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $releaseName = $input->getOption("release");
+        $releaseName = $input->getArgument("release");
         $release = $this->getRelease($releaseName);
 
-        $target = $input->getOption("target");
+        $target = $input->getArgument("target");
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
         $inputFiles = $input->getArgument("files");

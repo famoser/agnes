@@ -4,7 +4,7 @@
 namespace Agnes\Models\Connections;
 
 
-use Agnes\Models\Tasks\Task;
+use Agnes\Models\Task;
 use Agnes\Services\TaskService;
 
 abstract class Connection

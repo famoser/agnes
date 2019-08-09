@@ -8,7 +8,7 @@ use Agnes\Deploy\Deploy;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Tasks\Instance;
-use Agnes\Models\Tasks\Task;
+use Agnes\Models\Task;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\GithubService;
 use Http\Client\Exception;

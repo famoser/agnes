@@ -7,6 +7,7 @@ use Agnes\Services\Release\Release;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\ReleaseService;
 use Http\Client\Exception;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -35,8 +36,8 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $this->setName('release')
             ->setDescription('Create a new release.')
             ->setHelp('This command compiles & publishes a new release according to the passed configuration.')
-            ->addOption("release", "r", InputOption::VALUE_REQUIRED, "name of the release")
-            ->addOption("commitish", "b", InputOption::VALUE_REQUIRED, "branch or commit of the release");
+            ->addArgument("release", InputArgument::REQUIRED, "name of the release")
+            ->addArgument("commitish", InputArgument::REQUIRED, "branch or commit of the release");
 
         parent::configure();
     }
@@ -50,8 +51,8 @@ class ReleaseCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $name = $input->getOption("release");
-        $commitish = $input->getOption("commitish");
+        $name = $input->getArgument("release");
+        $commitish = $input->getArgument("commitish");
         $release = new Release($name, $commitish);
 
         $this->publishService->publish($release);

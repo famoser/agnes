@@ -9,6 +9,7 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\Rollback\Rollback;
 use Agnes\Services\RollbackService;
 use Http\Client\Exception;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -47,7 +48,7 @@ class RollbackCommand extends ConfigurationAwareCommand
             If source is supplied, it will only rollback instances with that release version active.
             If neither target nor source is supplied, it will rollback to the last release which was active.')
             ->setHelp('This command executes the rollback scripts & switches to the old release in specific environment(s).')
-            ->addOption("target", "t", InputOption::VALUE_REQUIRED, "the instance(s) to rollback. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
+            ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to rollback. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
             ->addOption("rollback-to", "rt", InputOption::VALUE_OPTIONAL, "name of the release to rollback to")
             ->addOption("rollback-from", "rs", InputOption::VALUE_OPTIONAL, "name of the release to rollback from");
 
@@ -62,7 +63,7 @@ class RollbackCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $target = $input->getOption("target");
+        $target = $input->getArgument("target");
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
         $instances = $this->filterByCanRollbackToAny($instances);
 

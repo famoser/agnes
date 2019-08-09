@@ -11,6 +11,7 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\Rollback\Rollback;
 use Agnes\Services\RollbackService;
 use Http\Client\Exception;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -47,8 +48,8 @@ class CopySharedCommand extends ConfigurationAwareCommand
         $this->setName('copy:shared')
             ->setDescription('Copies the shared data from the source to the target.')
             ->setHelp('This copies the shared data from the source to the target to replicate environment(s).')
-            ->addOption("source", "s", InputOption::VALUE_REQUIRED, "the instance(s) to copy data from. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addOption("target", "t", InputOption::VALUE_REQUIRED, "the instance(s) to replace the data from the source." . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION);
+            ->addArgument("source", InputArgument::REQUIRED, "the instance(s) to copy data from. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
+            ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to replace the data from the source." . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION);
 
         parent::configure();
     }
@@ -61,10 +62,10 @@ class CopySharedCommand extends ConfigurationAwareCommand
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $source = $input->getOption("source");
+        $source = $input->getArgument("source");
         $sourceInstances = $this->instanceService->getInstancesFromInstanceSpecification($source);
 
-        $target = $input->getOption("target");
+        $target = $input->getArgument("target");
         $targetInstances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
         /** @var CopyShared[] $copyShareds */

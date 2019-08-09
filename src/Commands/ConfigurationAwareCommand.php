@@ -30,7 +30,7 @@ abstract class ConfigurationAwareCommand extends Command
 
     public function configure()
     {
-        $this->addOption('config', "c", InputOption::VALUE_OPTIONAL, "config file", "agnes.yml");
+        $this->addOption('config', "c", InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, "config file", ["agnes.yml"]);
     }
 
     /**
@@ -43,7 +43,7 @@ abstract class ConfigurationAwareCommand extends Command
     {
         parent::initialize($input, $output);
 
-        $configFilePath = $input->getOption("config");
-        $this->configurationService->loadConfig($configFilePath);
+        $configFilePaths = $input->getOption("config");
+        $this->configurationService->loadConfigs($configFilePaths);
     }
 }

@@ -4,7 +4,7 @@
 namespace Agnes\Services;
 
 
-use Agnes\Models\Tasks\Task;
+use Agnes\Models\Task;
 use Agnes\Services\GithubService;
 use Agnes\Services\Release\Release;
 use Http\Client\Exception;
@@ -79,9 +79,10 @@ class ReleaseService
         $task->addPreCommand("git checkout " . $release->getCommitish());
         $task->addPreCommand("rm -rf .git");
 
-        // after release has been build, compress it to a single folder
+        // after release has been build, compress it to a single file
         $fileName = $release->getArchiveName();
-        $task->addPostCommand("tar -czvf $fileName .");
+        $task->addPostCommand("touch $fileName");
+        $task->addPostCommand("tar -czvf $fileName --exclude=$fileName .");
 
         // actually execute the task
         $buildConnection = $this->configurationService->getBuildConnection();

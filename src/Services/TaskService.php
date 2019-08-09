@@ -3,7 +3,7 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Tasks\Task;
+use Agnes\Models\Task;
 use Exception;
 
 class TaskService
@@ -19,7 +19,8 @@ class TaskService
             exec($command . " 2>&1", $output, $returnVar);
 
             if ($returnVar !== 0) {
-                throw new Exception("command execution of " . $command . " failed with " . $returnVar . ".");
+                $errorMessage = implode("\n", $output);
+                throw new Exception("command execution of " . $command . " failed with " . $returnVar . " because $errorMessage.");
             }
         }
     }

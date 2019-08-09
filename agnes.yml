@@ -42,9 +42,10 @@ application:
 servers:
   mangel.io:
     connection:
-      type: ssh
-      destination: '%env(SERVER_DESTINATION)%'
-    path: '%env(SERVER_PATH)%' # the path of the installation will be $path/$environment_name/$environment
+      type: local
+      # type: ssh
+      # destination: '%env(SERVER_DESTINATION)%'
+    path: .release
     keep_releases: 2
     environments:
       app.mangel.io: [production, education, staging, dev]

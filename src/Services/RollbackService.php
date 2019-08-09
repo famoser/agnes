@@ -4,7 +4,7 @@
 namespace Agnes\Services;
 
 
-use Agnes\Models\Tasks\Task;
+use Agnes\Models\Task;
 use Agnes\Services\Rollback\Rollback;
 use Exception;
 

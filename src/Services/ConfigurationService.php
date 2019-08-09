@@ -16,6 +16,7 @@ use Agnes\Services\Configuration\EditableFile;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\GithubConfig;
 use Agnes\Services\Configuration\Server;
+use Agnes\Services\Rollback\Rollback;
 use Exception;
 use Symfony\Component\Yaml\Yaml;
 
@@ -41,17 +42,31 @@ class ConfigurationService
     }
 
     /**
+     * @param string[] $paths
+     * @throws Exception
+     */
+    public function loadConfigs(array $paths)
+    {
+        foreach ($paths as $path) {
+            $filePath = $this->basePath . DIRECTORY_SEPARATOR . $path;
+            foreach (glob($filePath) as $item) {
+                $this->addConfig($item);
+            }
+        }
+    }
+
+    /**
      * @param string $path
      * @throws Exception
      */
-    public function loadConfig(string $path)
+    private function addConfig(string $path)
     {
-        $configFileContent = file_get_contents($this->basePath . DIRECTORY_SEPARATOR . $path);
+        $configFileContent = file_get_contents($path);
         $config = Yaml::parse($configFileContent);
 
         $this->replaceEnvVariables($config);
 
-        $this->config = $config;
+        $this->config = array_merge_recursive($this->config, $config);
     }
 
     /**
@@ -118,7 +133,7 @@ class ConfigurationService
     }
 
     /**
-     * @param array $config
+     * @param array $source
      * @param bool $throwOnMissing
      * @param $default
      * @param string $first
@@ -126,9 +141,9 @@ class ConfigurationService
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws Exception
      */
-    private function getValue(array $config, bool $throwOnMissing, $default, string $first, ...$additionalDept)
+    private function getValue(array $source, bool $throwOnMissing, $default, string $first, ...$additionalDept)
     {
-        if (!isset($config[$first])) {
+        if (!isset($source[$first])) {
             if ($throwOnMissing) {
                 throw new Exception("key " . $first . " does not exist.");
             } else {
@@ -136,12 +151,12 @@ class ConfigurationService
             }
         }
 
-        $value = $config[$first];
+        $newSource = $source[$first];
         if (count($additionalDept) > 0) {
-            return $this->getValue($value, ...$additionalDept);
+            return $this->getValue($newSource, $throwOnMissing, $default, ...$additionalDept);
         }
 
-        return $value;
+        return $newSource;
     }
 
     /**
