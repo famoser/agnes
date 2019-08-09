@@ -49,4 +49,10 @@ abstract class Connection
      * @return bool
      */
     public abstract function checkFolderExists(string $folderPath): bool;
+
+    /**
+     * @param Connection $connection
+     * @return bool
+     */
+    public abstract function equals(Connection $connection): bool;
 }

@@ -177,4 +177,13 @@ class SSHConnection extends Connection
     {
         return tempnam(sys_get_temp_dir(), 'Agnes');
     }
+
+    /**
+     * @param Connection $connection
+     * @return bool
+     */
+    public function equals(Connection $connection): bool
+    {
+        return $connection instanceof SSHConnection && $connection->getDestination() === $this->getDestination();
+    }
 }

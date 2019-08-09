@@ -90,4 +90,13 @@ class LocalConnection extends Connection
     {
         return is_dir($folderPath);
     }
+
+    /**
+     * @param Connection $connection
+     * @return bool
+     */
+    public function equals(Connection $connection): bool
+    {
+        return $connection instanceof LocalConnection;
+    }
 }

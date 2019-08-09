@@ -49,7 +49,7 @@ abstract class PolicyVisitor
      * @return bool
      * @throws Exception
      */
-    public function visitSameRelease(SameReleasePolicy $sameReleasePolicy)
+    public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
     {
         return $this->visitDefault($sameReleasePolicy);
     }
@@ -58,7 +58,7 @@ abstract class PolicyVisitor
      * @param Policy $policy
      * @return bool
      */
-    public function isApplicable(Policy $policy)
+    public function isApplicable(Policy $policy): bool
     {
         return $this->filterApplies($policy->getFilter());
     }

@@ -22,14 +22,57 @@ abstract class LayeredPolicy extends Policy
     {
         parent::__construct($filter);
 
-        $this->layers = $layers;
+        foreach ($layers as $key => $entries) {
+            $this->layers[(int)$key] = $entries;
+        }
+
+        ksort($this->layers);
     }
 
     /**
+     * @param string $targetStage
+     * @return int|string
+     */
+    public function getLayerIndex(string $targetStage)
+    {
+        foreach ($this->layers as $index => $stage) {
+            if ($stage === $targetStage) {
+                return $index;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param int $index
+     * @return bool
+     */
+    public function isLowestLayer(int $index)
+    {
+        $availableLayers = array_keys($this->layers);
+
+        return min($availableLayers) === $index;
+    }
+
+    /**
+     * @param string $index
+     * @return bool
+     */
+    public function isHighestLayer(string $index)
+    {
+        $availableLayers = array_keys($this->layers);
+
+        return max($availableLayers) === $index;
+    }
+
+    /**
+     * @param int $index
      * @return string[]
      */
-    public function getLayers(): array
+    public function getNextLowerLayer(int $index): array
     {
-        return $this->layers;
+        // this is a simplification; should check next lower not just subtract one. but should be OK
+        return $this->layers[$index - 1];
     }
 }
