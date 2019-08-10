@@ -16,7 +16,6 @@ class TaskService
     {
         // execute commands
         foreach ($commands as $command) {
-            var_dump("executing $command");
             exec($command . " 2>&1", $output, $returnVar);
 
             if ($returnVar !== 0) {
@@ -47,14 +46,5 @@ class TaskService
         }
 
         return $commands;
-    }
-
-    /**
-     * @param string $workingFolder
-     * @return string[]
-     */
-    public function ensureFolderExistsCommands(string $workingFolder): array
-    {
-        return ["rm -rf " . $workingFolder, "mkdir -m=0777 -p " . $workingFolder];
     }
 }

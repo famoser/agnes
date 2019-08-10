@@ -160,27 +160,26 @@ class DeployService
         $sharedPath = $this->instanceService->getSharedPath($target);
         $sharedFolders = $this->configurationService->getSharedFolders();
         foreach ($sharedFolders as $sharedFolder) {
-            $sharedFolderSource = $sharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
-            $releaseFolderTarget = $releaseFolder . DIRECTORY_SEPARATOR . $sharedFolder;
+            $sharedFolderTarget = $sharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
+            $releaseFolderSource = $releaseFolder . DIRECTORY_SEPARATOR . $sharedFolder;
 
             // if created for the first time...
-            if (!$connection->checkFolderExists($sharedFolderSource)) {
+            if (!$connection->checkFolderExists($sharedFolderTarget)) {
                 // use content of current shared folder
-                if ($connection->checkFolderExists($releaseFolderTarget)) {
-                    $connection->execute("mv $releaseFolderTarget $sharedFolderSource");
+                if ($connection->checkFolderExists($releaseFolderSource)) {
+                    $connection->execute("mv $releaseFolderSource $sharedFolderTarget");
                 } else {
-                    $connection->execute("mkdir -m=0777 -p $sharedFolderSource");
+                    $connection->execute("mkdir -m=0777 -p $sharedFolderTarget");
                 }
             }
 
             // remove folder if it exists from release path
-            $connection->execute("mkdir -m=0777 -p $releaseFolderTarget");
-            $connection->execute("rm -rf $releaseFolderTarget");
+            $connection->execute("mkdir -m=0777 -p $releaseFolderSource");
+            $connection->execute("rm -rf $releaseFolderSource");
 
             // create symlink from release path to shared path
-            $levels = substr_count($sharedFolder, DIRECTORY_SEPARATOR) + 1; // + 1 because the if its var/persistent we need to go back two levels ../../
-            $relativeSharedFolder = str_repeat(".." . DIRECTORY_SEPARATOR, $levels) . $this->instanceService->getRelativePathFromReleaseToSharedFolder() . DIRECTORY_SEPARATOR . $sharedFolder;
-            $connection->execute("ln -s $relativeSharedFolder $releaseFolderTarget");
+            $relativeSharedFolder = $this->getRelativeSymlinkPath($releaseFolderSource, $sharedFolderTarget);
+            $connection->execute("ln -s $relativeSharedFolder $releaseFolderSource");
         }
     }
 
@@ -194,8 +193,7 @@ class DeployService
     private function uploadRelease(string $releaseFolder, Connection $connection, ReleaseWithAsset $release): void
     {
         // make dir for new release
-        $commands = $this->taskService->ensureFolderExistsCommands($releaseFolder);
-        $connection->execute(...$commands);
+        $connection->execute("rm -rf " . $releaseFolder, "mkdir -m=0777 -p " . $releaseFolder);
 
         // transfer release packet
         $assetContent = $this->githubService->asset($release->getAssetId());
@@ -207,5 +205,32 @@ class DeployService
 
         // remove release packet
         $connection->execute("rm $assetPath");
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @return string
+     */
+    private function getRelativeSymlinkPath(string $source, string $target)
+    {
+        $sourceArray = explode(DIRECTORY_SEPARATOR, $source);
+        $targetArray = explode(DIRECTORY_SEPARATOR, $target);
+
+        // get count of entries equal for both paths
+        $equalEntries = 0;
+        while (($sourceArray[$equalEntries] === $targetArray[$equalEntries])) {
+            $equalEntries++;
+        }
+
+        // if some equal found, then cut how much path we need from the target in the resulting relative path
+        if ($equalEntries > 0) {
+            $targetArray = array_slice($targetArray, $equalEntries);
+        }
+
+        // find out how many levels we need to go back until we can start the relative target path
+        $levelsBack = count($sourceArray) - $equalEntries - 1;
+
+        return str_repeat(".." . DIRECTORY_SEPARATOR, $levelsBack) . implode(DIRECTORY_SEPARATOR, $targetArray);
     }
 }

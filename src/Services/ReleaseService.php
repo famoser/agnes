@@ -74,6 +74,10 @@ class ReleaseService
 
         $task = new Task($buildPath, $scripts);
 
+        // clean & create working directory exists
+        $task->addPreCommand("rm -rf " . $task->getWorkingFolder());
+        $task->addPreCommand("mkdir -m=0777 -p " . $task->getWorkingFolder());
+
         // clone repo, checkout correct commit & then remove git folder
         $task->addPreCommand("git clone git@github.com:" . $githubConfig->getRepository() . " .");
         $task->addPreCommand("git checkout " . $release->getCommitish());

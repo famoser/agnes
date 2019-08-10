@@ -286,14 +286,6 @@ class InstanceService
     }
 
     /**
-     * @return string
-     */
-    public function getRelativePathFromReleaseToSharedFolder()
-    {
-        return ".." . DIRECTORY_SEPARATOR . "shared";
-    }
-
-    /**
      * @param Configuration\Server $server
      * @param Configuration\Environment $environment
      * @param string $stage

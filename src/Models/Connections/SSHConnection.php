@@ -60,10 +60,6 @@ class SSHConnection extends Connection
         $commands = $service->getCommands($task);
         $workingFolder = $task->getWorkingFolder();
 
-        // ensure target dir exists
-        $workingFolderCommands = $service->ensureFolderExistsCommands($workingFolder);
-        $this->execute(...$workingFolderCommands);
-
         // prepare commands for execution
         foreach ($commands as &$command) {
             $command = $this->prepareCommand("cd $workingFolder && $command");

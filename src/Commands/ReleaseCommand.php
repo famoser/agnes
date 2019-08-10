@@ -17,7 +17,7 @@ class ReleaseCommand extends ConfigurationAwareCommand
     /**
      * @var ReleaseService
      */
-    private $publishService;
+    private $releaseService;
 
     /**
      * ReleaseCommand constructor.
@@ -28,7 +28,7 @@ class ReleaseCommand extends ConfigurationAwareCommand
     {
         parent::__construct($configurationService);
 
-        $this->publishService = $publishService;
+        $this->releaseService = $publishService;
     }
 
     public function configure()
@@ -55,6 +55,6 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $commitish = $input->getArgument("commitish");
         $release = new Release($name, $commitish);
 
-        $this->publishService->publish($release);
+        $this->releaseService->publish($release);
     }
 }

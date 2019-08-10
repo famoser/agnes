@@ -43,8 +43,6 @@ abstract class LayeredPolicy extends Policy
             }
         }
 
-        var_dump($this->layers);
-
         return false;
     }
 

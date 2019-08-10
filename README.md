@@ -31,6 +31,7 @@ Host *
 
 
 further work:
+    - create console statement generator which generates mkdir, tar commands -> to fix symlink creation in instance service
     - remove the TaskService? -> no need to prepend / postbend commands
-    - ensure the working folder is only cleared once; refactor the "ensureFolderExists" function
+        - but need to upload files & other tasks while executing commands
     - abstract the github service (later)
