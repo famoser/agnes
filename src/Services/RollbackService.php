@@ -21,11 +21,6 @@ class RollbackService
     private $policyService;
 
     /**
-     * @var TaskService
-     */
-    private $taskService;
-
-    /**
      * @var InstanceService
      */
     private $instanceService;
@@ -34,14 +29,12 @@ class RollbackService
      * RollbackService constructor.
      * @param ConfigurationService $configurationService
      * @param PolicyService $policyService
-     * @param TaskService $taskService
      * @param InstanceService $instanceService
      */
-    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, TaskService $taskService, InstanceService $instanceService)
+    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService)
     {
         $this->configurationService = $configurationService;
         $this->policyService = $policyService;
-        $this->taskService = $taskService;
         $this->instanceService = $instanceService;
     }
 
@@ -72,7 +65,7 @@ class RollbackService
         // execute rollback task
         $deployScripts = $this->configurationService->getScripts("rollback");
         $task = new Task($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
-        $rollback->getInstance()->getConnection()->executeTask($task, $this->taskService);
+        $rollback->getInstance()->getConnection()->executeTask($task);
 
         $this->instanceService->switchRelease($rollback->getInstance(), $rollback->getTarget()->getRelease());
     }

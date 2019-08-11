@@ -3,11 +3,11 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Services\Deploy\Deploy;
-use Agnes\Services\GithubService;
 use Agnes\Services\ConfigurationService;
+use Agnes\Services\Deploy\Deploy;
 use Agnes\Services\DeployService;
 use Agnes\Services\Github\ReleaseWithAsset;
+use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;

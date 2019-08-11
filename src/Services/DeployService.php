@@ -4,13 +4,12 @@
 namespace Agnes\Services;
 
 
-use Agnes\Services\Deploy\Deploy;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Models\Task;
+use Agnes\Services\Deploy\Deploy;
 use Agnes\Services\Github\ReleaseWithAsset;
-use Agnes\Services\GithubService;
 use Http\Client\Exception;
 
 class DeployService
@@ -26,11 +25,6 @@ class DeployService
     private $policyService;
 
     /**
-     * @var TaskService
-     */
-    private $taskService;
-
-    /**
      * @var InstanceService
      */
     private $instanceService;
@@ -44,15 +38,13 @@ class DeployService
      * DeployService constructor.
      * @param ConfigurationService $configurationService
      * @param PolicyService $policyService
-     * @param TaskService $taskService
      * @param InstanceService $instanceService
      * @param GithubService $githubService
      */
-    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, TaskService $taskService, InstanceService $instanceService, GithubService $githubService)
+    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, GithubService $githubService)
     {
         $this->configurationService = $configurationService;
         $this->policyService = $policyService;
-        $this->taskService = $taskService;
         $this->instanceService = $instanceService;
         $this->githubService = $githubService;
     }
@@ -111,7 +103,7 @@ class DeployService
         $previousReleasePath = $currentInstallation ? $currentInstallation->getPath() : null;
         $deployScripts = $this->configurationService->getScripts("deploy");
         $task = new Task($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
-        $connection->executeTask($task, $this->taskService);
+        $connection->executeTask($task);
 
         // publish new version
         $this->instanceService->switchRelease($target, $release);

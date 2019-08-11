@@ -8,16 +8,14 @@ use Agnes\Commands\CopySharedCommand;
 use Agnes\Commands\DeployCommand;
 use Agnes\Commands\ReleaseCommand;
 use Agnes\Commands\RollbackCommand;
-use Agnes\Services\GithubService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\CopySharedService;
 use Agnes\Services\DeployService;
+use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Agnes\Services\ReleaseService;
 use Agnes\Services\RollbackService;
-use Agnes\Services\TaskService;
-use Http\Adapter\Guzzle6\Client;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
@@ -50,13 +48,12 @@ class CommandFactory
 
         $pluginClient = new PluginClient(HttpClientDiscovery::find(), [$redirectPlugin]);
         $githubService = new GithubService($pluginClient, $configurationService);
-        $taskService = new TaskService();
         $instanceService = new InstanceService($configurationService);
         $policyService = new PolicyService($configurationService, $instanceService);
 
-        $releaseService = new ReleaseService($configurationService, $policyService, $taskService, $githubService);
-        $deployService = new DeployService($configurationService, $policyService, $taskService, $instanceService, $githubService);
-        $rollbackService = new RollbackService($configurationService, $policyService, $taskService, $instanceService);
+        $releaseService = new ReleaseService($configurationService, $policyService, $githubService);
+        $deployService = new DeployService($configurationService, $policyService, $instanceService, $githubService);
+        $rollbackService = new RollbackService($configurationService, $policyService, $instanceService);
         $copySharedService = new CopySharedService($policyService, $configurationService);
 
         return [

@@ -4,12 +4,12 @@
 namespace Agnes\Services\Policy;
 
 
+use Agnes\Models\Filter;
 use Agnes\Models\Policies\Policy;
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
-use Agnes\Models\Filter;
 use Exception;
 
 abstract class PolicyVisitor

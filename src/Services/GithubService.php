@@ -3,9 +3,9 @@
 
 namespace Agnes\Services;
 
-use Agnes\Services\Release\Release;
 use Agnes\Services\Github\Client;
 use Agnes\Services\Github\ReleaseWithAsset;
+use Agnes\Services\Release\Release;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
 use Psr\Http\Message\ResponseInterface;

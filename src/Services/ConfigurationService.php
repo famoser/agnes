@@ -6,17 +6,16 @@ namespace Agnes\Services;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Connections\LocalConnection;
 use Agnes\Models\Connections\SSHConnection;
+use Agnes\Models\Filter;
 use Agnes\Models\Policies\Policy;
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
-use Agnes\Models\Filter;
 use Agnes\Services\Configuration\EditableFile;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\GithubConfig;
 use Agnes\Services\Configuration\Server;
-use Agnes\Services\Rollback\Rollback;
 use Exception;
 use Symfony\Component\Yaml\Yaml;
 

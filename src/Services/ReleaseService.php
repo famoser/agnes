@@ -5,7 +5,6 @@ namespace Agnes\Services;
 
 
 use Agnes\Models\Task;
-use Agnes\Services\GithubService;
 use Agnes\Services\Release\Release;
 use Http\Client\Exception;
 
@@ -22,11 +21,6 @@ class ReleaseService
     private $policyService;
 
     /**
-     * @var TaskService
-     */
-    private $taskService;
-
-    /**
      * @var GithubService
      */
     private $githubService;
@@ -35,14 +29,12 @@ class ReleaseService
      * PublishService constructor.
      * @param ConfigurationService $configurationService
      * @param PolicyService $policyService
-     * @param TaskService $taskService
      * @param GithubService $githubService
      */
-    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, TaskService $taskService, GithubService $githubService)
+    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService)
     {
         $this->configurationService = $configurationService;
         $this->policyService = $policyService;
-        $this->taskService = $taskService;
         $this->githubService = $githubService;
     }
 
@@ -90,7 +82,7 @@ class ReleaseService
 
         // actually execute the task
         $buildConnection = $this->configurationService->getBuildConnection();
-        $buildConnection->executeTask($task, $this->taskService);
+        $buildConnection->executeTask($task);
         $releaseContent = $buildConnection->readFile($fileName);
 
         return $releaseContent;

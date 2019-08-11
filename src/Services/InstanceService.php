@@ -5,8 +5,8 @@ namespace Agnes\Services;
 
 
 use Agnes\Models\Connections\Connection;
-use Agnes\Models\Installation;
 use Agnes\Models\Filter;
+use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Models\OnlinePeriod;
 use Agnes\Services\Release\Release;

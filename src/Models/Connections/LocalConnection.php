@@ -5,7 +5,6 @@ namespace Agnes\Models\Connections;
 
 
 use Agnes\Models\Task;
-use Agnes\Services\TaskService;
 use Exception;
 use function chdir;
 use function file_get_contents;
@@ -28,19 +27,18 @@ class LocalConnection extends Connection
 
     /**
      * @param Task $task
-     * @param TaskService $service
      * @throws Exception
      */
-    public function executeTask(Task $task, TaskService $service)
+    public function executeTask(Task $task)
     {
-        $commands = $service->getCommands($task);
+        $commands = $this->getCommands($task);
 
         // change working directory
         $origin = getcwd();
         chdir($task->getWorkingFolder());
 
         // execute commands
-        $service->executeCommands($commands);
+        $this->executeCommands($commands);
 
         // recover working directory
         chdir($origin);

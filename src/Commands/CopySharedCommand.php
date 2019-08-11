@@ -8,12 +8,8 @@ use Agnes\Services\ConfigurationService;
 use Agnes\Services\CopyShared\CopyShared;
 use Agnes\Services\CopySharedService;
 use Agnes\Services\InstanceService;
-use Agnes\Services\Rollback\Rollback;
-use Agnes\Services\RollbackService;
-use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CopySharedCommand extends ConfigurationAwareCommand

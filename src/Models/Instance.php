@@ -5,7 +5,6 @@ namespace Agnes\Models;
 
 
 use Agnes\Models\Connections\Connection;
-use Agnes\Models\Installation;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\Server;
 

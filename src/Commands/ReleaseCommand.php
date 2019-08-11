@@ -3,13 +3,12 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Services\Release\Release;
 use Agnes\Services\ConfigurationService;
+use Agnes\Services\Release\Release;
 use Agnes\Services\ReleaseService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ReleaseCommand extends ConfigurationAwareCommand

@@ -5,7 +5,6 @@ namespace Agnes\Models\Connections;
 
 
 use Agnes\Models\Task;
-use Agnes\Services\TaskService;
 use Exception;
 use function exec;
 use function explode;
@@ -52,12 +51,11 @@ class SSHConnection extends Connection
 
     /**
      * @param Task $task
-     * @param TaskService $service
      * @throws Exception
      */
-    public function executeTask(Task $task, TaskService $service)
+    public function executeTask(Task $task)
     {
-        $commands = $service->getCommands($task);
+        $commands = $this->getCommands($task);
         $workingFolder = $task->getWorkingFolder();
 
         // prepare commands for execution
@@ -66,7 +64,7 @@ class SSHConnection extends Connection
         }
 
         // execute commands
-        $service->executeCommands($commands);
+        $this->executeCommands($commands);
     }
 
     /**

@@ -5,7 +5,7 @@ namespace Agnes\Models\Connections;
 
 
 use Agnes\Models\Task;
-use Agnes\Services\TaskService;
+use Exception;
 
 abstract class Connection
 {
@@ -16,9 +16,8 @@ abstract class Connection
 
     /**
      * @param Task $task
-     * @param TaskService $service
      */
-    public abstract function executeTask(Task $task, TaskService $service);
+    public abstract function executeTask(Task $task);
 
     /**
      * @param string $filePath
@@ -55,4 +54,45 @@ abstract class Connection
      * @return bool
      */
     public abstract function equals(Connection $connection): bool;
+
+
+    /**
+     * @param string[] $commands
+     * @throws Exception
+     */
+    protected function executeCommands(array $commands): void
+    {
+        // execute commands
+        foreach ($commands as $command) {
+            exec($command . " 2>&1", $output, $returnVar);
+
+            if ($returnVar !== 0) {
+                $errorMessage = implode("\n", $output);
+                throw new Exception("command execution of " . $command . " failed with " . $returnVar . " because $errorMessage.");
+            }
+        }
+    }
+
+    /**
+     * @param Task $task
+     * @return string[]
+     */
+    protected function getCommands(Task $task): array
+    {
+        // merge all commands to single list
+        $commands = array_merge($task->getPreCommands(), $task->getCommands(), $task->getPostCommands());
+
+        // create env definition
+        $envPrefix = "";
+        foreach ($task->getEnvVariables() as $key => $value) {
+            $envPrefix .= "$key=$value ";
+        }
+
+        // prefix env definition
+        foreach ($commands as &$command) {
+            $command = $envPrefix . $command;
+        }
+
+        return $commands;
+    }
 }

@@ -4,7 +4,6 @@
 namespace Agnes\Services;
 
 use Agnes\Services\CopyShared\CopyShared;
-use Agnes\Services\Rollback\Rollback;
 use Exception;
 
 class CopySharedService
