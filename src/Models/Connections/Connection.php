@@ -11,6 +11,7 @@ abstract class Connection
      * @param string $workingFolder
      * @param array $commands
      * @param array $envVariables
+     * @throws Exception
      */
     public function executeScript(string $workingFolder, array $commands, array $envVariables = [])
     {
@@ -22,7 +23,7 @@ abstract class Connection
     /**
      * @param string $workingFolder
      * @param string[] $commands
-     * @return mixed
+     * @throws Exception
      */
     protected abstract function executeWithinWorkingFolder(string $workingFolder, array $commands);
 
@@ -64,9 +65,10 @@ abstract class Connection
 
     /**
      * @param string $command
+     * @return string
      * @throws Exception
      */
-    public function executeCommand(string $command): void
+    protected function executeCommand(string $command): string
     {
         exec($command . " 2>&1", $output, $returnVar);
 
@@ -74,6 +76,8 @@ abstract class Connection
             $errorMessage = implode("\n", $output);
             throw new Exception("command execution of " . $command . " failed with " . $returnVar . " because $errorMessage.");
         }
+
+        return $output;
     }
 
     /**
@@ -107,5 +111,151 @@ abstract class Connection
         }
 
         return $commands;
+    }
+
+    /**
+     * @param string $buildPath
+     * @param string $repository
+     * @param string $commitish
+     * @throws Exception
+     */
+    public function checkoutRepository(string $buildPath, string $repository, string $commitish)
+    {
+        $this->executeScript($buildPath, [
+            "git clone git@github.com:" . $repository . " .",
+            "git checkout " . $commitish,
+            "rm -rf .git"
+        ]);
+    }
+
+    /**
+     * @param string $folder
+     * @throws Exception
+     */
+    public function createOrClearFolder(string $folder)
+    {
+        $this->executeCommand("rm -rf " . $folder);
+        $this->createFolder($folder);
+    }
+
+    /**
+     * @param string $folder
+     * @throws Exception
+     */
+    public function createFolder(string $folder)
+    {
+        $this->executeCommand("mkdir -m=0777 -p $folder");
+    }
+
+    /**
+     * @param string $folder
+     * @param string $fileName
+     * @return string
+     * @throws Exception
+     */
+    public function compressTarGz(string $folder, string $fileName)
+    {
+        $this->executeScript($folder, [
+            "touch $fileName",
+            "tar -czvf $fileName --exclude=$fileName ."
+        ]);
+
+        return $folder . DIRECTORY_SEPARATOR . $fileName;
+    }
+
+    /**
+     * @param string $archivePath
+     * @param string $targetFolder
+     * @throws Exception
+     */
+    public function uncompressTarGz(string $archivePath, string $targetFolder)
+    {
+        $this->executeCommand("tar -xzf $archivePath -C $targetFolder");
+    }
+
+    /**
+     * @param string $path
+     * @throws Exception
+     */
+    public function removeFile(string $path)
+    {
+        $this->executeCommand("rm $path");
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @throws Exception
+     */
+    public function createSymlink(string $source, string $target)
+    {
+        $relativeSharedFolder = $this->getRelativeSymlinkPath($source, $target);
+        $this->executeCommand("ln -s $relativeSharedFolder $source");
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @return string
+     */
+    private function getRelativeSymlinkPath(string $source, string $target)
+    {
+        $sourceArray = explode(DIRECTORY_SEPARATOR, $source);
+        $targetArray = explode(DIRECTORY_SEPARATOR, $target);
+
+        // get count of entries equal for both paths
+        $equalEntries = 0;
+        while (($sourceArray[$equalEntries] === $targetArray[$equalEntries])) {
+            $equalEntries++;
+        }
+
+        // if some equal found, then cut how much path we need from the target in the resulting relative path
+        if ($equalEntries > 0) {
+            $targetArray = array_slice($targetArray, $equalEntries);
+        }
+
+        // find out how many levels we need to go back until we can start the relative target path
+        $levelsBack = count($sourceArray) - $equalEntries - 1;
+
+        return str_repeat(".." . DIRECTORY_SEPARATOR, $levelsBack) . implode(DIRECTORY_SEPARATOR, $targetArray);
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @throws Exception
+     */
+    public function moveFolder(string $source, string $target)
+    {
+        $this->executeCommand("mv $source $target");
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @throws Exception
+     */
+    public function copyFolder(string $source, string $target)
+    {
+        $this->executeCommand("cp -r $source $target");
+    }
+
+    /**
+     * @param string $folder
+     * @throws Exception
+     */
+    public function removeFolder(string $folder)
+    {
+        $this->executeCommand("rm -rf $folder");
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @throws Exception
+     */
+    public function moveFile(string $source, string $target)
+    {
+        $this->executeCommand("mv -T $source $target");
     }
 }

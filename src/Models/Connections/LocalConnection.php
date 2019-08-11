@@ -85,4 +85,12 @@ class LocalConnection extends Connection
     {
         return $connection instanceof LocalConnection;
     }
+
+    /**
+     * @param string $path
+     */
+    public function removeFile(string $path)
+    {
+        unlink($path);
+    }
 }

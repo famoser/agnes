@@ -30,16 +30,15 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @param string[] $commands
+     * @param string $command
+     * @return string
      * @throws Exception
      */
-    public function executeCommands(array $commands): void
+    public function executeCommand(string $command): string
     {
-        foreach ($commands as &$command) {
-            $command = "ssh " . $this->getDestination() . " '$command'";
-        }
+        $command = "ssh " . $this->getDestination() . " '$command'";
 
-        parent::executeCommands($commands);
+        return parent::executeCommand($command);
     }
 
     /**
@@ -119,6 +118,7 @@ class SSHConnection extends Connection
     /**
      * @param string $filePath
      * @return bool
+     * @throws Exception
      */
     public function checkFileExists(string $filePath): bool
     {
@@ -128,6 +128,7 @@ class SSHConnection extends Connection
     /**
      * @param string $folderPath
      * @return bool
+     * @throws Exception
      */
     public function checkFolderExists(string $folderPath): bool
     {
@@ -136,14 +137,15 @@ class SSHConnection extends Connection
 
     /**
      * @param string $testArgs
-     * @return int
+     * @return bool
+     * @throws Exception
      */
     private function testFor(string $testArgs)
     {
-        $command = "ssh " . $this->getDestination() . " 'test $testArgs && echo \"yes\"'";
-        exec($command, $output);
+        $command = "test $testArgs && echo \"yes\"";
+        $output = $this->executeCommand($command);
 
-        return strlen($output === 3);
+        return strpos($output, "yes") !== false;
     }
 
     /**

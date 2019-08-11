@@ -135,8 +135,7 @@ class DeployService
                 break;
             }
 
-            $path = $installation->getPath();
-            $connection->executeCommand("rm -rf $path");
+            $connection->removeFolder($installation->getPath());
         }
     }
 
@@ -158,21 +157,20 @@ class DeployService
             if (!$connection->checkFolderExists($sharedFolderTarget)) {
                 // use content of current shared folder
                 if ($connection->checkFolderExists($releaseFolderSource)) {
-                    $connection->executeCommand("mv $releaseFolderSource $sharedFolderTarget");
+                    $connection->moveFolder($releaseFolderSource, $sharedFolderTarget);
                 } else {
-                    $connection->executeCommand("mkdir -m=0777 -p $sharedFolderTarget");
+                    $connection->createFolder($sharedFolderTarget);
                 }
             }
 
             // ensure directory structure exists
-            $connection->executeCommand("mkdir -m=0777 -p $releaseFolderSource");
+            $connection->createFolder($releaseFolderSource);
 
-            // remove folder if it exists from release path
-            $connection->executeCommand("rm -rf $releaseFolderSource");
+            // remove folder to make space for symlink
+            $connection->removeFolder($releaseFolderSource);
 
             // create symlink from release path to shared path
-            $relativeSharedFolder = $this->getRelativeSymlinkPath($releaseFolderSource, $sharedFolderTarget);
-            $connection->executeCommand("ln -s $relativeSharedFolder $releaseFolderSource");
+            $connection->createSymlink($releaseFolderSource, $sharedFolderTarget);
         }
     }
 
@@ -186,10 +184,7 @@ class DeployService
     private function uploadRelease(string $releaseFolder, Connection $connection, ReleaseWithAsset $release): void
     {
         // make empty dir for new release
-        $connection->executeCommands([
-            "rm -rf " . $releaseFolder,
-            "mkdir -m=0777 -p " . $releaseFolder
-        ]);
+        $connection->createOrClearFolder($releaseFolder);
 
         // transfer release packet
         $assetContent = $this->githubService->asset($release->getAssetId());
@@ -197,36 +192,9 @@ class DeployService
         $connection->writeFile($assetPath, $assetContent);
 
         // unpack release packet
-        $connection->executeCommand("tar -xzf $assetPath -C $releaseFolder");
+        $connection->uncompressTarGz($assetPath, $releaseFolder);
 
         // remove release packet
-        $connection->executeCommand("rm $assetPath");
-    }
-
-    /**
-     * @param string $source
-     * @param string $target
-     * @return string
-     */
-    private function getRelativeSymlinkPath(string $source, string $target)
-    {
-        $sourceArray = explode(DIRECTORY_SEPARATOR, $source);
-        $targetArray = explode(DIRECTORY_SEPARATOR, $target);
-
-        // get count of entries equal for both paths
-        $equalEntries = 0;
-        while (($sourceArray[$equalEntries] === $targetArray[$equalEntries])) {
-            $equalEntries++;
-        }
-
-        // if some equal found, then cut how much path we need from the target in the resulting relative path
-        if ($equalEntries > 0) {
-            $targetArray = array_slice($targetArray, $equalEntries);
-        }
-
-        // find out how many levels we need to go back until we can start the relative target path
-        $levelsBack = count($sourceArray) - $equalEntries - 1;
-
-        return str_repeat(".." . DIRECTORY_SEPARATOR, $levelsBack) . implode(DIRECTORY_SEPARATOR, $targetArray);
+        $connection->removeFile($assetPath);
     }
 }

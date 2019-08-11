@@ -60,19 +60,12 @@ class CopySharedService
         $targetPath = $copyShared->getTarget()->getCurrentInstallation()->getPath();
         $connection = $copyShared->getSource()->getConnection();
 
-        $commands = [];
         foreach ($sharedFolders as $sharedFolder) {
             $sourceFolderPath = $sourcePath . DIRECTORY_SEPARATOR . $sharedFolder;
             $targetFolderPath = $targetPath . DIRECTORY_SEPARATOR . $sharedFolder;
-            $commands = array_merge(
-                $commands,
-                [
-                    "rm -rf $targetFolderPath",
-                    "cp -r $sourceFolderPath $targetFolderPath"
-                ]
-            );
-        }
 
-        $connection->executeCommands($commands);
+            $connection->removeFolder($targetFolderPath);
+            $connection->copyFolder($sourceFolderPath, $targetFolderPath);
+        }
     }
 }

@@ -62,32 +62,16 @@ class ReleaseService
         $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
 
-        // clean & create working directory exists
-        // make empty dir for new release
-        $connection->executeCommands([
-            "rm -rf " . $buildPath,
-            "mkdir -m=0777 -p " . $buildPath
-        ]);
+        $connection->createOrClearFolder($buildPath);
 
-        // clone repo, checkout correct commit & then remove git folder
         $githubConfig = $this->configurationService->getGithubConfig();
-        $connection->executeScript($buildPath, [
-            "git clone git@github.com:" . $githubConfig->getRepository() . " .",
-            "git checkout " . $release->getCommitish(),
-            "rm -rf .git"
-        ]);
+        $connection->checkoutRepository($buildPath, $githubConfig->getRepository(), $release->getCommitish());
 
-        // actually execute the task
         $scripts = $this->configurationService->getScripts("release");
         $connection->executeScript($buildPath, $scripts);
 
         // after release has been build, compress it to a single file
-        $fileName = $release->getArchiveName();
-        $connection->executeScript($buildPath, [
-            "touch $fileName",
-            "tar -czvf $fileName --exclude=$fileName ."
-        ]);
-
-        return $connection->readFile($fileName);
+        $filePath = $connection->compressTarGz($buildPath, $release->getArchiveName());
+        return $connection->readFile($filePath);
     }
 }
