@@ -8,6 +8,7 @@ use Agnes\Services\ConfigurationService;
 use Agnes\Services\CopyShared\CopyShared;
 use Agnes\Services\CopySharedService;
 use Agnes\Services\InstanceService;
+use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -54,7 +55,7 @@ class CopySharedCommand extends ConfigurationAwareCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int|void|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {

@@ -9,7 +9,6 @@ use function exec;
 use function explode;
 use function file_get_contents;
 use function file_put_contents;
-use function strlen;
 use function substr;
 use function unlink;
 

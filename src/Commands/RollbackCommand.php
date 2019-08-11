@@ -8,6 +8,7 @@ use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\Rollback\Rollback;
 use Agnes\Services\RollbackService;
+use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -58,7 +59,7 @@ class RollbackCommand extends ConfigurationAwareCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int|void|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
