@@ -44,6 +44,10 @@ abstract class ConfigurationAwareCommand extends Command
         parent::initialize($input, $output);
 
         $configFilePaths = $input->getOption("config");
-        $this->configurationService->loadConfigs($configFilePaths);
+        foreach ($configFilePaths as $path) {
+            foreach (glob($path) as $item) {
+                $this->configurationService->addConfig($item);
+            }
+        }
     }
 }

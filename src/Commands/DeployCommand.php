@@ -21,6 +21,7 @@ class DeployCommand extends ConfigurationAwareCommand
             Instances are specified in the form server:environment:stage (like aws:example.com:production deploys to production of example.com on the aws server). 
             Replace entries with stars to not enforce a constraint (like *:*:production would deploy to all production stages).
             Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).";
+
     /**
      * @var DeployService
      */
@@ -142,8 +143,7 @@ class DeployCommand extends ConfigurationAwareCommand
                     throw new \Exception("no match found for file " . $configuredFile->getPath());
                 }
             } else {
-                $filePath = $this->configurationService->getBasePath() . DIRECTORY_SEPARATOR . $highestMatch;
-                $fileContent = file_get_contents($filePath);
+                $fileContent = file_get_contents($highestMatch);
                 $fileContents[$configuredFilePath] = $fileContent;
 
                 $indexOfFile = array_search($highestMatch, $inputFiles);
@@ -166,6 +166,11 @@ class DeployCommand extends ConfigurationAwareCommand
         return $fileContents;
     }
 
+    /**
+     * @param string $string1
+     * @param string $string2
+     * @return int
+     */
     private function getMatchingSizeFromEnd(string $string1, string $string2)
     {
         $sizeString1 = strlen($string1);

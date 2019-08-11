@@ -20,29 +20,16 @@ use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class CommandFactory
 {
-    /**
-     * @var string
-     */
-    private $basePath;
-
-    /**
-     * CommandFactory constructor.
-     * @param string $basePath
-     */
-    public function __construct(string $basePath)
-    {
-        $this->basePath = $basePath;
-    }
-
     /**
      * @return Command[]
      */
     public function getCommands()
     {
-        $configurationService = new ConfigurationService($this->basePath);
+        $configurationService = new ConfigurationService();
 
         $redirectPlugin = new RedirectPlugin(["preserve_header" => false]);
 

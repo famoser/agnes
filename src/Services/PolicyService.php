@@ -45,7 +45,7 @@ class PolicyService
     public function ensureCanRelease(Release $release)
     {
         $releasePolicyVisitor = new ReleasePolicyVisitor($release);
-        if (($policy = $this->canExecute($releasePolicyVisitor, "release"))) {
+        if (($policy = $this->getConflictingPolicy($releasePolicyVisitor, "release"))) {
             throw new Exception("policy denied execution: " . get_class($policy));
         }
     }
@@ -59,7 +59,7 @@ class PolicyService
     {
         $deployPolicyVisitor = new DeployPolicyVisitor($this->instanceService, $deploy);
 
-        return $this->canExecute($deployPolicyVisitor, "deploy") === null;
+        return $this->getConflictingPolicy($deployPolicyVisitor, "deploy") === null;
     }
 
     /**
@@ -71,7 +71,7 @@ class PolicyService
     {
         $roollbackPolicyVisitor = new RollbackPolicyVisitor($rollback);
 
-        return $this->canExecute($roollbackPolicyVisitor, "rollback") === null;
+        return $this->getConflictingPolicy($roollbackPolicyVisitor, "rollback") === null;
     }
 
     /**
@@ -83,7 +83,7 @@ class PolicyService
     {
         $copySharedPolicyVisitor = new CopySharedPolicyVisitor($copyShared);
 
-        return $this->canExecute($copySharedPolicyVisitor, "copy_shared") === null;
+        return $this->getConflictingPolicy($copySharedPolicyVisitor, "copy_shared") === null;
     }
 
     /**
@@ -92,7 +92,7 @@ class PolicyService
      * @return Policy|null
      * @throws Exception
      */
-    private function canExecute(PolicyVisitor $visitor, string $task): ?Policy
+    private function getConflictingPolicy(PolicyVisitor $visitor, string $task): ?Policy
     {
         $policies = $this->configurationService->getPolicies($task);
 

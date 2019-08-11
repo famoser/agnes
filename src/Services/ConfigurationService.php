@@ -22,43 +22,15 @@ use Symfony\Component\Yaml\Yaml;
 class ConfigurationService
 {
     /**
-     * @var string
-     */
-    private $basePath;
-
-    /**
      * @var array
      */
     private $config = [];
 
     /**
-     * ConfigurationService constructor.
-     * @param string $basePath
-     */
-    public function __construct(string $basePath)
-    {
-        $this->basePath = $basePath;
-    }
-
-    /**
-     * @param string[] $paths
-     * @throws Exception
-     */
-    public function loadConfigs(array $paths)
-    {
-        foreach ($paths as $path) {
-            $filePath = $this->basePath . DIRECTORY_SEPARATOR . $path;
-            foreach (glob($filePath) as $item) {
-                $this->addConfig($item);
-            }
-        }
-    }
-
-    /**
      * @param string $path
      * @throws Exception
      */
-    private function addConfig(string $path)
+    public function addConfig(string $path)
     {
         $configFileContent = file_get_contents($path);
         $config = Yaml::parse($configFileContent);
@@ -97,7 +69,7 @@ class ConfigurationService
      */
     public function getBuildPath()
     {
-        return $this->basePath . DIRECTORY_SEPARATOR . $this->getConfigEntry("agnes", "build", "path");
+        return $this->getConfigEntry("agnes", "build", "path");
     }
 
     /**
@@ -298,13 +270,5 @@ class ConfigurationService
         }
 
         return $editableFiles;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBasePath(): string
-    {
-        return $this->basePath;
     }
 }
