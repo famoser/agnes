@@ -9,6 +9,8 @@ use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Models\OnlinePeriod;
+use Agnes\Services\Configuration\Environment;
+use Agnes\Services\Configuration\Server;
 use Agnes\Services\Release\Release;
 use DateTime;
 use Exception;
@@ -94,20 +96,44 @@ class InstanceService
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
                     $releasesFolder = $this->getReleasesFolder($server, $environment, $stage);
+
                     $installations = $this->loadInstallations($server->getConnection(), $releasesFolder);
-
-                    $currentReleaseFolder = $this->getCurrentReleaseSymlink($server, $environment, $stage);;
-                    $currentInstallation = null;
-                    if ($server->getConnection()->checkFolderExists($currentReleaseFolder)) {
-                        $currentInstallation = $this->getInstallationFromPath($server->getConnection(), $currentReleaseFolder);
-                    }
-
+                    $currentInstallation = $this->getCurrentInstallation($server, $environment, $stage, $installations);
                     $instances[] = new Instance($server, $environment, $stage, $installations, $currentInstallation);
                 }
             }
         }
 
         return $instances;
+    }
+
+    /**
+     * @param Server $server
+     * @param Environment $environment
+     * @param string $stage
+     * @param Installation[] $installations
+     * @return mixed|null
+     * @throws Exception
+     */
+    private function getCurrentInstallation(Server $server, Environment $environment, string $stage, array $installations)
+    {
+        $currentReleaseFolder = $this->getCurrentReleaseSymlink($server, $environment, $stage);
+        if (!$server->getConnection()->checkFolderExists($currentReleaseFolder)) {
+            return null;
+        }
+
+        $currentInstallation = $this->getInstallationFromPath($server->getConnection(), $currentReleaseFolder);
+        if ($currentInstallation->getRelease() === null) {
+            return null;
+        }
+
+        foreach ($installations as $installation) {
+            if ($installation->getRelease() !== null && $installation->isSameReleaseName($currentInstallation->getRelease()->getName())) {
+                return $installation;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -128,13 +154,13 @@ class InstanceService
         // switch active release
         $this->onReleaseOffline($connection, $currentSymlink);
         $connection->moveFile($tempCurrentSymlink, $currentSymlink);
-        $this->onReleaseOnline($connection, $currentSymlink);
+        $this->onReleaseOnline($connection, $targetFolder);
     }
 
     /**
      * @param Connection $connection
      * @param string $releasesFolder
-     * @return array
+     * @return Installation[]
      * @throws Exception
      */
     private function loadInstallations(Connection $connection, string $releasesFolder)
@@ -144,8 +170,7 @@ class InstanceService
         $installations = [];
 
         foreach ($folders as $folder) {
-            $installationPath = $releasesFolder . DIRECTORY_SEPARATOR . $folder;
-            $installations[] = $this->getInstallationFromPath($connection, $installationPath);
+            $installations[] = $this->getInstallationFromPath($connection, $folder);
         }
 
         return $installations;
@@ -166,7 +191,7 @@ class InstanceService
         }
 
         $installation = $this->getInstallationFromPath($connection, $installationPath);
-        $installation->setRelease($maxReleaseNumber, $release);
+        $installation->setRelease($maxReleaseNumber + 1, $release);
 
         $this->saveInstallationToPath($connection, $installationPath, $installation);
     }
@@ -218,13 +243,13 @@ class InstanceService
 
         $metaJson = $connection->readFile($agnesFilePath);
         $meta = json_decode($metaJson);
-        $number = $meta["number"];
-        $release = new Release($meta["release"]["name"], $meta["release"]["commitish"]);
+        $number = $meta->number;
+        $release = new Release($meta->release->name, $meta->release->commitish);
 
         $onlinePeriods = [];
-        foreach ($meta["online_periods"] as $onlinePeriod) {
-            $start = new DateTime($onlinePeriod["start"]);
-            $end = $onlinePeriod["end"] !== null ? new DateTime($onlinePeriod["end"]) : null;
+        foreach ($meta->online_periods as $onlinePeriod) {
+            $start = new DateTime($onlinePeriod->start);
+            $end = $onlinePeriod->end !== null ? new DateTime($onlinePeriod->end) : null;
             $onlinePeriods[] = new OnlinePeriod($start, $end);
         }
 
@@ -252,7 +277,7 @@ class InstanceService
 
         $meta["online_periods"] = $onlinePeriods;
 
-        $metaJson = json_encode($meta);
+        $metaJson = json_encode($meta, JSON_PRETTY_PRINT);
         $agnesFilePath = $this->getAgnesMetaFilePath($installationPath);
         $connection->writeFile($agnesFilePath, $metaJson);
     }

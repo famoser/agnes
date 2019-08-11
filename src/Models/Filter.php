@@ -50,19 +50,19 @@ class Filter
      */
     public function isMatch(string $server, string $environment, string $stage)
     {
-        if ($this->servers !== null && in_array($server, $this->servers)) {
-            return true;
+        if ($this->servers !== null && !in_array($server, $this->servers)) {
+            return false;
         }
 
-        if ($this->environments !== null && in_array($environment, $this->environments)) {
-            return true;
+        if ($this->environments !== null && !in_array($environment, $this->environments)) {
+            return false;
         }
 
-        if ($this->stages !== null && in_array($stage, $this->stages)) {
-            return true;
+        if ($this->stages !== null && !in_array($stage, $this->stages)) {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
 }

@@ -131,7 +131,7 @@ class Instance
             return false;
         }
 
-        return $this->getCurrentInstallation()->isSameRelease($releaseName);
+        return $this->getCurrentInstallation()->isSameReleaseName($releaseName);
     }
 
     /**
@@ -141,7 +141,7 @@ class Instance
     public function getInstallation(string $releaseName): ?Installation
     {
         foreach ($this->installations as $installation) {
-            if ($installation->isSameRelease($releaseName)) {
+            if ($installation->isSameReleaseName($releaseName)) {
                 return $installation;
             }
         }

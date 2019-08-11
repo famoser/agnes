@@ -54,12 +54,12 @@ class CopySharedPolicyVisitor extends PolicyVisitor
         }
 
         // if the stageIndex is the highest layer, we are allowed to write
-        if ($stageWriteDownPolicy->isHighestLayer($stageIndex) || $stageWriteDownPolicy->isLowestLayer($targetStage)) {
+        if ($stageWriteDownPolicy->isHighestLayer($stageIndex) || $stageWriteDownPolicy->isLowestLayer($stageIndex)) {
             return true;
         }
 
-        // get the next lower layer and check if the target is contained in there
-        $stagesToCheck = $stageWriteDownPolicy->getNextLowerLayer($stageIndex);
+        // get the next lower layer & the current layer and check if the target is contained in there
+        $stagesToCheck = array_merge($stageWriteDownPolicy->getNextLowerLayer($stageIndex), $stageWriteDownPolicy->getLayer($stageIndex));
         return in_array($targetStage, $stagesToCheck);
     }
 

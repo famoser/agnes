@@ -133,7 +133,7 @@ class RollbackCommand extends ConfigurationAwareCommand
             }
         }
 
-        return $instances;
+        return $result;
     }
 
     /**
@@ -151,6 +151,6 @@ class RollbackCommand extends ConfigurationAwareCommand
             }
         }
 
-        return $instances;
+        return $result;
     }
 }

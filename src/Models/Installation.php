@@ -159,7 +159,7 @@ class Installation
      * @param string $releaseName
      * @return bool
      */
-    public function isSameRelease(string $releaseName)
+    public function isSameReleaseName(string $releaseName)
     {
         return $this->getRelease() != null && $this->getRelease()->getName() === $releaseName;
     }

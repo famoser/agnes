@@ -47,6 +47,15 @@ abstract class LayeredPolicy extends Policy
     }
 
     /**
+     * @param int $stageIndex
+     * @return string[]
+     */
+    public function getLayer(int $stageIndex)
+    {
+        return $this->layers[$stageIndex];
+    }
+
+    /**
      * @param int $index
      * @return bool
      */

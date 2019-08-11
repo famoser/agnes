@@ -19,14 +19,21 @@ class CopySharedService
     private $configurationService;
 
     /**
+     * @var InstanceService
+     */
+    private $instanceService;
+
+    /**
      * CopySharedService constructor.
      * @param PolicyService $policyService
      * @param ConfigurationService $configurationService
+     * @param InstanceService $instanceService
      */
-    public function __construct(PolicyService $policyService, ConfigurationService $configurationService)
+    public function __construct(PolicyService $policyService, ConfigurationService $configurationService, InstanceService $instanceService)
     {
         $this->policyService = $policyService;
         $this->configurationService = $configurationService;
+        $this->instanceService = $instanceService;
     }
 
     /**
@@ -56,16 +63,15 @@ class CopySharedService
             return;
         }
 
-        $sourcePath = $copyShared->getSource()->getCurrentInstallation()->getPath();
-        $targetPath = $copyShared->getTarget()->getCurrentInstallation()->getPath();
+        $sourceSharedPath = $this->instanceService->getSharedPath($copyShared->getSource());
+        $targetSharedPath = $this->instanceService->getSharedPath($copyShared->getTarget());
         $connection = $copyShared->getSource()->getConnection();
 
         foreach ($sharedFolders as $sharedFolder) {
-            $sourceFolderPath = $sourcePath . DIRECTORY_SEPARATOR . $sharedFolder;
-            $targetFolderPath = $targetPath . DIRECTORY_SEPARATOR . $sharedFolder;
+            $sourceFolderPath = $sourceSharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
+            $targetFolderPath = $targetSharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
 
-            $connection->removeFolder($targetFolderPath);
-            $connection->copyFolder($sourceFolderPath, $targetFolderPath);
+            $connection->copyFolderContent($sourceFolderPath, $targetFolderPath);
         }
     }
 }

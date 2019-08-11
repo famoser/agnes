@@ -70,14 +70,15 @@ abstract class Connection
      */
     protected function executeCommand(string $command): string
     {
+        var_dump($command);
         exec($command . " 2>&1", $output, $returnVar);
 
+        $outputMessage = implode("\n", $output);
         if ($returnVar !== 0) {
-            $errorMessage = implode("\n", $output);
-            throw new Exception("command execution of " . $command . " failed with " . $returnVar . " because $errorMessage.");
+            throw new Exception("command execution of " . $command . " failed with " . $returnVar . " because $outputMessage.");
         }
 
-        return $output;
+        return $outputMessage;
     }
 
     /**
@@ -235,9 +236,10 @@ abstract class Connection
      * @param string $target
      * @throws Exception
      */
-    public function copyFolder(string $source, string $target)
+    public function copyFolderContent(string $source, string $target)
     {
-        $this->executeCommand("cp -r $source $target");
+        $sourceContent = $source . DIRECTORY_SEPARATOR . ".";
+        $this->executeCommand("cp -r $sourceContent $target");
     }
 
     /**

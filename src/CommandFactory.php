@@ -54,7 +54,7 @@ class CommandFactory
         $releaseService = new ReleaseService($configurationService, $policyService, $githubService);
         $deployService = new DeployService($configurationService, $policyService, $instanceService, $githubService);
         $rollbackService = new RollbackService($configurationService, $policyService, $instanceService);
-        $copySharedService = new CopySharedService($policyService, $configurationService);
+        $copySharedService = new CopySharedService($policyService, $configurationService, $instanceService);
 
         return [
             new ReleaseCommand($configurationService, $releaseService),

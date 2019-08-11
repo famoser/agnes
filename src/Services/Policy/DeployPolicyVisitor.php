@@ -51,14 +51,15 @@ class DeployPolicyVisitor extends PolicyVisitor
             return true;
         }
 
-        // get the next lower layer and check if this release was published there at any time
+        // get all instances of the next lower layer
         $stagesToCheck = $stageWriteUpPolicy->getNextLowerLayer($stageIndex);
-        $filter = new Filter([], [$this->deployment->getTarget()->getEnvironmentName()], $stagesToCheck);
+        $filter = new Filter(null, [$this->deployment->getTarget()->getEnvironmentName()], $stagesToCheck);
         $instances = $this->installationService->getInstancesByFilter($filter);
 
+        // check if the release was published there at any given time
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {
-                if ($installation->hasOnlinePeriods() !== null && $installation->isSameRelease($this->deployment->getRelease()->getName())) {
+                if ($installation->hasOnlinePeriods() !== null && $installation->isSameReleaseName($this->deployment->getRelease()->getName())) {
                     return true;
                 }
             }
