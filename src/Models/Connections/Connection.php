@@ -3,21 +3,28 @@
 
 namespace Agnes\Models\Connections;
 
-
-use Agnes\Models\Task;
 use Exception;
 
 abstract class Connection
 {
     /**
+     * @param string $workingFolder
      * @param array $commands
+     * @param array $envVariables
      */
-    public abstract function execute(...$commands);
+    public function executeScript(string $workingFolder, array $commands, array $envVariables = [])
+    {
+        $commands = $this->prependEnvVariables($commands, $envVariables);
+
+        $this->executeWithinWorkingFolder($workingFolder, $commands);
+    }
 
     /**
-     * @param Task $task
+     * @param string $workingFolder
+     * @param string[] $commands
+     * @return mixed
      */
-    public abstract function executeTask(Task $task);
+    protected abstract function executeWithinWorkingFolder(string $workingFolder, array $commands);
 
     /**
      * @param string $filePath
@@ -55,36 +62,42 @@ abstract class Connection
      */
     public abstract function equals(Connection $connection): bool;
 
+    /**
+     * @param string $command
+     * @throws Exception
+     */
+    public function executeCommand(string $command): void
+    {
+        exec($command . " 2>&1", $output, $returnVar);
+
+        if ($returnVar !== 0) {
+            $errorMessage = implode("\n", $output);
+            throw new Exception("command execution of " . $command . " failed with " . $returnVar . " because $errorMessage.");
+        }
+    }
 
     /**
      * @param string[] $commands
      * @throws Exception
      */
-    protected function executeCommands(array $commands): void
+    public function executeCommands(array $commands): void
     {
         // execute commands
         foreach ($commands as $command) {
-            exec($command . " 2>&1", $output, $returnVar);
-
-            if ($returnVar !== 0) {
-                $errorMessage = implode("\n", $output);
-                throw new Exception("command execution of " . $command . " failed with " . $returnVar . " because $errorMessage.");
-            }
+            $this->executeCommand($command);
         }
     }
 
     /**
-     * @param Task $task
+     * @param string[] $commands
+     * @param string[] $envVariables
      * @return string[]
      */
-    protected function getCommands(Task $task): array
+    private function prependEnvVariables(array $commands, array $envVariables): array
     {
-        // merge all commands to single list
-        $commands = array_merge($task->getPreCommands(), $task->getCommands(), $task->getPostCommands());
-
         // create env definition
         $envPrefix = "";
-        foreach ($task->getEnvVariables() as $key => $value) {
+        foreach ($envVariables as $key => $value) {
             $envPrefix .= "$key=$value ";
         }
 

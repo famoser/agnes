@@ -7,7 +7,6 @@ namespace Agnes\Services;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Models\Task;
 use Agnes\Services\Deploy\Deploy;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Http\Client\Exception;
@@ -102,8 +101,7 @@ class DeployService
         $currentInstallation = $deploy->getTarget()->getCurrentInstallation();
         $previousReleasePath = $currentInstallation ? $currentInstallation->getPath() : null;
         $deployScripts = $this->configurationService->getScripts("deploy");
-        $task = new Task($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
-        $connection->executeTask($task);
+        $connection->executeScript($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
 
         // publish new version
         $this->instanceService->switchRelease($target, $release);
@@ -115,6 +113,7 @@ class DeployService
     /**
      * @param Deploy $deploy
      * @param Connection $connection
+     * @throws \Exception
      */
     private function clearOldReleases(Deploy $deploy, Connection $connection)
     {
@@ -137,7 +136,7 @@ class DeployService
             }
 
             $path = $installation->getPath();
-            $connection->execute("rm -rf $path");
+            $connection->executeCommand("rm -rf $path");
         }
     }
 
@@ -159,19 +158,21 @@ class DeployService
             if (!$connection->checkFolderExists($sharedFolderTarget)) {
                 // use content of current shared folder
                 if ($connection->checkFolderExists($releaseFolderSource)) {
-                    $connection->execute("mv $releaseFolderSource $sharedFolderTarget");
+                    $connection->executeCommand("mv $releaseFolderSource $sharedFolderTarget");
                 } else {
-                    $connection->execute("mkdir -m=0777 -p $sharedFolderTarget");
+                    $connection->executeCommand("mkdir -m=0777 -p $sharedFolderTarget");
                 }
             }
 
+            // ensure directory structure exists
+            $connection->executeCommand("mkdir -m=0777 -p $releaseFolderSource");
+
             // remove folder if it exists from release path
-            $connection->execute("mkdir -m=0777 -p $releaseFolderSource");
-            $connection->execute("rm -rf $releaseFolderSource");
+            $connection->executeCommand("rm -rf $releaseFolderSource");
 
             // create symlink from release path to shared path
             $relativeSharedFolder = $this->getRelativeSymlinkPath($releaseFolderSource, $sharedFolderTarget);
-            $connection->execute("ln -s $relativeSharedFolder $releaseFolderSource");
+            $connection->executeCommand("ln -s $relativeSharedFolder $releaseFolderSource");
         }
     }
 
@@ -180,12 +181,15 @@ class DeployService
      * @param Connection $connection
      * @param ReleaseWithAsset $release
      * @throws Exception
-     * @throws Exception
+     * @throws \Exception
      */
     private function uploadRelease(string $releaseFolder, Connection $connection, ReleaseWithAsset $release): void
     {
-        // make dir for new release
-        $connection->execute("rm -rf " . $releaseFolder, "mkdir -m=0777 -p " . $releaseFolder);
+        // make empty dir for new release
+        $connection->executeCommands([
+            "rm -rf " . $releaseFolder,
+            "mkdir -m=0777 -p " . $releaseFolder
+        ]);
 
         // transfer release packet
         $assetContent = $this->githubService->asset($release->getAssetId());
@@ -193,10 +197,10 @@ class DeployService
         $connection->writeFile($assetPath, $assetContent);
 
         // unpack release packet
-        $connection->execute("tar -xzf $assetPath -C $releaseFolder");
+        $connection->executeCommand("tar -xzf $assetPath -C $releaseFolder");
 
         // remove release packet
-        $connection->execute("rm $assetPath");
+        $connection->executeCommand("rm $assetPath");
     }
 
     /**

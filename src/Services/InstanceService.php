@@ -123,11 +123,11 @@ class InstanceService
 
         // create new symlink
         $tempCurrentSymlink = $currentSymlink . "_";
-        $connection->execute("ln -s $targetFolder $tempCurrentSymlink");
+        $connection->executeCommand("ln -s $targetFolder $tempCurrentSymlink");
 
         // switch active release
         $this->onReleaseOffline($connection, $currentSymlink);
-        $connection->execute("mv -T $tempCurrentSymlink $currentSymlink");
+        $connection->executeCommand("mv -T $tempCurrentSymlink $currentSymlink");
         $this->onReleaseOnline($connection, $currentSymlink);
     }
 

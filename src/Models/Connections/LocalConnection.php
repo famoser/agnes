@@ -4,7 +4,6 @@
 namespace Agnes\Models\Connections;
 
 
-use Agnes\Models\Task;
 use Exception;
 use function chdir;
 use function file_get_contents;
@@ -16,32 +15,21 @@ use const GLOB_ONLYDIR;
 class LocalConnection extends Connection
 {
     /**
+     * @param string $workingFolder
      * @param array $commands
-     */
-    public function execute(...$commands)
-    {
-        foreach ($commands as $command) {
-            exec($command);
-        }
-    }
-
-    /**
-     * @param Task $task
      * @throws Exception
      */
-    public function executeTask(Task $task)
+    protected function executeWithinWorkingFolder(string $workingFolder, array $commands)
     {
-        $commands = $this->getCommands($task);
-
         // change working directory
-        $origin = getcwd();
-        chdir($task->getWorkingFolder());
+        $originWorkingFolder = getcwd();
+        chdir($workingFolder);
 
         // execute commands
         $this->executeCommands($commands);
 
         // recover working directory
-        chdir($origin);
+        chdir($originWorkingFolder);
     }
 
     /**

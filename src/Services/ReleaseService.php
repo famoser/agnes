@@ -4,7 +4,6 @@
 namespace Agnes\Services;
 
 
-use Agnes\Models\Task;
 use Agnes\Services\Release\Release;
 use Http\Client\Exception;
 
@@ -60,31 +59,35 @@ class ReleaseService
      */
     private function buildRelease(Release $release): string
     {
-        $githubConfig = $this->configurationService->getGithubConfig();
-        $scripts = $this->configurationService->getScripts("release");
+        $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
 
-        $task = new Task($buildPath, $scripts);
-
         // clean & create working directory exists
-        $task->addPreCommand("rm -rf " . $task->getWorkingFolder());
-        $task->addPreCommand("mkdir -m=0777 -p " . $task->getWorkingFolder());
+        // make empty dir for new release
+        $connection->executeCommands([
+            "rm -rf " . $buildPath,
+            "mkdir -m=0777 -p " . $buildPath
+        ]);
 
         // clone repo, checkout correct commit & then remove git folder
-        $task->addPreCommand("git clone git@github.com:" . $githubConfig->getRepository() . " .");
-        $task->addPreCommand("git checkout " . $release->getCommitish());
-        $task->addPreCommand("rm -rf .git");
+        $githubConfig = $this->configurationService->getGithubConfig();
+        $connection->executeScript($buildPath, [
+            "git clone git@github.com:" . $githubConfig->getRepository() . " .",
+            "git checkout " . $release->getCommitish(),
+            "rm -rf .git"
+        ]);
+
+        // actually execute the task
+        $scripts = $this->configurationService->getScripts("release");
+        $connection->executeScript($buildPath, $scripts);
 
         // after release has been build, compress it to a single file
         $fileName = $release->getArchiveName();
-        $task->addPostCommand("touch $fileName");
-        $task->addPostCommand("tar -czvf $fileName --exclude=$fileName .");
+        $connection->executeScript($buildPath, [
+            "touch $fileName",
+            "tar -czvf $fileName --exclude=$fileName ."
+        ]);
 
-        // actually execute the task
-        $buildConnection = $this->configurationService->getBuildConnection();
-        $buildConnection->executeTask($task);
-        $releaseContent = $buildConnection->readFile($fileName);
-
-        return $releaseContent;
+        return $connection->readFile($fileName);
     }
 }

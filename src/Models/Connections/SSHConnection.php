@@ -4,7 +4,6 @@
 namespace Agnes\Models\Connections;
 
 
-use Agnes\Models\Task;
 use Exception;
 use function exec;
 use function explode;
@@ -32,35 +31,27 @@ class SSHConnection extends Connection
 
     /**
      * @param string[] $commands
-     */
-    public function execute(...$commands)
-    {
-        foreach ($commands as $command) {
-            exec($this->prepareCommand($command));
-        }
-    }
-
-    /**
-     * @param string $command
-     * @return string
-     */
-    private function prepareCommand(string $command)
-    {
-        return "ssh " . $this->getDestination() . " '$command'";
-    }
-
-    /**
-     * @param Task $task
      * @throws Exception
      */
-    public function executeTask(Task $task)
+    public function executeCommands(array $commands): void
     {
-        $commands = $this->getCommands($task);
-        $workingFolder = $task->getWorkingFolder();
+        foreach ($commands as &$command) {
+            $command = "ssh " . $this->getDestination() . " '$command'";
+        }
 
+        parent::executeCommands($commands);
+    }
+
+    /**
+     * @param string $workingFolder
+     * @param string[] $commands
+     * @throws Exception
+     */
+    protected function executeWithinWorkingFolder(string $workingFolder, array $commands)
+    {
         // prepare commands for execution
         foreach ($commands as &$command) {
-            $command = $this->prepareCommand("cd $workingFolder && $command");
+            $command = "cd $workingFolder && $command";
         }
 
         // execute commands

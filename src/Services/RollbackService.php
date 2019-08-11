@@ -4,7 +4,6 @@
 namespace Agnes\Services;
 
 
-use Agnes\Models\Task;
 use Agnes\Services\Rollback\Rollback;
 use Exception;
 
@@ -64,8 +63,7 @@ class RollbackService
 
         // execute rollback task
         $deployScripts = $this->configurationService->getScripts("rollback");
-        $task = new Task($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
-        $rollback->getInstance()->getConnection()->executeTask($task);
+        $rollback->getInstance()->getConnection()->executeScript($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
 
         $this->instanceService->switchRelease($rollback->getInstance(), $rollback->getTarget()->getRelease());
     }

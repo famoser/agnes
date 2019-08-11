@@ -73,6 +73,6 @@ class CopySharedService
             );
         }
 
-        $connection->execute(...$commands);
+        $connection->executeCommands($commands);
     }
 }
