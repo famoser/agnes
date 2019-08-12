@@ -28,10 +28,3 @@ Host *
   ControlMaster auto
   ControlPersist yes
 ```
-
-
-further work:
-    - create console statement generator which generates mkdir, tar commands -> to fix symlink creation in instance service
-    - remove the TaskService? -> no need to prepend / postbend commands
-        - but need to upload files & other tasks while executing commands
-    - abstract the github service (later)

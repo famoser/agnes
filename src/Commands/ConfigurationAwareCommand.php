@@ -45,7 +45,12 @@ abstract class ConfigurationAwareCommand extends Command
 
         $configFilePaths = $input->getOption("config");
         foreach ($configFilePaths as $path) {
-            foreach (glob($path) as $item) {
+            $files = glob($path);
+            if (count($files) === 0) {
+                throw new Exception("no config files found at path " . realpath(__DIR__) . " for $path");
+            }
+
+            foreach ($files as $item) {
                 $this->configurationService->addConfig($item);
             }
         }

@@ -155,14 +155,6 @@ class DeployCommand extends ConfigurationAwareCommand
             throw new \Exception("the file(s) " . implode($inputFiles) . " have no match");
         }
 
-        // ensure all required files have their match
-        foreach ($configuredFiles as $configuredFile) {
-            $path = $configuredFile->getPath();
-            if ($configuredFile->getIsRequired() && !isset($fileContents[$path])) {
-                throw new \Exception("you must pass a file which matches $path");
-            }
-        }
-
         return $fileContents;
     }
 

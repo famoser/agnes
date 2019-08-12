@@ -24,6 +24,7 @@ use Symfony\Component\Console\Command\Command;
 class CommandFactory
 {
     /**
+     * @param string $projectRootDir
      * @return Command[]
      */
     public function getCommands()

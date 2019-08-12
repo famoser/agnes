@@ -31,15 +31,14 @@ application:
 
 
 servers:
-  local:
+  hostpoint:
     connection:
-      type: local
-      # type: ssh
-      # destination: '%env(SERVER_DESTINATION)%'
-    path: .release
+      type: ssh
+      destination: '%env(SERVER_DESTINATION)%'
+    path: '%env(SERVER_PATH)%'
     keep_releases: 2
     environments:
-      agnes.ch: [production, education, staging, dev]
+      agnes: [production, education, staging, dev]
 
 policies:
   strategy: unanimous # all matching policies must be valid

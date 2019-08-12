@@ -5,7 +5,6 @@ namespace Agnes\Models\Connections;
 
 
 use Exception;
-use function exec;
 use function explode;
 use function file_get_contents;
 use function file_put_contents;
@@ -67,6 +66,7 @@ class SSHConnection extends Connection
     /**
      * @param string $filePath
      * @return string
+     * @throws Exception
      */
     public function readFile(string $filePath): string
     {
@@ -74,9 +74,9 @@ class SSHConnection extends Connection
 
         // download file
         $source = $this->getRsyncPath($filePath);
-        exec("rsync -chavzP $source $tempFile");
+        parent::executeCommand("rsync -chavzP $source $tempFile");
 
-        $content = file_get_contents($filePath);
+        $content = file_get_contents($tempFile);
         unlink($tempFile);
 
         return $content;
@@ -85,6 +85,7 @@ class SSHConnection extends Connection
     /**
      * @param string $filePath
      * @param string $content
+     * @throws Exception
      */
     public function writeFile(string $filePath, string $content)
     {
@@ -93,20 +94,28 @@ class SSHConnection extends Connection
 
         // download file
         $destination = $this->getRsyncPath($filePath);
-        exec("rsync -chavzP $tempFile $destination");
+        parent::executeCommand("rsync -chavzP $tempFile $destination");
     }
 
     /**
      * @param string $dir
      * @return string[]
+     * @throws Exception
      */
     public function getFolders(string $dir): array
     {
-        $command = "ssh " . $this->getDestination() . " 'cd $dir && ls -1d */'";
-        exec($command, $content);
+        try {
+            $response = $this->executeCommand("cd $dir && ls -1d */");
+        } catch (Exception $exception) {
+            if (strpos($exception->getMessage(), "No such file or directory") !== false) {
+                return [];
+            }
+
+            throw $exception;
+        }
 
         $dirs = [];
-        foreach (explode("\n", $content) as $line) {
+        foreach (explode("\n", $response) as $line) {
             // cut off last entry because it is /
             $dirs[] = substr($line, 0, -1);
         }
@@ -142,7 +151,11 @@ class SSHConnection extends Connection
     private function testFor(string $testArgs)
     {
         $command = "test $testArgs && echo \"yes\"";
-        $output = $this->executeCommand($command);
+        try {
+            $output = $this->executeCommand($command);
+        } catch (Exception $exception) {
+            return false;
+        }
 
         return strpos($output, "yes") !== false;
     }

@@ -144,7 +144,7 @@ abstract class Connection
      */
     public function createFolder(string $folder)
     {
-        $this->executeCommand("mkdir -m=0777 -p $folder");
+        $this->executeCommand("mkdir -m 0777 -p $folder");
     }
 
     /**
@@ -257,6 +257,6 @@ abstract class Connection
      */
     public function moveFile(string $source, string $target)
     {
-        $this->executeCommand("mv -T $source $target");
+        $this->executeCommand("mv $source $target");
     }
 }
