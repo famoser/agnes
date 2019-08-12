@@ -1,0 +1,49 @@
+#!/usr/bin/env php
+<?php
+
+function writeErrorAndExit(string $error)
+{
+    fwrite(STDERR, $error);
+    exit(1);
+}
+
+function findFileByTraversingUp(string $dir, string $filePath)
+{
+    $absoluteFilePath = $dir . DIRECTORY_SEPARATOR . $filePath;
+    if (file_exists($absoluteFilePath)) {
+        return $absoluteFilePath;
+    } else {
+        $parentDir = dirname($dir);
+        if ($parentDir === ".") {
+            return false;
+        }
+
+        return findFileByTraversingUp($parentDir, $filePath);
+    }
+}
+
+$absolutePath = realpath(__DIR__);
+
+$autoloadFilePath = findFileByTraversingUp($absolutePath, "vendor" . DIRECTORY_SEPARATOR . "autoload.php");
+if ($absolutePath === false) {
+    writeErrorAndExit("There was no autoload.php file found, hence the dependencies could not be loaded.");
+} else {
+    require $autoloadFilePath;
+}
+
+use Agnes\CommandFactory;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Dotenv\Dotenv;
+
+$envFilePath = findFileByTraversingUp($absolutePath, ".env");
+if ($envFilePath !== false) {
+    $dotenv = new Dotenv(false);
+    $dotenv->loadEnv($envFilePath);
+}
+
+$app = new Application();
+
+$commandFactory = new CommandFactory();
+$app->addCommands($commandFactory->getCommands());
+
+$app->run();

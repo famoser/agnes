@@ -1,6 +1,20 @@
 {
   "name": "famoser/agnes",
   "description": "Creates & deploys releases safely to various environments.",
+  "support": {
+    "issues": "https://github.com/famoser/agnes/issues",
+    "source": "https://github.com/famoser/agnes"
+  },
+  "authors": [
+    {
+      "name": "Florian Moser",
+      "email": "git@famoser.ch"
+    }
+  ],
+  "bin": [
+    "bin/agnes"
+  ],
+  "license": "MIT",
   "require": {
     "php": "^7.2",
     "symfony/console": "^4.3",
@@ -19,5 +33,11 @@
     "classmap": [
       "src"
     ]
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "7.3.8"
+    }
   }
 }
