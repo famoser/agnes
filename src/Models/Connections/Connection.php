@@ -70,7 +70,6 @@ abstract class Connection
      */
     protected function executeCommand(string $command): string
     {
-        var_dump($command);
         exec($command . " 2>&1", $output, $returnVar);
 
         $outputMessage = implode("\n", $output);
