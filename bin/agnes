@@ -7,18 +7,18 @@ function writeErrorAndExit(string $error)
     exit(1);
 }
 
-function findFileByTraversingUp(string $dir, string $filePath)
+function findFileByTraversingUp(string $dir, string $filePath, int $skips = 0)
 {
     $absoluteFilePath = $dir . DIRECTORY_SEPARATOR . $filePath;
-    if (file_exists($absoluteFilePath)) {
+    if (file_exists($absoluteFilePath) && $skips-- === 0) {
         return $absoluteFilePath;
     } else {
         $parentDir = dirname($dir);
-        if ($parentDir === ".") {
+        if ($parentDir === $dir) {
             return false;
         }
 
-        return findFileByTraversingUp($parentDir, $filePath);
+        return findFileByTraversingUp($parentDir, $filePath, $skips);
     }
 }
 
@@ -35,7 +35,7 @@ use Agnes\CommandFactory;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
 
-$envFilePath = findFileByTraversingUp($absolutePath, ".env");
+$envFilePath = findFileByTraversingUp($absolutePath, ".env", 1);
 if ($envFilePath !== false) {
     $dotenv = new Dotenv(false);
     $dotenv->loadEnv($envFilePath);
