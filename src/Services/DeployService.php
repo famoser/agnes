@@ -155,11 +155,11 @@ class DeployService
 
             // if created for the first time...
             if (!$connection->checkFolderExists($sharedFolderTarget)) {
+                $connection->createFolder($sharedFolderTarget);
+
                 // use content of current shared folder
                 if ($connection->checkFolderExists($releaseFolderSource)) {
                     $connection->moveFolder($releaseFolderSource, $sharedFolderTarget);
-                } else {
-                    $connection->createFolder($sharedFolderTarget);
                 }
             }
 

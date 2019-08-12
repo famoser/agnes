@@ -117,7 +117,8 @@ class SSHConnection extends Connection
         $dirs = [];
         foreach (explode("\n", $response) as $line) {
             // cut off last entry because it is /
-            $dirs[] = substr($line, 0, -1);
+            $folderName = substr($line, 0, -1);
+            $dirs[] = $dir . DIRECTORY_SEPARATOR . $folderName;
         }
 
         return $dirs;
