@@ -4,8 +4,8 @@
 namespace Agnes\Commands;
 
 use Agnes\Actions\Deploy;
+use Agnes\AgnesFactory;
 use Agnes\Services\ConfigurationService;
-use Agnes\Actions\DeployAction;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
@@ -23,9 +23,9 @@ class DeployCommand extends ConfigurationAwareCommand
             Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).";
 
     /**
-     * @var DeployAction
+     * @var ConfigurationService
      */
-    private $deployService;
+    private $configurationService;
 
     /**
      * @var InstanceService
@@ -39,16 +39,16 @@ class DeployCommand extends ConfigurationAwareCommand
 
     /**
      * DeployCommand constructor.
+     * @param AgnesFactory $factory
      * @param ConfigurationService $configurationService
      * @param InstanceService $instanceService
      * @param GithubService $githubService
-     * @param DeployAction $deployService
      */
-    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, GithubService $githubService, DeployAction $deployService)
+    public function __construct(AgnesFactory $factory, ConfigurationService $configurationService, InstanceService $instanceService, GithubService $githubService)
     {
-        parent::__construct($configurationService);
+        parent::__construct($factory);
 
-        $this->deployService = $deployService;
+        $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
         $this->githubService = $githubService;
     }
@@ -91,7 +91,8 @@ class DeployCommand extends ConfigurationAwareCommand
             $deploys[] = new Deploy($release, $instance, $fileContents);
         }
 
-        $this->deployService->deployMultiple($deploys);
+        $service = $this->getFactory()->getDeployService();
+        $service->deployMultiple($deploys);
     }
 
     /**

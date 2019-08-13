@@ -16,6 +16,7 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Agnes\Actions\ReleaseAction;
 use Agnes\Actions\RollbackAction;
+use Exception;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
@@ -62,6 +63,15 @@ class AgnesFactory
         $this->githubService = $githubService;
         $this->instanceService = $instanceService;
         $this->policyService = $policyService;
+    }
+
+    /**
+     * @param string $path
+     * @throws Exception
+     */
+    public function addConfig(string $path)
+    {
+        $this->configurationService->addConfig($path);
     }
 
     /**
@@ -138,10 +148,10 @@ class AgnesFactory
     public function getCommands()
     {
         return [
-            new ReleaseCommand($this->configurationService, $this->getReleaseService()),
-            new DeployCommand($this->configurationService, $this->instanceService, $this->githubService, $this->getDeployService()),
-            new RollbackCommand($this->configurationService, $this->instanceService, $this->getRollbackService()),
-            new CopySharedCommand($this->configurationService, $this->instanceService, $this->getCopySharedService())
+            new ReleaseCommand($this),
+            new DeployCommand($this, $this->configurationService, $this->instanceService, $this->githubService),
+            new RollbackCommand($this, $this->instanceService),
+            new CopySharedCommand($this, $this->instanceService)
         ];
     }
 }

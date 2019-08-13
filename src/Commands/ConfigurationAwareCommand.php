@@ -3,7 +3,7 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Services\ConfigurationService;
+use Agnes\AgnesFactory;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,19 +13,20 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class ConfigurationAwareCommand extends Command
 {
     /**
-     * @var ConfigurationService
+     * @var AgnesFactory
      */
-    protected $configurationService;
+    private $factory;
 
     /**
      * ReleaseCommand constructor.
-     * @param ConfigurationService $configurationService
+     * @param AgnesFactory $factory
      */
-    public function __construct(ConfigurationService $configurationService)
+    public function __construct(AgnesFactory $factory)
     {
+        // TODO: set config over factory
         parent::__construct();
 
-        $this->configurationService = $configurationService;
+        $this->factory = $factory;
     }
 
     public function configure()
@@ -51,8 +52,16 @@ abstract class ConfigurationAwareCommand extends Command
             }
 
             foreach ($files as $item) {
-                $this->configurationService->addConfig($item);
+                $this->factory->addConfig($item);
             }
         }
+    }
+
+    /**
+     * @return AgnesFactory
+     */
+    protected function getFactory(): AgnesFactory
+    {
+        return $this->factory;
     }
 }

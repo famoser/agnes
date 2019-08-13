@@ -4,9 +4,8 @@
 namespace Agnes\Commands;
 
 use Agnes\Actions\CopyShared;
+use Agnes\AgnesFactory;
 use Agnes\Models\Instance;
-use Agnes\Services\ConfigurationService;
-use Agnes\Actions\CopySharedAction;
 use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
@@ -16,26 +15,19 @@ use Symfony\Component\Console\Output\OutputInterface;
 class CopySharedCommand extends ConfigurationAwareCommand
 {
     /**
-     * @var CopySharedAction
-     */
-    private $copySharedService;
-
-    /**
      * @var InstanceService
      */
     private $instanceService;
 
     /**
      * CopySharedCommand constructor.
-     * @param ConfigurationService $configurationService
+     * @param AgnesFactory $factory
      * @param InstanceService $instanceService
-     * @param CopySharedAction $copySharedService
      */
-    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, CopySharedAction $copySharedService)
+    public function __construct(AgnesFactory $factory, InstanceService $instanceService)
     {
-        parent::__construct($configurationService);
+        parent::__construct($factory);
 
-        $this->copySharedService = $copySharedService;
         $this->instanceService = $instanceService;
     }
 
@@ -74,7 +66,8 @@ class CopySharedCommand extends ConfigurationAwareCommand
             }
         }
 
-        $this->copySharedService->copySharedMultiple($copyShareds);
+        $service = $this->getFactory()->getCopySharedService();
+        $service->copySharedMultiple($copyShareds);
     }
 
     /**

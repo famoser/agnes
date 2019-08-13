@@ -45,7 +45,7 @@ class ReleaseAction
      * @throws Exception
      * @throws Exception
      */
-    public function publish(Release $release): void
+    public function release(Release $release): void
     {
         $this->policyService->ensureCanRelease($release);
 

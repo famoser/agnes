@@ -4,7 +4,7 @@
 namespace Agnes\Commands;
 
 use Agnes\Actions\Release;
-use Agnes\Services\ConfigurationService;
+use Agnes\AgnesFactory;
 use Agnes\Actions\ReleaseAction;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
@@ -14,20 +14,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ReleaseCommand extends ConfigurationAwareCommand
 {
     /**
-     * @var ReleaseAction
-     */
-    private $releaseService;
-
-    /**
      * ReleaseCommand constructor.
-     * @param ConfigurationService $configurationService
-     * @param ReleaseAction $publishService
+     * @param AgnesFactory $factory
      */
-    public function __construct(ConfigurationService $configurationService, ReleaseAction $publishService)
+    public function __construct(AgnesFactory $factory)
     {
-        parent::__construct($configurationService);
-
-        $this->releaseService = $publishService;
+        parent::__construct($factory);
     }
 
     public function configure()
@@ -54,6 +46,7 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $commitish = $input->getArgument("commitish");
         $release = new Release($name, $commitish);
 
-        $this->releaseService->publish($release);
+        $service = $this->getFactory()->getReleaseService();
+        $service->release($release);
     }
 }
