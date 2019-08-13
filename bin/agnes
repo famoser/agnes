@@ -34,7 +34,7 @@ if ($projectRootDir === false) {
 }
 
 
-use Agnes\CommandFactory;
+use Agnes\AgnesFactory;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
 
@@ -45,7 +45,7 @@ if (file_exists(".env")) {
 
 $app = new Application();
 
-$commandFactory = new CommandFactory();
+$commandFactory = new AgnesFactory();
 $app->addCommands($commandFactory->getCommands());
 
 $app->run();

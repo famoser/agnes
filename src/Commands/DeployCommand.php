@@ -40,11 +40,11 @@ class DeployCommand extends ConfigurationAwareCommand
     /**
      * DeployCommand constructor.
      * @param ConfigurationService $configurationService
-     * @param DeployService $deployService
      * @param InstanceService $instanceService
      * @param GithubService $githubService
+     * @param DeployService $deployService
      */
-    public function __construct(ConfigurationService $configurationService, DeployService $deployService, InstanceService $instanceService, GithubService $githubService)
+    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, GithubService $githubService, DeployService $deployService)
     {
         parent::__construct($configurationService);
 

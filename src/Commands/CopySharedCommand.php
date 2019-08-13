@@ -28,10 +28,10 @@ class CopySharedCommand extends ConfigurationAwareCommand
     /**
      * CopySharedCommand constructor.
      * @param ConfigurationService $configurationService
-     * @param CopySharedService $copySharedService
      * @param InstanceService $instanceService
+     * @param CopySharedService $copySharedService
      */
-    public function __construct(ConfigurationService $configurationService, CopySharedService $copySharedService, InstanceService $instanceService)
+    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, CopySharedService $copySharedService)
     {
         parent::__construct($configurationService);
 

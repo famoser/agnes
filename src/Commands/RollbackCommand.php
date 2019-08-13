@@ -29,10 +29,10 @@ class RollbackCommand extends ConfigurationAwareCommand
     /**
      * DeployCommand constructor.
      * @param ConfigurationService $configurationService
-     * @param RollbackService $rollbackService
      * @param InstanceService $instanceService
+     * @param RollbackService $rollbackService
      */
-    public function __construct(ConfigurationService $configurationService, RollbackService $rollbackService, InstanceService $instanceService)
+    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, RollbackService $rollbackService)
     {
         parent::__construct($configurationService);
 
@@ -88,7 +88,6 @@ class RollbackCommand extends ConfigurationAwareCommand
                 $rollbacks[] = new Rollback($instance, $installation);
             }
         }
-
 
         $this->rollbackService->rollbackMultiple($rollbacks);
     }
