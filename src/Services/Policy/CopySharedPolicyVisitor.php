@@ -4,10 +4,10 @@
 namespace Agnes\Services\Policy;
 
 
+use Agnes\Actions\CopyShared;
 use Agnes\Models\Filter;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
-use Agnes\Services\CopyShared\CopyShared;
 use Exception;
 
 class CopySharedPolicyVisitor extends PolicyVisitor

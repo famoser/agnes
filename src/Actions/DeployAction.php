@@ -1,17 +1,20 @@
 <?php
 
 
-namespace Agnes\Services;
+namespace Agnes\Actions;
 
 
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Services\Deploy\Deploy;
+use Agnes\Services\ConfigurationService;
 use Agnes\Services\Github\ReleaseWithAsset;
+use Agnes\Services\GithubService;
+use Agnes\Services\InstanceService;
+use Agnes\Services\PolicyService;
 use Http\Client\Exception;
 
-class DeployService
+class DeployAction
 {
     /**
      * @var ConfigurationService

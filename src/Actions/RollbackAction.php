@@ -1,13 +1,15 @@
 <?php
 
 
-namespace Agnes\Services;
+namespace Agnes\Actions;
 
 
-use Agnes\Services\Rollback\Rollback;
+use Agnes\Services\ConfigurationService;
+use Agnes\Services\InstanceService;
+use Agnes\Services\PolicyService;
 use Exception;
 
-class RollbackService
+class RollbackAction
 {
     /**
      * @var ConfigurationService

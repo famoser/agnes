@@ -3,7 +3,7 @@
 
 namespace Agnes\Models;
 
-use Agnes\Services\Release\Release;
+use Agnes\Actions\Release;
 use DateTime;
 use Exception;
 

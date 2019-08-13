@@ -3,9 +3,9 @@
 
 namespace Agnes\Services;
 
+use Agnes\Actions\Release;
 use Agnes\Services\Github\Client;
 use Agnes\Services\Github\ReleaseWithAsset;
-use Agnes\Services\Release\Release;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
 use Psr\Http\Message\ResponseInterface;
@@ -122,7 +122,7 @@ class GithubService
           "tag_name": "' . $release->getName() . '",
           "target_commitish": "' . $release->getCommitish() . '",
           "name": "' . $release->getName() . '",
-          "body": "Release of ' . $release->getName() . '",
+          "body": "' . $release->getBody() . '",
           "draft": false,
           "prerelease": ' . $this->booleanToString(strpos($release->getName(), "-") > 0) . '
         }';

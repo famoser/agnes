@@ -4,6 +4,7 @@
 namespace Agnes\Services;
 
 
+use Agnes\Actions\Release;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
@@ -11,7 +12,6 @@ use Agnes\Models\Instance;
 use Agnes\Models\OnlinePeriod;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\Server;
-use Agnes\Services\Release\Release;
 use DateTime;
 use Exception;
 

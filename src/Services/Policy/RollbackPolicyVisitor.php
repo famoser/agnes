@@ -4,8 +4,8 @@
 namespace Agnes\Services\Policy;
 
 
+use Agnes\Actions\Rollback;
 use Agnes\Models\Filter;
-use Agnes\Services\Rollback\Rollback;
 
 class RollbackPolicyVisitor extends PolicyVisitor
 {

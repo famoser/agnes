@@ -3,9 +3,9 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Actions\Release;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\Release\Release;
-use Agnes\Services\ReleaseService;
+use Agnes\Actions\ReleaseAction;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,16 +14,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ReleaseCommand extends ConfigurationAwareCommand
 {
     /**
-     * @var ReleaseService
+     * @var ReleaseAction
      */
     private $releaseService;
 
     /**
      * ReleaseCommand constructor.
      * @param ConfigurationService $configurationService
-     * @param ReleaseService $publishService
+     * @param ReleaseAction $publishService
      */
-    public function __construct(ConfigurationService $configurationService, ReleaseService $publishService)
+    public function __construct(ConfigurationService $configurationService, ReleaseAction $publishService)
     {
         parent::__construct($configurationService);
 

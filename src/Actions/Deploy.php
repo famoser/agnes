@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Agnes\Services\Deploy;
+namespace Agnes\Actions;
 
 
 use Agnes\Models\Instance;

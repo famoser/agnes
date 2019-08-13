@@ -1,13 +1,15 @@
 <?php
 
 
-namespace Agnes\Services;
+namespace Agnes\Actions;
 
 
-use Agnes\Services\Release\Release;
+use Agnes\Services\ConfigurationService;
+use Agnes\Services\GithubService;
+use Agnes\Services\PolicyService;
 use Http\Client\Exception;
 
-class ReleaseService
+class ReleaseAction
 {
     /**
      * @var ConfigurationService
@@ -49,7 +51,7 @@ class ReleaseService
 
         $content = $this->buildRelease($release);
 
-        $this->githubService->publish($release, $release->getArchiveName(), "application/zip", $content);
+        $this->githubService->publish($release, $release->getArchiveName(".tar.gz"), "application/zip", $content);
     }
 
     /**
@@ -71,7 +73,7 @@ class ReleaseService
         $connection->executeScript($buildPath, $scripts);
 
         // after release has been build, compress it to a single file
-        $filePath = $connection->compressTarGz($buildPath, $release->getArchiveName());
+        $filePath = $connection->compressTarGz($buildPath, $release->getArchiveName(".tar.gz"));
         return $connection->readFile($filePath);
     }
 }

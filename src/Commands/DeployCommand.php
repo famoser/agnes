@@ -3,9 +3,9 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Actions\Deploy;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\Deploy\Deploy;
-use Agnes\Services\DeployService;
+use Agnes\Actions\DeployAction;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
@@ -23,7 +23,7 @@ class DeployCommand extends ConfigurationAwareCommand
             Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).";
 
     /**
-     * @var DeployService
+     * @var DeployAction
      */
     private $deployService;
 
@@ -42,9 +42,9 @@ class DeployCommand extends ConfigurationAwareCommand
      * @param ConfigurationService $configurationService
      * @param InstanceService $instanceService
      * @param GithubService $githubService
-     * @param DeployService $deployService
+     * @param DeployAction $deployService
      */
-    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, GithubService $githubService, DeployService $deployService)
+    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, GithubService $githubService, DeployAction $deployService)
     {
         parent::__construct($configurationService);
 

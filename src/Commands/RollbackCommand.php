@@ -3,11 +3,11 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Actions\Rollback;
 use Agnes\Models\Instance;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
-use Agnes\Services\Rollback\Rollback;
-use Agnes\Services\RollbackService;
+use Agnes\Actions\RollbackAction;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class RollbackCommand extends ConfigurationAwareCommand
 {
     /**
-     * @var RollbackService
+     * @var RollbackAction
      */
     private $rollbackService;
 
@@ -30,9 +30,9 @@ class RollbackCommand extends ConfigurationAwareCommand
      * DeployCommand constructor.
      * @param ConfigurationService $configurationService
      * @param InstanceService $instanceService
-     * @param RollbackService $rollbackService
+     * @param RollbackAction $rollbackService
      */
-    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, RollbackService $rollbackService)
+    public function __construct(ConfigurationService $configurationService, InstanceService $instanceService, RollbackAction $rollbackService)
     {
         parent::__construct($configurationService);
 

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Agnes\Services\Rollback;
+namespace Agnes\Actions;
 
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;

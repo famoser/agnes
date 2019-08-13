@@ -4,9 +4,9 @@
 namespace Agnes\Services\Policy;
 
 
+use Agnes\Actions\Deploy;
 use Agnes\Models\Filter;
 use Agnes\Models\Policies\StageWriteUpPolicy;
-use Agnes\Services\Deploy\Deploy;
 use Agnes\Services\InstanceService;
 use Exception;
 

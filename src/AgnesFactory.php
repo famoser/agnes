@@ -9,13 +9,13 @@ use Agnes\Commands\DeployCommand;
 use Agnes\Commands\ReleaseCommand;
 use Agnes\Commands\RollbackCommand;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\CopySharedService;
-use Agnes\Services\DeployService;
+use Agnes\Actions\CopySharedAction;
+use Agnes\Actions\DeployAction;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
-use Agnes\Services\ReleaseService;
-use Agnes\Services\RollbackService;
+use Agnes\Actions\ReleaseAction;
+use Agnes\Actions\RollbackAction;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
@@ -65,68 +65,68 @@ class AgnesFactory
     }
 
     /**
-     * @var ReleaseService
+     * @var ReleaseAction
      */
     private $releaseService;
 
     /**
-     * @var DeployService
+     * @var DeployAction
      */
     private $deployService;
 
     /**
-     * @var RollbackService
+     * @var RollbackAction
      */
     private $rollbackService;
 
     /**
-     * @var CopySharedService
+     * @var CopySharedAction
      */
     private $copySharedService;
 
     /**
-     * @return ReleaseService
+     * @return ReleaseAction
      */
     public function getReleaseService()
     {
         if ($this->releaseService === null) {
-            $this->releaseService = new ReleaseService($this->configurationService, $this->policyService, $this->githubService);
+            $this->releaseService = new ReleaseAction($this->configurationService, $this->policyService, $this->githubService);
         }
 
         return $this->releaseService;
     }
 
     /**
-     * @return DeployService
+     * @return DeployAction
      */
     public function getDeployService()
     {
         if ($this->deployService === null) {
-            $this->deployService = new DeployService($this->configurationService, $this->policyService, $this->instanceService, $this->githubService);
+            $this->deployService = new DeployAction($this->configurationService, $this->policyService, $this->instanceService, $this->githubService);
         }
 
         return $this->deployService;
     }
 
     /**
-     * @return RollbackService
+     * @return RollbackAction
      */
     public function getRollbackService()
     {
         if ($this->rollbackService === null) {
-            $this->rollbackService = new RollbackService($this->configurationService, $this->policyService, $this->instanceService);
+            $this->rollbackService = new RollbackAction($this->configurationService, $this->policyService, $this->instanceService);
         }
 
         return $this->rollbackService;
     }
 
     /**
-     * @return CopySharedService
+     * @return CopySharedAction
      */
     public function getCopySharedService()
     {
         if ($this->copySharedService === null) {
-            $this->copySharedService = new CopySharedService($this->policyService, $this->configurationService, $this->instanceService);
+            $this->copySharedService = new CopySharedAction($this->policyService, $this->configurationService, $this->instanceService);
         }
 
         return $this->copySharedService;

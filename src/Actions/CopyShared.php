@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Agnes\Services\CopyShared;
+namespace Agnes\Actions;
 
 
 use Agnes\Models\Instance;

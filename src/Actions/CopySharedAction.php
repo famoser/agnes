@@ -1,12 +1,14 @@
 <?php
 
 
-namespace Agnes\Services;
+namespace Agnes\Actions;
 
-use Agnes\Services\CopyShared\CopyShared;
+use Agnes\Services\ConfigurationService;
+use Agnes\Services\InstanceService;
+use Agnes\Services\PolicyService;
 use Exception;
 
-class CopySharedService
+class CopySharedAction
 {
     /**
      * @var PolicyService

@@ -3,16 +3,16 @@
 
 namespace Agnes\Services;
 
+use Agnes\Actions\CopyShared;
+use Agnes\Actions\Deploy;
+use Agnes\Actions\Release;
+use Agnes\Actions\Rollback;
 use Agnes\Models\Policies\Policy;
-use Agnes\Services\CopyShared\CopyShared;
-use Agnes\Services\Deploy\Deploy;
 use Agnes\Services\Policy\CopySharedPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\PolicyVisitor;
 use Agnes\Services\Policy\ReleasePolicyVisitor;
 use Agnes\Services\Policy\RollbackPolicyVisitor;
-use Agnes\Services\Release\Release;
-use Agnes\Services\Rollback\Rollback;
 use Exception;
 
 class PolicyService
