@@ -75,71 +75,35 @@ class AgnesFactory
     }
 
     /**
-     * @var ReleaseAction
-     */
-    private $releaseService;
-
-    /**
-     * @var DeployAction
-     */
-    private $deployService;
-
-    /**
-     * @var RollbackAction
-     */
-    private $rollbackService;
-
-    /**
-     * @var CopySharedAction
-     */
-    private $copySharedService;
-
-    /**
      * @return ReleaseAction
      */
-    public function getReleaseService()
+    public function createReleaseAction()
     {
-        if ($this->releaseService === null) {
-            $this->releaseService = new ReleaseAction($this->configurationService, $this->policyService, $this->githubService);
-        }
-
-        return $this->releaseService;
+        return new ReleaseAction($this->configurationService, $this->policyService, $this->githubService);
     }
 
     /**
      * @return DeployAction
      */
-    public function getDeployService()
+    public function createDeployAction()
     {
-        if ($this->deployService === null) {
-            $this->deployService = new DeployAction($this->configurationService, $this->policyService, $this->instanceService, $this->githubService);
-        }
-
-        return $this->deployService;
+        return new DeployAction($this->configurationService, $this->policyService, $this->instanceService, $this->githubService);
     }
 
     /**
      * @return RollbackAction
      */
-    public function getRollbackService()
+    public function createRollbackAction()
     {
-        if ($this->rollbackService === null) {
-            $this->rollbackService = new RollbackAction($this->configurationService, $this->policyService, $this->instanceService);
-        }
-
-        return $this->rollbackService;
+        return new RollbackAction($this->configurationService, $this->policyService, $this->instanceService);
     }
 
     /**
      * @return CopySharedAction
      */
-    public function getCopySharedService()
+    public function createCopySharedAction()
     {
-        if ($this->copySharedService === null) {
-            $this->copySharedService = new CopySharedAction($this->policyService, $this->configurationService, $this->instanceService);
-        }
-
-        return $this->copySharedService;
+        return new CopySharedAction($this->policyService, $this->configurationService, $this->instanceService);
     }
 
     /**

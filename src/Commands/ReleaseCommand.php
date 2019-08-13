@@ -46,7 +46,7 @@ class ReleaseCommand extends ConfigurationAwareCommand
         $commitish = $input->getArgument("commitish");
         $release = new Release($name, $commitish);
 
-        $service = $this->getFactory()->getReleaseService();
+        $service = $this->getFactory()->createReleaseAction();
         $service->release($release);
     }
 }

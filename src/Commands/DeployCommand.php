@@ -91,7 +91,7 @@ class DeployCommand extends ConfigurationAwareCommand
             $deploys[] = new Deploy($release, $instance, $fileContents);
         }
 
-        $service = $this->getFactory()->getDeployService();
+        $service = $this->getFactory()->createDeployAction();
         $service->deployMultiple($deploys);
     }
 
