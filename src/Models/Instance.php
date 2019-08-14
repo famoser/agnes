@@ -185,7 +185,7 @@ class Instance
     /**
      * @return string
      */
-    public function getCurrentRelease()
+    public function getCurrentReleaseName()
     {
         if ($this->getCurrentInstallation() != null && $this->getCurrentInstallation()->getRelease() !== null) {
             return $this->getCurrentInstallation()->getRelease()->getName();

@@ -32,8 +32,8 @@ class CopySharedPolicyVisitor extends PolicyVisitor
      */
     public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
     {
-        $sourceRelease = $this->copyShared->getSource()->getCurrentRelease();
-        $targetRelease = $this->copyShared->getTarget()->getCurrentRelease();
+        $sourceRelease = $this->copyShared->getSource()->getCurrentReleaseName();
+        $targetRelease = $this->copyShared->getTarget()->getCurrentReleaseName();
 
         return $sourceRelease !== null && $sourceRelease === $targetRelease;
     }
