@@ -46,7 +46,7 @@ class InstanceService
         $entries = explode(":", $target);
 
         $parseToArray = function ($entry) {
-            return $entry !== "*" ? explode(",", $entry) : [];
+            return $entry !== "*" ? explode(",", $entry) : null;
         };
 
         $servers = $parseToArray($entries[0]);
