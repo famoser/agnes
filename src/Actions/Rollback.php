@@ -5,8 +5,9 @@ namespace Agnes\Actions;
 
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Services\PolicyService;
 
-class Rollback
+class Rollback extends AbstractPayload
 {
     /**
      * @var Instance
@@ -43,5 +44,15 @@ class Rollback
     public function getTarget(): Installation
     {
         return $this->target;
+    }
+
+    /**
+     * @param PolicyService $policyService
+     * @return bool
+     * @throws \Exception
+     */
+    public function canExecute(PolicyService $policyService): bool
+    {
+        return $policyService->canRollback($this);
     }
 }

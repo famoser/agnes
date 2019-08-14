@@ -9,17 +9,12 @@ use Agnes\Services\GithubService;
 use Agnes\Services\PolicyService;
 use Http\Client\Exception;
 
-class ReleaseAction
+class ReleaseAction extends AbstractAction
 {
     /**
      * @var ConfigurationService
      */
     private $configurationService;
-
-    /**
-     * @var PolicyService
-     */
-    private $policyService;
 
     /**
      * @var GithubService
@@ -34,21 +29,30 @@ class ReleaseAction
      */
     public function __construct(ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService)
     {
+        parent::__construct($policyService);
+
         $this->configurationService = $configurationService;
-        $this->policyService = $policyService;
         $this->githubService = $githubService;
     }
 
     /**
-     * @param Release $release
-     * @throws \Exception
-     * @throws Exception
-     * @throws Exception
+     * check the instance of the payload is of the expected type to execute in execute()
+     *
+     * @param Release $payload
+     * @return bool
      */
-    public function release(Release $release): void
+    protected function canProcessPayload($payload): bool
     {
-        $this->policyService->ensureCanRelease($release);
+        return $payload instanceof Release;
+    }
 
+    /**
+     * @param Release $release
+     * @throws Exception
+     * @throws \Exception
+     */
+    protected function doExecute($release)
+    {
         $content = $this->buildRelease($release);
 
         $this->githubService->publish($release, $release->getArchiveName(".tar.gz"), "application/zip", $content);

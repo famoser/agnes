@@ -14,17 +14,12 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Http\Client\Exception;
 
-class DeployAction
+class DeployAction extends AbstractAction
 {
     /**
      * @var ConfigurationService
      */
     private $configurationService;
-
-    /**
-     * @var PolicyService
-     */
-    private $policyService;
 
     /**
      * @var InstanceService
@@ -45,42 +40,41 @@ class DeployAction
      */
     public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, GithubService $githubService)
     {
+        parent::__construct($policyService);
+
         $this->configurationService = $configurationService;
-        $this->policyService = $policyService;
         $this->instanceService = $instanceService;
         $this->githubService = $githubService;
     }
 
     /**
-     * @param Deploy[] $deploys
-     * @throws Exception
-     * @throws \Exception
-     */
-    public function deployMultiple(array $deploys): void
-    {
-        foreach ($deploys as $deploy) {
-            $this->deploy($deploy);
-        }
-    }
-
-    /**
+     * check the instance of the payload is of the expected type to execute in execute()
+     *
      * @param Deploy $deploy
-     * @throws \Exception
-     * @throws Exception
+     * @return bool
      */
-    private function deploy(Deploy $deploy)
+    protected function canProcessPayload($deploy): bool
     {
-        // check policies
-        if (!$this->policyService->canDeploy($deploy)) {
-            return;
+        if (!$deploy instanceof Deploy) {
+            return false;
         }
 
         // block if this installation is active
         $installation = $deploy->getTarget()->getInstallation($deploy->getRelease()->getName());
         if ($installation !== null && $installation->isOnline()) {
-            return;
+            return false;
         }
 
+        return true;
+    }
+
+    /**
+     * @param Deploy $deploy
+     * @throws Exception
+     * @throws \Exception
+     */
+    protected function doExecute($deploy)
+    {
         $release = $deploy->getRelease();
         $target = $deploy->getTarget();
         $connection = $target->getConnection();

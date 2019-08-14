@@ -9,7 +9,7 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Exception;
 
-class RollbackAction
+class RollbackAction extends AbstractAction
 {
     /**
      * @var ConfigurationService
@@ -34,32 +34,29 @@ class RollbackAction
      */
     public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService)
     {
+        parent::__construct($policyService);
+
         $this->configurationService = $configurationService;
-        $this->policyService = $policyService;
         $this->instanceService = $instanceService;
     }
 
     /**
-     * @param Rollback[] $rollbacks
-     * @throws Exception
+     * check the instance of the payload is of the expected type to execute in execute()
+     *
+     * @param Rollback $payload
+     * @return bool
      */
-    public function rollbackMultiple(array $rollbacks)
+    protected function canProcessPayload($payload): bool
     {
-        foreach ($rollbacks as $rollback) {
-            $this->rollback($rollback);
-        }
+        return $payload instanceof Rollback;
     }
 
     /**
      * @param Rollback $rollback
      * @throws Exception
      */
-    private function rollback(Rollback $rollback)
+    protected function doExecute($rollback)
     {
-        if (!$this->policyService->canRollback($rollback)) {
-            return;
-        }
-
         $previousReleasePath = $rollback->getTarget()->getPath();
         $releaseFolder = $rollback->getInstance()->getCurrentInstallation()->getPath();
 

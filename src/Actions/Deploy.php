@@ -6,8 +6,9 @@ namespace Agnes\Actions;
 
 use Agnes\Models\Instance;
 use Agnes\Services\Github\ReleaseWithAsset;
+use Agnes\Services\PolicyService;
 
-class Deploy
+class Deploy extends AbstractPayload
 {
     /**
      * @var Instance
@@ -59,5 +60,15 @@ class Deploy
     public function getFiles(): array
     {
         return $this->files;
+    }
+
+    /**
+     * @param PolicyService $policyService
+     * @return bool
+     * @throws \Exception
+     */
+    public function canExecute(PolicyService $policyService): bool
+    {
+        return $policyService->canDeploy($this);
     }
 }

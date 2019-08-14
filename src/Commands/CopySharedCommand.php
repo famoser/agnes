@@ -67,7 +67,7 @@ class CopySharedCommand extends ConfigurationAwareCommand
         }
 
         $service = $this->getFactory()->createCopySharedAction();
-        $service->copySharedMultiple($copyShareds);
+        $service->executeMultiple($copyShareds);
     }
 
     /**

@@ -4,7 +4,9 @@
 namespace Agnes\Actions;
 
 
-class Release
+use Agnes\Services\PolicyService;
+
+class Release extends AbstractPayload
 {
     /**
      * @var string
@@ -65,5 +67,15 @@ class Release
     public function getArchiveName(string $ending): string
     {
         return "release-" . $this->getName() . $ending;
+    }
+
+    /**
+     * @param PolicyService $policyService
+     * @return bool
+     * @throws \Exception
+     */
+    public function canExecute(PolicyService $policyService): bool
+    {
+        return $policyService->canRelease($this);
     }
 }

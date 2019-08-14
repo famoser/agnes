@@ -92,7 +92,7 @@ class DeployCommand extends ConfigurationAwareCommand
         }
 
         $service = $this->getFactory()->createDeployAction();
-        $service->deployMultiple($deploys);
+        $service->executeMultiple($deploys);
     }
 
     /**

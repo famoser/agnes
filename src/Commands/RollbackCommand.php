@@ -82,7 +82,7 @@ class RollbackCommand extends ConfigurationAwareCommand
         }
 
         $service = $this->getFactory()->createRollbackAction();
-        $service->rollbackMultiple($rollbacks);
+        $service->executeMultiple($rollbacks);
     }
 
     /**

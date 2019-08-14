@@ -40,14 +40,14 @@ class PolicyService
 
     /**
      * @param Release $release
+     * @return bool
      * @throws Exception
      */
-    public function ensureCanRelease(Release $release)
+    public function canRelease(Release $release): bool
     {
         $releasePolicyVisitor = new ReleasePolicyVisitor($release);
-        if (($policy = $this->getConflictingPolicy($releasePolicyVisitor, "release"))) {
-            throw new Exception("policy denied execution: " . get_class($policy));
-        }
+
+        return $this->getConflictingPolicy($releasePolicyVisitor, "release") === null;
     }
 
     /**

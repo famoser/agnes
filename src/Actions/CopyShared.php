@@ -5,8 +5,9 @@ namespace Agnes\Actions;
 
 
 use Agnes\Models\Instance;
+use Agnes\Services\PolicyService;
 
-class CopyShared
+class CopyShared extends AbstractPayload
 {
     /**
      * @var Instance
@@ -43,5 +44,15 @@ class CopyShared
     public function getTarget(): Instance
     {
         return $this->target;
+    }
+
+    /**
+     * @param PolicyService $policyService
+     * @return bool
+     * @throws \Exception
+     */
+    public function canExecute(PolicyService $policyService): bool
+    {
+        return $policyService->canCopyShared($this);
     }
 }
