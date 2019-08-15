@@ -5,7 +5,6 @@ namespace Agnes\Commands;
 
 use Agnes\Actions\CopyShared;
 use Agnes\AgnesFactory;
-use Agnes\Models\Instance;
 use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
@@ -57,8 +56,6 @@ class CopySharedCommand extends ConfigurationAwareCommand
         $target = $input->getArgument("target");
         $targetInstances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
-        $service = $this->getFactory()->createCopySharedAction();
-
         /** @var CopyShared[] $copyShareds */
         $copyShareds = [];
         foreach ($targetInstances as $targetInstance) {
@@ -68,6 +65,7 @@ class CopySharedCommand extends ConfigurationAwareCommand
             }
         }
 
+        $service = $this->getFactory()->createCopySharedAction();
         $service->executeMultiple($copyShareds);
     }
 }

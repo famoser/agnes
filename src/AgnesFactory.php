@@ -4,18 +4,18 @@
 namespace Agnes;
 
 
+use Agnes\Actions\CopySharedAction;
+use Agnes\Actions\DeployAction;
+use Agnes\Actions\ReleaseAction;
+use Agnes\Actions\RollbackAction;
 use Agnes\Commands\CopySharedCommand;
 use Agnes\Commands\DeployCommand;
 use Agnes\Commands\ReleaseCommand;
 use Agnes\Commands\RollbackCommand;
 use Agnes\Services\ConfigurationService;
-use Agnes\Actions\CopySharedAction;
-use Agnes\Actions\DeployAction;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
-use Agnes\Actions\ReleaseAction;
-use Agnes\Actions\RollbackAction;
 use Exception;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;

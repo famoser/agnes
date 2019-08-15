@@ -5,6 +5,7 @@ namespace Agnes\Actions;
 
 
 use Agnes\Services\PolicyService;
+use Exception;
 
 abstract class AbstractAction
 {
@@ -24,7 +25,7 @@ abstract class AbstractAction
 
     /**
      * @param AbstractPayload[] $payloads
-     * @throws \Exception
+     * @throws Exception
      */
     public function executeMultiple(array $payloads)
     {
@@ -35,7 +36,7 @@ abstract class AbstractAction
 
     /**
      * @param AbstractPayload $payload
-     * @throws \Exception
+     * @throws Exception
      */
     public function execute(AbstractPayload $payload)
     {
@@ -49,7 +50,7 @@ abstract class AbstractAction
     /**
      * @param AbstractPayload[] $payloads
      * @return AbstractPayload[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function filterCanExecute(array $payloads)
     {
@@ -67,7 +68,7 @@ abstract class AbstractAction
     /**
      * @param AbstractPayload $payload
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function canExecute(AbstractPayload $payload): bool
     {

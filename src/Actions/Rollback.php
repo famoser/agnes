@@ -6,6 +6,7 @@ namespace Agnes\Actions;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\PolicyService;
+use Exception;
 
 class Rollback extends AbstractPayload
 {
@@ -49,7 +50,7 @@ class Rollback extends AbstractPayload
     /**
      * @param PolicyService $policyService
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function canExecute(PolicyService $policyService): bool
     {

@@ -5,7 +5,6 @@ namespace Agnes\Commands;
 
 use Agnes\Actions\Rollback;
 use Agnes\AgnesFactory;
-use Agnes\Models\Instance;
 use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
@@ -61,17 +60,16 @@ class RollbackCommand extends ConfigurationAwareCommand
         $rollbackTo = $input->getOption("rollback-to");
         $rollbackFrom = $input->getOption("rollback-from");
 
-        $service = $this->getFactory()->createRollbackAction();
-
         /** @var Rollback[] $rollbacks */
         $rollbacks = [];
         foreach ($instances as $instance) {
-            $rollbackTarget = $service->getRollbackTarget($instance, $rollbackTo, $rollbackFrom);
+            $rollbackTarget = $instance->getRollbackTarget($rollbackTo, $rollbackFrom);
             if ($rollbackTarget !== null) {
                 $rollbacks[] = new Rollback($instance, $rollbackTarget);
             }
         }
 
+        $service = $this->getFactory()->createRollbackAction();
         $service->executeMultiple($rollbacks);
     }
 }

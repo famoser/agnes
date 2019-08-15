@@ -210,4 +210,40 @@ class Instance
 
         return $matching;
     }
+
+    /**
+     * @param string|null $rollbackTo
+     * @param string|null $rollbackFrom
+     * @return Installation|null
+     */
+    public function getRollbackTarget(?string $rollbackTo, ?string $rollbackFrom): ?Installation
+    {
+        // ensure instance active
+        if ($this->getCurrentInstallation() === null) {
+            return null;
+        }
+
+        // ensure rollbackFrom is what is currently active
+        if ($rollbackFrom !== null && !$this->isCurrentRelease($rollbackFrom)) {
+            return null;
+        }
+
+        // if no rollback target specified, return the previous installation
+        if ($rollbackTo === null) {
+            return $this->getPreviousInstallation();
+        }
+
+        // ensure target is not same than current release
+        if ($this->isCurrentRelease($rollbackTo)) {
+            return null;
+        }
+
+        // find matching installation & ensure it is indeed a previous release
+        $targetInstallation = $this->getInstallation($rollbackTo);
+        if ($targetInstallation !== null && $targetInstallation->getNumber() < $this->getCurrentInstallation()->getNumber()) {
+            return $targetInstallation;
+        }
+
+        return null;
+    }
 }

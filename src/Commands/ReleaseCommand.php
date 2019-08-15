@@ -5,7 +5,6 @@ namespace Agnes\Commands;
 
 use Agnes\Actions\Release;
 use Agnes\AgnesFactory;
-use Agnes\Actions\ReleaseAction;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -38,7 +37,6 @@ class ReleaseCommand extends ConfigurationAwareCommand
      * @param OutputInterface $output
      * @return int|void|null
      * @throws \Exception
-     * @throws Exception
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {

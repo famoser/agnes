@@ -5,6 +5,7 @@ namespace Agnes\Actions;
 
 
 use Agnes\Services\PolicyService;
+use Exception;
 
 class Release extends AbstractPayload
 {
@@ -72,7 +73,7 @@ class Release extends AbstractPayload
     /**
      * @param PolicyService $policyService
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function canExecute(PolicyService $policyService): bool
     {
