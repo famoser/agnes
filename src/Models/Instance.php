@@ -246,4 +246,23 @@ class Instance
 
         return null;
     }
+
+    /**
+     * @param Instance $other
+     * @return bool
+     */
+    public function equals(Instance $other)
+    {
+        if ($this === $other) {
+            return true;
+        }
+
+        if ($this->getServerName() === $other->getServerName() &&
+            $this->getEnvironmentName() === $other->getEnvironmentName() &&
+            $this->getStage() === $other->getStage()) {
+            return true;
+        }
+
+        return false;
+    }
 }

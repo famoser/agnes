@@ -51,6 +51,11 @@ class CopySharedAction extends AbstractAction
             return false;
         }
 
+        // does not make sense to copy from itself
+        if ($copyShared->getSource()->equals($copyShared->getTarget())) {
+            return false;
+        }
+
         return true;
     }
 
