@@ -46,8 +46,8 @@ class ConfigurationService
      */
     public function getGithubConfig()
     {
-        $apiToken = $this->getConfigEntry("agnes", "github_api_token");
-        $repository = $this->getConfigEntry("application", "repository");
+        $apiToken = $this->getNestedConfig(["agnes", "github_api_token"]);
+        $repository = $this->getNestedConfig(["application", "repository"]);
 
         return new GithubConfig($apiToken, $repository);
     }
@@ -58,7 +58,7 @@ class ConfigurationService
      */
     public function getBuildConnection()
     {
-        $connection = $this->getConfigEntry("agnes", "build", "connection");
+        $connection = $this->getNestedConfig(["agnes", "build_target", "connection"]);
 
         return $this->getConnection($connection);
     }
@@ -69,7 +69,7 @@ class ConfigurationService
      */
     public function getBuildPath()
     {
-        return $this->getConfigEntry("agnes", "build", "path");
+        return $this->getNestedConfig(["agnes", "build_target", "path"]);
     }
 
     /**
@@ -79,55 +79,73 @@ class ConfigurationService
      */
     public function getScripts(string $task)
     {
-        return $this->getConfigEntryOrDefault([], "application", "scripts", $task);
+        return $this->getNestedConfigWithDefault([], "application", "scripts", $task);
     }
 
     /**
-     * @param string[] ...$key
+     * @param string[] ...$keys
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws Exception
      */
-    private function getConfigEntry(...$key)
+    private function getNestedConfig(array $keys)
     {
-        return $this->getValue($this->config, true, null, ...$key);
+        $current = $this->config;
+
+        foreach ($keys as $key) {
+            $current = $this->getValue($current, $key);
+        }
+
+        return $current;
     }
 
     /**
      * @param $default
-     * @param string[] ...$key
+     * @param string[] ...$keys
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws Exception
      */
-    private function getConfigEntryOrDefault($default, ...$key)
+    private function getNestedConfigWithDefault($default, ...$keys)
     {
-        return $this->getValue($this->config, false, $default, ...$key);
+        // choose new default 2 because if passed "false" to geValue this throws exception if not found
+        $defaultIsFalse = $default === false;
+        if ($defaultIsFalse) {
+            $default = 2;
+        }
+
+        $current = $this->config;
+
+        foreach ($keys as $key) {
+            $current = $this->getValue($current, $key, $default);
+            if ($current === $default) {
+                break;
+            }
+        }
+
+        if ($current === $default && $defaultIsFalse) {
+            return false;
+        }
+
+        return $current;
     }
 
     /**
      * @param array $source
-     * @param bool $throwOnMissing
-     * @param $default
-     * @param string $first
-     * @param string[] ...$additionalDept
+     * @param string $key
+     * @param bool $default
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws Exception
      */
-    private function getValue(array $source, bool $throwOnMissing, $default, string $first, ...$additionalDept)
+    private function getValue(array $source, string $key, $default = false)
     {
-        if (!isset($source[$first])) {
-            if ($throwOnMissing) {
-                throw new Exception("key " . $first . " does not exist.");
+        if (!isset($source[$key])) {
+            if ($default === false) {
+                throw new Exception("key " . $key . " does not exist.");
             } else {
                 return $default;
             }
         }
 
-        $newSource = $source[$first];
-        if (count($additionalDept) > 0) {
-            return $this->getValue($newSource, $throwOnMissing, $default, ...$additionalDept);
-        }
-
-        return $newSource;
+        return $source[$key];
     }
 
     /**
@@ -159,20 +177,22 @@ class ConfigurationService
      */
     public function getServers(): array
     {
-        $serverConfigs = $this->getConfigEntryOrDefault([], "servers");
+        $serverConfigs = $this->getNestedConfigWithDefault([], "servers");
 
         $servers = [];
         foreach ($serverConfigs as $serverName => $serverConfig) {
-            $connection = $this->getConnection($serverConfig["connection"]);
-            $path = $serverConfig["path"];
-            $keepReleases = (int)$serverConfig["keep_releases"];
+            $connectionConfig = $this->getValue($serverConfig, "connection");
+            $connection = $this->getConnection($connectionConfig);
+            $path = $this->getValue($serverConfig, "path");
+            $keepReleases = $this->getValue($serverConfig, "keep_releases", 2);
+            $scriptOverrides = $this->getValue($serverConfig, "script_overrides", []);
 
             $environments = [];
             foreach ($serverConfig["environments"] as $environmentName => $stages) {
                 $environments[] = new Environment($environmentName, $stages);
             }
 
-            $servers[] = new Server($serverName, $connection, $path, $keepReleases, $environments);
+            $servers[] = new Server($serverName, $connection, $path, $keepReleases, $scriptOverrides, $environments);
         }
 
         return $servers;
@@ -185,7 +205,7 @@ class ConfigurationService
      */
     public function getPolicies(string $type)
     {
-        $policies = $this->getConfigEntryOrDefault([], "policies", $type);
+        $policies = $this->getNestedConfigWithDefault([], "policies", $type);
 
         /** @var Policy[] $parsedPolicies */
         $parsedPolicies = [];
@@ -252,7 +272,7 @@ class ConfigurationService
      */
     public function getSharedFolders()
     {
-        return $this->getConfigEntryOrDefault([], "application", "shared_folders");
+        return $this->getNestedConfigWithDefault([], "application", "shared_folders");
     }
 
     /**
@@ -261,7 +281,7 @@ class ConfigurationService
      */
     public function getEditableFiles()
     {
-        $files = $this->getConfigEntryOrDefault([], "application", "editable_files");
+        $files = $this->getNestedConfigWithDefault([], "application", "editable_files");
 
         /** @var EditableFile[] $editableFiles */
         $editableFiles = [];

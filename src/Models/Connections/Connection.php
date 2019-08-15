@@ -8,6 +8,19 @@ use Exception;
 abstract class Connection
 {
     /**
+     * @var string[]
+     */
+    private $scriptOverrides = [];
+
+    /**
+     * @param string[] $scriptOverrides
+     */
+    public function setScriptOverrides(array $scriptOverrides): void
+    {
+        $this->scriptOverrides = $scriptOverrides;
+    }
+
+    /**
      * @param string $workingFolder
      * @param array $commands
      * @param array $envVariables
@@ -16,6 +29,7 @@ abstract class Connection
     public function executeScript(string $workingFolder, array $commands, array $envVariables = [])
     {
         $commands = $this->prependEnvVariables($commands, $envVariables);
+        $commands = $this->applyScriptOverrides($commands);
 
         $this->executeWithinWorkingFolder($workingFolder, $commands);
     }
@@ -258,5 +272,30 @@ abstract class Connection
     public function moveFile(string $source, string $target)
     {
         $this->executeCommand("mv $source $target");
+    }
+
+    /**
+     * @param string[] $commands
+     * @return array|string[]
+     */
+    private function applyScriptOverrides(array $commands)
+    {
+        $overrideMatch = "/{{[^{}]*}}/";
+
+        foreach ($commands as &$command) {
+            preg_match_all($overrideMatch, $command, $matches);
+
+            $replaces = [];
+            foreach ($matches as $match) {
+                $content = substr($match[0], 2, -2); // cut off {{ and }}
+                $newValue = isset($this->scriptOverrides[$content]) ? $this->scriptOverrides[$content] : $content;
+
+                $replaces[$match] = $newValue;
+            }
+
+            $command = str_replace(array_keys($replaces), array_values($replaces), $command);
+        }
+
+        return $commands;
     }
 }

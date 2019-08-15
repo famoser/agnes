@@ -1,6 +1,6 @@
 agnes:
   github_api_token: '%env(GITHUB_API_TOKEN)%'
-  build:
+  build_target:
     connection:
       type: local
     path: .build
@@ -24,11 +24,10 @@ application:
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
 
     deploy:
+      - echo "deployed"
 
     rollback:
-
-    fixtures:
-
+      - echo "rollbacked"
 
 servers:
   hostpoint:
@@ -37,6 +36,8 @@ servers:
       destination: '%env(SERVER_DESTINATION)%'
     path: '%env(SERVER_PATH)%'
     keep_releases: 2
+    script_overrides:
+      php: /usr/local/php73/bin/php
     environments:
       agnes: [production, education, staging, dev]
 

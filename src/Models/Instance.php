@@ -203,7 +203,7 @@ class Instance
         /** @var Instance[] $matching */
         $matching = [];
         foreach ($instances as $instance) {
-            if ($instance->getEnvironmentName() === $this->getEnvironmentName()) {
+            if ($this->getEnvironmentName() === $instance->getEnvironmentName()) {
                 $matching[] = $instance;
             }
         }

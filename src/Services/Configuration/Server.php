@@ -39,15 +39,18 @@ class Server
      * @param Connection $connection
      * @param string $path
      * @param int $keepReleases
+     * @param array $scriptOverrides
      * @param Environment[] $environments
      */
-    public function __construct(string $name, Connection $connection, string $path, int $keepReleases, array $environments)
+    public function __construct(string $name, Connection $connection, string $path, int $keepReleases, array $scriptOverrides, array $environments)
     {
         $this->name = $name;
         $this->connection = $connection;
         $this->path = $path;
         $this->keepReleases = $keepReleases;
         $this->environments = $environments;
+
+        $connection->setScriptOverrides($scriptOverrides);
     }
 
     /**
