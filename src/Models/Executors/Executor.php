@@ -55,14 +55,23 @@ abstract class Executor
     }
 
     /**
-     * @param string $buildPath
+     * @param string $path
      * @param string $repository
+     * @return string
+     */
+    public function gitClone(string $path, string $repository): string
+    {
+        return "git clone git@github.com:" . $repository . " $path";
+    }
+
+    /**
+     * @param string $path
      * @param string $commitish
      * @return string
      */
-    public function checkoutRepository(string $buildPath, string $repository, string $commitish): string
+    public function gitCheckout(string $path, string $commitish): string
     {
-        return "git clone git@github.com:" . $repository . " $buildPath && git --git-dir=$buildPath/.git  --work-tree=$buildPath checkout " . $commitish . " && rm -rf $buildPath/.git";
+        return "git --git-dir=$path/.git  --work-tree=$path checkout " . $commitish;
     }
 
     /**

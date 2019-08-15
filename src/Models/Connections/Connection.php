@@ -150,8 +150,15 @@ abstract class Connection
      */
     public function checkoutRepository(string $buildPath, string $repository, string $commitish)
     {
-        $command = $this->executor->checkoutRepository($buildPath, $repository, $commitish);
-        $this->executeCommand($command);
+        $commands = [
+            $this->executor->gitClone($buildPath, $repository),
+            $this->executor->gitCheckout($buildPath, $commitish),
+            $this->executor->removeRecursive($buildPath . "/.git")
+        ];
+
+        foreach ($commands as $command) {
+            $this->executeCommand($command);
+        }
     }
 
     /**
