@@ -57,93 +57,21 @@ class RollbackCommand extends ConfigurationAwareCommand
     {
         $target = $input->getArgument("target");
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
-        $instances = $this->filterByCanRollbackToAny($instances);
 
         $rollbackTo = $input->getOption("rollback-to");
-        if ($rollbackTo !== null) {
-            $instances = $this->filterByCanRollbackTo($instances, $rollbackTo);
-        }
-
         $rollbackFrom = $input->getOption("rollback-from");
-        if ($rollbackFrom !== null) {
-            $instances = $this->filterByCanRollbackFrom($instances, $rollbackFrom);
-        }
+
+        $service = $this->getFactory()->createRollbackAction();
 
         /** @var Rollback[] $rollbacks */
         $rollbacks = [];
         foreach ($instances as $instance) {
-            if ($rollbackTo) {
-                $installation = $instance->getInstallation($rollbackTo);
-                $rollbacks[] = new Rollback($instance, $installation);
-            } else {
-                $installation = $instance->getPreviousInstallation();
-                $rollbacks[] = new Rollback($instance, $installation);
+            $rollbackTarget = $service->getRollbackTarget($instance, $rollbackTo, $rollbackFrom);
+            if ($rollbackTarget !== null) {
+                $rollbacks[] = new Rollback($instance, $rollbackTarget);
             }
         }
 
-        $service = $this->getFactory()->createRollbackAction();
         $service->executeMultiple($rollbacks);
-    }
-
-    /**
-     * @param Instance[] $instances
-     * @param string|null $releaseName
-     * @return Instance[]
-     */
-    private function filterByCanRollbackTo(array $instances, ?string $releaseName)
-    {
-        /** @var Instance[] $result */
-        $result = [];
-
-        foreach ($instances as $instance) {
-            if ($instance->isCurrentRelease($releaseName)) {
-                continue;
-            }
-
-            $installation = $instance->getInstallation($releaseName);
-            if ($installation !== null && $instance->getCurrentInstallation() !== null && $installation->getNumber() < $instance->getCurrentInstallation()->getNumber()) {
-                $result[] = $installation;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param Instance[] $instances
-     * @param string|null $releaseName
-     *
-     * @return Instance[]
-     */
-    private function filterByCanRollbackFrom(array $instances, ?string $releaseName)
-    {
-        /** @var Instance[] $result */
-        $result = [];
-
-        foreach ($instances as $instance) {
-            if ($instance->isCurrentRelease($releaseName)) {
-                $result[] = $instance;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param Instance[] $instances
-     * @return Instance[]
-     */
-    private function filterByCanRollbackToAny(array $instances)
-    {
-        /** @var Instance[] $result */
-        $result = [];
-
-        foreach ($instances as $instance) {
-            if ($instance->getPreviousInstallation() !== null) {
-                $result[] = $instance;
-            }
-        }
-
-        return $result;
     }
 }

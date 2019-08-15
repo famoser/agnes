@@ -28,3 +28,7 @@ Host *
   ControlMaster auto
   ControlPersist yes
 ```
+
+
+todo:
+- deploy action still needs the files to be supplied

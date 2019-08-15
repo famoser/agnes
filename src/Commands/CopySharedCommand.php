@@ -57,33 +57,17 @@ class CopySharedCommand extends ConfigurationAwareCommand
         $target = $input->getArgument("target");
         $targetInstances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
+        $service = $this->getFactory()->createCopySharedAction();
+
         /** @var CopyShared[] $copyShareds */
         $copyShareds = [];
         foreach ($targetInstances as $targetInstance) {
-            $source = $this->getMatch($sourceInstances, $targetInstance->getServerName(), $targetInstance->getEnvironmentName());
-            if ($source !== null) {
-                $copyShareds[] = new CopyShared($source, $targetInstance);
+            $matchingInstances = $targetInstance->getSameEnvironmentInstances($sourceInstances);
+            if (count($matchingInstances) === 1) {
+                $copyShareds[] = new CopyShared($matchingInstances[0], $targetInstance);
             }
         }
 
-        $service = $this->getFactory()->createCopySharedAction();
         $service->executeMultiple($copyShareds);
-    }
-
-    /**
-     * @param Instance[] $instances
-     * @param string $serverName
-     * @param string $environmentName
-     * @return Instance|null
-     */
-    private function getMatch(array $instances, string $serverName, string $environmentName)
-    {
-        foreach ($instances as $instance) {
-            if ($instance->getServerName() === $serverName && $instance->getEnvironmentName() === $environmentName) {
-                return $instance;
-            }
-        }
-
-        return null;
     }
 }
