@@ -127,14 +127,7 @@ class SSHConnection extends Connection
             throw $exception;
         }
 
-        $dirs = [];
-        foreach (explode("\n", $response) as $line) {
-            // cut off last entry because it is /
-            $folder = substr($line, 0, -1);
-            $dirs[] = $folder;
-        }
-
-        return $dirs;
+        return explode("\n", $response);
     }
 
     /**
