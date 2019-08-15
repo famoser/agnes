@@ -22,6 +22,7 @@ application:
   scripts:
     release:
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
+      - '{{php}} -v'
 
     deploy:
       - echo "deployed"

@@ -286,8 +286,8 @@ abstract class Connection
             preg_match_all($overrideMatch, $command, $matches);
 
             $replaces = [];
-            foreach ($matches as $match) {
-                $content = substr($match[0], 2, -2); // cut off {{ and }}
+            foreach ($matches[0] as $match) {
+                $content = substr($match, 2, -2); // cut off {{ and }}
                 $newValue = isset($this->scriptOverrides[$content]) ? $this->scriptOverrides[$content] : $content;
 
                 $replaces[$match] = $newValue;
