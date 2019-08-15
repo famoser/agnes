@@ -35,6 +35,7 @@ servers:
     connection:
       type: ssh
       destination: '%env(SERVER_DESTINATION)%'
+      system: FreeBSD
     path: '%env(SERVER_PATH)%'
     keep_releases: 2
     script_overrides:

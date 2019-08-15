@@ -4,6 +4,7 @@
 namespace Agnes\Models\Connections;
 
 
+use Agnes\Models\Executors\Executor;
 use Exception;
 use function explode;
 use function file_get_contents;
@@ -19,12 +20,21 @@ class SSHConnection extends Connection
     private $destination;
 
     /**
+     * @var Executor
+     */
+    private $executor;
+
+    /**
      * SSHConnection constructor.
+     * @param Executor $executor
      * @param string $destination
      */
-    public function __construct(string $destination)
+    public function __construct(Executor $executor, string $destination)
     {
+        parent::__construct($executor);
+
         $this->destination = $destination;
+        $this->executor = $executor;
     }
 
     /**
@@ -34,7 +44,7 @@ class SSHConnection extends Connection
      */
     public function executeCommand(string $command): string
     {
-        $command = "ssh " . $this->getDestination() . " '$command'";
+        $command = $this->executor->sshCommand($this->getDestination(), $command);
 
         return parent::executeCommand($command);
     }
@@ -48,7 +58,7 @@ class SSHConnection extends Connection
     {
         // prepare commands for execution
         foreach ($commands as &$command) {
-            $command = "cd $workingFolder && $command";
+            $command = $this->executor->executeWithinWorkingFolder($workingFolder, $command);
         }
 
         // execute commands
@@ -73,8 +83,9 @@ class SSHConnection extends Connection
         $tempFile = self::getTempFile();
 
         // download file
-        $source = $this->getRsyncPath($filePath);
-        parent::executeCommand("rsync -chavzP $source $tempFile");
+        $source = $this->getSSHRsyncPath($filePath);
+        $command = $this->executor->rsync($source, $tempFile);
+        parent::executeCommand($command);
 
         $content = file_get_contents($tempFile);
         unlink($tempFile);
@@ -93,8 +104,9 @@ class SSHConnection extends Connection
         file_put_contents($tempFile, $content);
 
         // download file
-        $destination = $this->getRsyncPath($filePath);
-        parent::executeCommand("rsync -chavzP $tempFile $destination");
+        $destination = $this->getSSHRsyncPath($filePath);
+        $command = $this->executor->rsync($tempFile, $destination);
+        parent::executeCommand($command);
     }
 
     /**
@@ -105,7 +117,8 @@ class SSHConnection extends Connection
     public function getFolders(string $dir): array
     {
         try {
-            $response = $this->executeCommand("cd $dir && ls -1d */");
+            $command = $this->executor->listFolders($dir);
+            $response = $this->executeCommand($command);
         } catch (Exception $exception) {
             if (strpos($exception->getMessage(), "No such file or directory") !== false) {
                 return [];
@@ -117,8 +130,8 @@ class SSHConnection extends Connection
         $dirs = [];
         foreach (explode("\n", $response) as $line) {
             // cut off last entry because it is /
-            $folderName = substr($line, 0, -1);
-            $dirs[] = $dir . DIRECTORY_SEPARATOR . $folderName;
+            $folder = substr($line, 0, -1);
+            $dirs[] = $folder;
         }
 
         return $dirs;
@@ -131,7 +144,8 @@ class SSHConnection extends Connection
      */
     public function checkFileExists(string $filePath): bool
     {
-        return $this->testFor("-f $filePath");
+        $command = $this->executor->testFileExists($filePath, "yes");
+        return $this->testForOutput($command, "yes");
     }
 
     /**
@@ -141,31 +155,31 @@ class SSHConnection extends Connection
      */
     public function checkFolderExists(string $folderPath): bool
     {
-        return $this->testFor("-d $folderPath");
+        $command = $this->executor->testFolderExists($folderPath, "yes");
+        return $this->testForOutput($command, "yes");
     }
 
     /**
-     * @param string $testArgs
+     * @param string $command
+     * @param string $expected
      * @return bool
-     * @throws Exception
      */
-    private function testFor(string $testArgs)
+    private function testForOutput(string $command, string $expected)
     {
-        $command = "test $testArgs && echo \"yes\"";
         try {
             $output = $this->executeCommand($command);
         } catch (Exception $exception) {
             return false;
         }
 
-        return strpos($output, "yes") !== false;
+        return strpos($output, $expected) !== false;
     }
 
     /**
      * @param string $filePath
      * @return string
      */
-    private function getRsyncPath(string $filePath)
+    private function getSSHRsyncPath(string $filePath)
     {
         return $this->getDestination() . ":" . $filePath;
     }

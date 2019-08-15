@@ -3,6 +3,7 @@
 
 namespace Agnes\Models\Connections;
 
+use Agnes\Models\Executors\Executor;
 use Exception;
 
 abstract class Connection
@@ -11,6 +12,20 @@ abstract class Connection
      * @var string[]
      */
     private $scriptOverrides = [];
+
+    /**
+     * @var Executor
+     */
+    private $executor;
+
+    /**
+     * Connection constructor.
+     * @param Executor $executor
+     */
+    public function __construct(Executor $executor)
+    {
+        $this->executor = $executor;
+    }
 
     /**
      * @param string[] $scriptOverrides
@@ -135,11 +150,8 @@ abstract class Connection
      */
     public function checkoutRepository(string $buildPath, string $repository, string $commitish)
     {
-        $this->executeScript($buildPath, [
-            "git clone git@github.com:" . $repository . " .",
-            "git checkout " . $commitish,
-            "rm -rf .git"
-        ]);
+        $command = $this->executor->checkoutRepository($buildPath, $repository, $commitish);
+        $this->executeCommand($command);
     }
 
     /**
@@ -148,7 +160,8 @@ abstract class Connection
      */
     public function createOrClearFolder(string $folder)
     {
-        $this->executeCommand("rm -rf " . $folder);
+        $command = $this->executor->removeRecursive($folder);
+        $this->executeCommand($command);
         $this->createFolder($folder);
     }
 
@@ -158,7 +171,8 @@ abstract class Connection
      */
     public function createFolder(string $folder)
     {
-        $this->executeCommand("mkdir -m 0777 -p $folder");
+        $command = $this->executor->makeDirRecursive($folder);
+        $this->executeCommand($command);
     }
 
     /**
@@ -169,10 +183,8 @@ abstract class Connection
      */
     public function compressTarGz(string $folder, string $fileName)
     {
-        $this->executeScript($folder, [
-            "touch $fileName",
-            "tar -czvf $fileName --exclude=$fileName ."
-        ]);
+        $command = $this->executor->compressTarGz($folder, $fileName);
+        $this->executeCommand($command);
 
         return $folder . DIRECTORY_SEPARATOR . $fileName;
     }
@@ -184,7 +196,8 @@ abstract class Connection
      */
     public function uncompressTarGz(string $archivePath, string $targetFolder)
     {
-        $this->executeCommand("tar -xzf $archivePath -C $targetFolder");
+        $command = $this->executor->uncompressTarGz($archivePath, $targetFolder);
+        $this->executeCommand($command);
     }
 
     /**
@@ -193,7 +206,8 @@ abstract class Connection
      */
     public function removeFile(string $path)
     {
-        $this->executeCommand("rm $path");
+        $command = $this->executor->removeRecursive($path);
+        $this->executeCommand($command);
     }
 
     /**
@@ -204,7 +218,8 @@ abstract class Connection
     public function createSymlink(string $source, string $target)
     {
         $relativeSharedFolder = $this->getRelativeSymlinkPath($source, $target);
-        $this->executeCommand("ln -s $relativeSharedFolder $source");
+        $command = $this->executor->createSymbolicLink($source, $relativeSharedFolder);
+        $this->executeCommand($command);
     }
 
     /**
@@ -241,7 +256,8 @@ abstract class Connection
      */
     public function moveFolder(string $source, string $target)
     {
-        $this->executeCommand("mv $source $target");
+        $command = $this->executor->moveAndReplace($source, $target);
+        $this->executeCommand($command);
     }
 
     /**
@@ -252,7 +268,8 @@ abstract class Connection
     public function copyFolderContent(string $source, string $target)
     {
         $sourceContent = $source . DIRECTORY_SEPARATOR . ".";
-        $this->executeCommand("cp -r $sourceContent $target");
+        $command = $this->executor->copyRecursive($sourceContent, $target);
+        $this->executeCommand($command);
     }
 
     /**
@@ -261,7 +278,8 @@ abstract class Connection
      */
     public function removeFolder(string $folder)
     {
-        $this->executeCommand("rm -rf $folder");
+        $command = $this->executor->removeRecursive($folder);
+        $this->executeCommand($command);
     }
 
     /**
@@ -271,7 +289,8 @@ abstract class Connection
      */
     public function moveFile(string $source, string $target)
     {
-        $this->executeCommand("mv $source $target");
+        $command = $this->executor->moveAndReplace($source, $target);
+        $this->executeCommand($command);
     }
 
     /**

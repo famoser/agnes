@@ -6,6 +6,8 @@ namespace Agnes\Services;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Connections\LocalConnection;
 use Agnes\Models\Connections\SSHConnection;
+use Agnes\Models\Executors\BSDExecutor;
+use Agnes\Models\Executors\LinuxExecutor;
 use Agnes\Models\Filter;
 use Agnes\Models\Policies\Policy;
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
@@ -254,15 +256,35 @@ class ConfigurationService
      */
     private function getConnection($connection)
     {
-        $connectionType = $connection["type"];
+        $connectionType = $this->getValue($connection, "type");
+
+        $system = $this->getValue($connection, "system", "Linux");
+        $executor = $this->getExecutor($system);
 
         if ($connectionType === "local") {
-            return new LocalConnection();
+            return new LocalConnection($executor);
         } else if ($connectionType === "ssh") {
             $destination = $connection["destination"];
-            return new SSHConnection($destination);
+            return new SSHConnection($executor, $destination);
         } else {
             throw new Exception("unknown connection type $connectionType");
+        }
+    }
+
+    /**
+     * @param string $system
+     * @return BSDExecutor|LinuxExecutor
+     * @throws Exception
+     */
+    private function getExecutor(string $system)
+    {
+        switch ($system) {
+            case "Linux":
+                return new LinuxExecutor();
+            case "FreeBSD":
+                return new BSDExecutor();
+            default:
+                throw new Exception("System not implemented: " . $system);
         }
     }
 

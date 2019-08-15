@@ -60,8 +60,8 @@ class DeployAction extends AbstractAction
         }
 
         // block if this installation is active
-        $installation = $deploy->getTarget()->getInstallation($deploy->getRelease()->getName());
-        if ($installation !== null && $installation->isOnline()) {
+        $installation = $deploy->getTarget()->getCurrentInstallation();
+        if ($installation !== null && $installation->isSameReleaseName($deploy->getRelease()->getName())) {
             return false;
         }
 
