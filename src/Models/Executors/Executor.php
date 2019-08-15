@@ -120,7 +120,7 @@ abstract class Executor
      */
     public function listFolders(string $dir): string
     {
-        return "ls -1d $dir/";
+        return "ls -1d $dir/*";
     }
 
     /**
