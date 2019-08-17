@@ -11,7 +11,7 @@ application:
   shared_folders:
     - var/persistent
 
-  editable_files:
+  files:
     - path: .env.local
       required: true
     - path: var/transient/domainOverrides.json

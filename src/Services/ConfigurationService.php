@@ -14,7 +14,7 @@ use Agnes\Models\Policies\ReleaseWhitelistPolicy;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
-use Agnes\Services\Configuration\EditableFile;
+use Agnes\Services\Configuration\File;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\GithubConfig;
 use Agnes\Services\Configuration\Server;
@@ -298,19 +298,19 @@ class ConfigurationService
     }
 
     /**
-     * @return EditableFile[]
+     * @return File[]
      * @throws Exception
      */
-    public function getEditableFiles()
+    public function getFiles()
     {
-        $files = $this->getNestedConfigWithDefault([], "application", "editable_files");
+        $entries = $this->getNestedConfigWithDefault([], "application", "files");
 
-        /** @var EditableFile[] $editableFiles */
-        $editableFiles = [];
-        foreach ($files as $file) {
-            $editableFiles[] = new EditableFile((bool)$file["required"], $file["path"]);
+        /** @var File[] $files */
+        $files = [];
+        foreach ($entries as $entry) {
+            $files[] = new File((bool)$entry["required"], $entry["path"]);
         }
 
-        return $editableFiles;
+        return $files;
     }
 }

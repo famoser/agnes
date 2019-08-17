@@ -123,7 +123,7 @@ class DeployCommand extends ConfigurationAwareCommand
      */
     private function getFileContents(array $inputFiles, bool $validate): array
     {
-        $configuredFiles = $this->configurationService->getEditableFiles();
+        $configuredFiles = $this->configurationService->getFiles();
         $fileContents = [];
         foreach ($configuredFiles as $configuredFile) {
             $configuredFilePath = $configuredFile->getPath();

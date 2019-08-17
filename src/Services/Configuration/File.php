@@ -4,7 +4,7 @@
 namespace Agnes\Services\Configuration;
 
 
-class EditableFile
+class File
 {
     /**
      * @var bool
