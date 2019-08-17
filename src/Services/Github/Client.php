@@ -119,7 +119,11 @@ class Client
      */
     private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], string $body = null)
     {
-        $headers = array_merge(["Authorization" => "token " . $this->githubConfig->getApiToken()], $additionalHeaders);
+        $headers = [
+            "Authorization" => "token " . $this->githubConfig->getApiToken(),
+            "Accept" => "application/vnd.github.v3+json"
+        ];
+        $headers = array_merge($headers, $additionalHeaders);
         $request = new Request($method, $url, $headers, $body);
 
         $response = $this->httpClient->sendRequest($request);
