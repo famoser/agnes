@@ -38,7 +38,7 @@ class CopySharedAction extends AbstractAction
     /**
      * @param string $source
      * @param string $target
-     * @return array
+     * @return CopyShared[]
      * @throws Exception
      */
     public function createMany(string $source, string $target): array

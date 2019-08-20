@@ -39,11 +39,12 @@ class ReleaseAction extends AbstractAction
     /**
      * @param string $name
      * @param string $commitish
+     * @param string|null $body
      * @return Release
      */
-    public function tryCreate(string $name, string $commitish)
+    public function tryCreate(string $name, string $commitish, ?string $body = null)
     {
-        return new Release($name, $commitish);
+        return new Release($name, $commitish, $body);
     }
 
     /**

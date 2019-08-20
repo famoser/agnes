@@ -54,7 +54,7 @@ class DeployAction extends AbstractAction
      * @param string $target
      * @param string|null $configFolder
      * @param bool $skipValidation
-     * @return Deploy[]|array
+     * @return Deploy[]
      * @throws Exception
      * @throws \Exception
      */
