@@ -2,6 +2,8 @@
 
 releases safely to various environments, and allows to perform other common tasks.
 
+there is also a UI available at [famoser/agnes-ui](https://github.com/famoser/agnes-ui).
+
 ## commands
 
 `php bin/agnes release v1.0 master` creates the release `v1.0` from the latest master  
