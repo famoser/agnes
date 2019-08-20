@@ -78,6 +78,6 @@ class Deploy extends AbstractPayload
      */
     public function describe(): string
     {
-        return "deploys " . $this->getRelease()->getName() . " to " . $this->getTarget()->describe() . ".";
+        return "deploy " . $this->getRelease()->getName() . " to " . $this->getTarget()->describe();
     }
 }

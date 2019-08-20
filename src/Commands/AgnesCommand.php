@@ -88,45 +88,27 @@ abstract class AgnesCommand extends Command
             $output->writeln("");
         }
 
+        $output->writeln("starting execution...");
+        $output->writeln("======================");
+        $output->writeln("");
+
         foreach ($payloads as $payload) {
             $description = $payload->describe();
 
             if (!$action->canExecute($payload)) {
-                $output->writeln("execution of " . $description . " blocked by policy; skipping");
+                $output->writeln("execution of \"" . $description . "\" blocked by policy; skipping");
                 $output->writeln("");
             } else if (!$isDryRun) {
                 $output->writeln($description);
                 $action->execute($payload, $output);
-                $output->writeln("executing finished");
+                $output->writeln("execution finished");
                 $output->writeln("");
             }
         }
-
-
-        $output->writeln("command execution finished");
+        $output->writeln("======================");
+        $output->writeln("all tasks completed.");
 
         return 0;
-    }
-
-    /**
-     * @param AgnesFactory $factory
-     * @return AbstractAction
-     */
-    abstract protected function getAction(AgnesFactory $factory): AbstractAction;
-
-    /**
-     * @param AbstractAction $action
-     * @param InputInterface $input
-     * @return AbstractPayload[]
-     */
-    abstract protected function createPayloads(AbstractAction $action, InputInterface $input): array;
-
-    /**
-     * @return AgnesFactory
-     */
-    protected function getFactory(): AgnesFactory
-    {
-        return $this->factory;
     }
 
     /**
@@ -141,9 +123,15 @@ abstract class AgnesCommand extends Command
         $configFolder = $input->getOption("config-folder");
 
         // default config file
-        if ($configFilePath === null && $configFolder === null) {
-            $output->writeln("using default config file agnes.yml because no config option was supplied");
-            $configFilePath = "agnes.yml";
+        if ($configFilePath === null) {
+            if (file_exists("agnes.yml")) {
+                $configFilePath = "agnes.yml";
+                $output->writeln("found agnes.yml in project root and will use it");
+            } else if ($configFolder === null) {
+                $output->writeln("no configuration found or supplied");
+
+                return false;
+            }
         }
 
         // read config file
@@ -177,4 +165,17 @@ abstract class AgnesCommand extends Command
 
         return true;
     }
+
+    /**
+     * @param AgnesFactory $factory
+     * @return AbstractAction
+     */
+    abstract protected function getAction(AgnesFactory $factory): AbstractAction;
+
+    /**
+     * @param AbstractAction $action
+     * @param InputInterface $input
+     * @return AbstractPayload[]
+     */
+    abstract protected function createPayloads(AbstractAction $action, InputInterface $input): array;
 }

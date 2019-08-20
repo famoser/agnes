@@ -85,6 +85,6 @@ class Release extends AbstractPayload
      */
     public function describe(): string
     {
-        return "builds " . $this->getCommitish() . " and then publishes it under the name " . $this->getName() . ".";
+        return "build " . $this->getCommitish() . " and then publish it under the name " . $this->getName();
     }
 }

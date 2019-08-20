@@ -62,6 +62,6 @@ class CopyShared extends AbstractPayload
      */
     public function describe(): string
     {
-        return "copes the shared data from " . $this->getSource()->describe() . " to " . $this->getTarget()->describe() . ".";
+        return "copy shared data from " . $this->getSource()->describe() . " to " . $this->getTarget()->describe();
     }
 }

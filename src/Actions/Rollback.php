@@ -62,6 +62,6 @@ class Rollback extends AbstractPayload
      */
     public function describe(): string
     {
-        return "rolls back " . $this->getInstance()->describe() . " to " . $this->getTarget()->getRelease()->getName() . ".";
+        return "rollback " . $this->getInstance()->describe() . " to " . $this->getTarget()->getRelease()->getName();
     }
 }

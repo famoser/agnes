@@ -54,6 +54,7 @@ class DeployAction extends AbstractAction
      * @param string $target
      * @param string|null $configFolder
      * @param bool $skipValidation
+     * @return Deploy[]|array
      * @throws Exception
      * @throws \Exception
      */
@@ -79,7 +80,7 @@ class DeployAction extends AbstractAction
         foreach ($instances as $instance) {
             $filePaths = [];
             if ($configFolder != null) {
-                $filePaths = $this->getFilesPathsForInstance($instance, $configuredFiles, $whitelistFiles);
+                $filePaths = $this->getFilesPathsForInstance($instance, $configFolder, $whitelistFiles);
             }
 
             $valid = true;
@@ -92,6 +93,8 @@ class DeployAction extends AbstractAction
                 $deploys[] = new Deploy($release, $instance, $filePaths);
             }
         }
+
+        return $deploys;
     }
 
 
