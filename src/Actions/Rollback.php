@@ -56,4 +56,12 @@ class Rollback extends AbstractPayload
     {
         return $policyService->canRollback($this);
     }
+
+    /**
+     * @return string
+     */
+    public function describe(): string
+    {
+        return "rolls back " . $this->getInstance()->describe() . " to " . $this->getTarget()->getRelease()->getName() . ".";
+    }
 }

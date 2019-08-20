@@ -72,4 +72,12 @@ class Deploy extends AbstractPayload
     {
         return $policyService->canDeploy($this);
     }
+
+    /**
+     * @return string
+     */
+    public function describe(): string
+    {
+        return "deploys " . $this->getRelease()->getName() . " to " . $this->getTarget()->describe() . ".";
+    }
 }

@@ -56,4 +56,12 @@ class CopyShared extends AbstractPayload
     {
         return $policyService->canCopyShared($this);
     }
+
+    /**
+     * @return string
+     */
+    public function describe(): string
+    {
+        return "copes the shared data from " . $this->getSource()->describe() . " to " . $this->getTarget()->describe() . ".";
+    }
 }

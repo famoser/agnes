@@ -79,4 +79,12 @@ class Release extends AbstractPayload
     {
         return $policyService->canRelease($this);
     }
+
+    /**
+     * @return string
+     */
+    public function describe(): string
+    {
+        return "builds " . $this->getCommitish() . " and then publishes it under the name " . $this->getName() . ".";
+    }
 }

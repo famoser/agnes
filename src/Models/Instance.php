@@ -265,4 +265,12 @@ class Instance
 
         return false;
     }
+
+    /**
+     * @return string
+     */
+    public function describe()
+    {
+        return $this->getServerName() . ":" . $this->getEnvironmentName() . ":" . $this->getStage();
+    }
 }
