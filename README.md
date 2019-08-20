@@ -4,10 +4,10 @@ releases safely to various environments, and allows to perform other common task
 
 ## commands
 
-`php console.php release v1.0 master` creates the release `v1.0` from the latest master  
-`php console.php deploy v1.0 *:*:dev` installs the release `v1.0` on all instances matching `*:*:dev`  
-`php console.php rollback *:*:dev` rolls back instances matching `*:*:dev` to the previous release
-`php console.php copy:shared example:example.com:production example:example.com:dev` copies the shared data from the instance matching `example:example.com:production` to `example:example.com:dev`
+`php bin/agnes release v1.0 master` creates the release `v1.0` from the latest master  
+`php bin/agnes deploy v1.0 *:*:dev` installs the release `v1.0` on all instances matching `*:*:dev`  
+`php bin/agnes rollback *:*:dev` rolls back instances matching `*:*:dev` to the previous release
+`php bin/agnes copy:shared example:example.com:production example:example.com:dev` copies the shared data from the instance matching `example:example.com:production` to `example:example.com:dev`
 
 for details on the commands use the `--help` argument.
 
