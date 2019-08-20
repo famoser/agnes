@@ -24,7 +24,7 @@ You can define environment variables in a `.env` or `.env.local` file in your pr
 
 Full example config:
 
-```
+```yml
 agnes:
   github_api_token: '%env(GITHUB_API_TOKEN)%'
   build_target: # where the release will be built
