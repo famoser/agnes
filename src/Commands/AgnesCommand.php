@@ -36,7 +36,7 @@ abstract class AgnesCommand extends Command
      */
     public function configure()
     {
-        $this->addOption('dry-run', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_NONE, "if argument is given then the command skips the actual execution for your to preview the potential impact");
+        $this->addOption('dry-run', null, InputOption::VALUE_NONE, "should the command skip the actual execution (useful for you to preview the potential impact)");
         $this->addOption('config-file', null, InputOption::VALUE_OPTIONAL, "agnes main config file");
         $this->addOption('config-folder', null, InputOption::VALUE_OPTIONAL, "agnes config folder");
     }
@@ -66,13 +66,14 @@ abstract class AgnesCommand extends Command
             return 1;
         }
 
-        $isDryRun = $input->getArgument('dry-run');
+        $isDryRun = $input->getOption('dry-run');
         if ($isDryRun) {
             $output->writeln("dry run active; none of the commands will be actually executed.");
         }
 
         $action = $this->getAction($this->factory);
 
+        $output->writeln("");
         $payloads = $this->createPayloads($action, $input);
         if (count($payloads) === 0) {
             $output->writeln("nothing to execute");
@@ -88,16 +89,17 @@ abstract class AgnesCommand extends Command
         }
 
         foreach ($payloads as $payload) {
-            $output->writeln($payload->describe());
+            $description = $payload->describe();
 
             if (!$action->canExecute($payload)) {
-                $output->writeln("execution blocked by policy; skipping");
+                $output->writeln("execution of " . $description . " blocked by policy; skipping");
+                $output->writeln("");
             } else if (!$isDryRun) {
+                $output->writeln($description);
                 $action->execute($payload, $output);
                 $output->writeln("executing finished");
+                $output->writeln("");
             }
-
-            $output->writeln("");
         }
 
 
@@ -136,6 +138,15 @@ abstract class AgnesCommand extends Command
     protected function tryLoadConfig(InputInterface $input, OutputInterface $output): bool
     {
         $configFilePath = $input->getOption("config-file");
+        $configFolder = $input->getOption("config-folder");
+
+        // default config file
+        if ($configFilePath === null && $configFolder === null) {
+            $output->writeln("using default config file agnes.yml because no config option was supplied");
+            $configFilePath = "agnes.yml";
+        }
+
+        // read config file
         if ($configFilePath !== null) {
             $path = realpath($configFilePath);
             if (!is_file($path)) {
@@ -147,7 +158,7 @@ abstract class AgnesCommand extends Command
             $this->factory->addConfig($path);
         }
 
-        $configFolder = $input->getOption("config-folder");
+        // read config folder
         if ($configFolder !== null) {
             $path = realpath($configFolder);
             if (!is_dir($path)) {
