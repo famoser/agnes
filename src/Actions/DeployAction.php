@@ -7,12 +7,14 @@ namespace Agnes\Actions;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Services\Configuration\File;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Http\Client\Exception;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class DeployAction extends AbstractAction
 {
@@ -48,6 +50,142 @@ class DeployAction extends AbstractAction
     }
 
     /**
+     * @param string $releaseName
+     * @param string $target
+     * @param string|null $configFolder
+     * @param bool $skipValidation
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function createMany(string $releaseName, string $target, ?string $configFolder, bool $skipValidation)
+    {
+        $release = $this->getRelease($releaseName);
+        $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
+
+        $configuredFiles = $this->configurationService->getFiles();
+        $requiredFiles = [];
+        $whitelistFiles = [];
+        foreach ($configuredFiles as $configuredFile) {
+            $configuredFilePath = $configuredFile->getPath();
+
+            $whitelistFiles[] = $configuredFilePath;
+            if ($configuredFile->getIsRequired()) {
+                $requiredFiles[] = $configuredFilePath;
+            }
+        }
+
+        /** @var Deploy[] $deploys */
+        $deploys = [];
+        foreach ($instances as $instance) {
+            $filePaths = [];
+            if ($configFolder != null) {
+                $filePaths = $this->getFilesPathsForInstance($instance, $configuredFiles, $whitelistFiles);
+            }
+
+            $valid = true;
+            if (!$skipValidation) {
+                $containedFiles = array_keys($filePaths);
+                $valid = empty(array_diff($requiredFiles, $containedFiles));
+            }
+
+            if ($valid) {
+                $deploys[] = new Deploy($release, $instance, $filePaths);
+            }
+        }
+    }
+
+
+    /**
+     * @param Instance $instance
+     * @param string $configFolderPath
+     * @param string[] $whitelistFiles
+     * @return string[]
+     */
+    private function getFilesPathsForInstance(Instance $instance, string $configFolderPath, array $whitelistFiles): array
+    {
+        $instanceFolder = $configFolderPath . DIRECTORY_SEPARATOR .
+            "files" . DIRECTORY_SEPARATOR .
+            $instance->getServerName() . DIRECTORY_SEPARATOR .
+            $instance->getEnvironmentName() . DIRECTORY_SEPARATOR .
+            $instance->getStage();
+
+        $filePaths = $this->getFilesRecursively($instanceFolder);
+
+        $result = [];
+        $instanceFolderPrefixLength = strlen($instanceFolder) + 1;
+        foreach ($filePaths as $filePath) {
+            $key = substr($filePath, $instanceFolderPrefixLength);
+
+            if (in_array($key, $whitelistFiles)) {
+                $result[$key] = $filePath;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $folder
+     * @return string[]
+     */
+    private function getFilesRecursively(string $folder)
+    {
+        $directoryElements = scandir($folder);
+
+        $result = [];
+        foreach ($directoryElements as $key => $value) {
+            $path = realpath($folder . DIRECTORY_SEPARATOR . $value);
+            if (!is_dir($path)) {
+                $result[] = $path;
+            } else if ($value != "." && $value != "..") {
+                $result = array_merge($result, $this->getFilesRecursively($path));
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param \Agnes\Models\Instance $instance
+     * @param File[] $configuredFiles
+     * @param string[] $files
+     * @return string[]|bool
+     */
+    private function getFiles(\Agnes\Models\Instance $instance, array $configuredFiles, &$files)
+    {
+        $foundFiles = $this->getConfigService()->loadFilesForInstance($instance);
+
+        foreach ($configuredFiles as $configuredFile) {
+            $filePath = $configuredFile->getPath();
+            if (isset($foundFiles[$filePath])) {
+                $files[$filePath] = $foundFiles[$filePath];
+            } else if ($configuredFile->getIsRequired()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $releaseName
+     * @return ReleaseWithAsset
+     * @throws Exception
+     */
+    private function getRelease(string $releaseName): ReleaseWithAsset
+    {
+        $releases = $this->githubService->releases();
+
+        foreach ($releases as $release) {
+            if ($release->getName() === $releaseName) {
+                return $release;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * check the instance of the payload is of the expected type to execute in execute()
      *
      * @param Deploy $deploy
@@ -70,10 +208,11 @@ class DeployAction extends AbstractAction
 
     /**
      * @param Deploy $deploy
+     * @param OutputInterface $output
      * @throws Exception
      * @throws \Exception
      */
-    protected function doExecute($deploy)
+    protected function doExecute($deploy, OutputInterface $output)
     {
         $release = $deploy->getRelease();
         $target = $deploy->getTarget();
@@ -81,29 +220,33 @@ class DeployAction extends AbstractAction
 
         $releaseFolder = $this->instanceService->getReleasePath($target, $release);
 
+        $output->writeln("uploading release");
         $this->uploadRelease($releaseFolder, $connection, $release);
 
+        $output->writeln("registering new release");
         $this->instanceService->onReleaseInstalled($target, $releaseFolder, $release);
 
-        // create shared folders
+        $output->writeln("creating and linking shared folders");
         $this->createAndLinkSharedFolders($connection, $target, $releaseFolder);
 
-        // upload files
-        foreach ($deploy->getFiles() as $targetPath => $content) {
+        $output->writeln("uploading files");
+        foreach ($deploy->getFilePaths() as $targetPath => $sourcePath) {
             $fullPath = $releaseFolder . DIRECTORY_SEPARATOR . $targetPath;
+            $content = file_get_contents($sourcePath);
             $connection->writeFile($fullPath, $content);
         }
 
-        // execute deploy task
+        $output->writeln("executing deploy script");
         $currentInstallation = $deploy->getTarget()->getCurrentInstallation();
         $previousReleasePath = $currentInstallation ? $currentInstallation->getPath() : null;
         $deployScripts = $this->configurationService->getScripts("deploy");
         $connection->executeScript($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
 
-        // publish new version
+        $output->writeln("switching to new release");
         $this->instanceService->switchRelease($target, $release);
+        $output->writeln("release online");
 
-        // clear old releases
+        $output->writeln("cleaning old releases if required");
         $this->clearOldReleases($deploy, $connection);
     }
 

@@ -24,19 +24,19 @@ class Deploy extends AbstractPayload
     /**
      * @var string[]
      */
-    private $files;
+    private $filePaths;
 
     /**
      * Deployment constructor.
      * @param ReleaseWithAsset $release
      * @param Instance $target
-     * @param array $files
+     * @param string[] $files
      */
     public function __construct(ReleaseWithAsset $release, Instance $target, array $files)
     {
         $this->target = $target;
         $this->release = $release;
-        $this->files = $files;
+        $this->filePaths = $files;
     }
 
     /**
@@ -58,9 +58,9 @@ class Deploy extends AbstractPayload
     /**
      * @return string[]
      */
-    public function getFiles(): array
+    public function getFilePaths(): array
     {
-        return $this->files;
+        return $this->filePaths;
     }
 
     /**

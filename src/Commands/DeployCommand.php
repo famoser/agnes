@@ -3,7 +3,10 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Actions\AbstractAction;
+use Agnes\Actions\AbstractPayload;
 use Agnes\Actions\Deploy;
+use Agnes\Actions\DeployAction;
 use Agnes\AgnesFactory;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\Github\ReleaseWithAsset;
@@ -15,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class DeployCommand extends ConfigurationAwareCommand
+class DeployCommand extends AgnesCommand
 {
     const INSTANCE_SPECIFICATION_EXPLANATION = "
             Instances are specified in the form server:environment:stage (like aws:example.com:production deploys to production of example.com on the aws server). 
@@ -56,127 +59,38 @@ class DeployCommand extends ConfigurationAwareCommand
     public function configure()
     {
         $this->setName('deploy')
-            ->setDescription('Deploy a release to a specific environment.')
-            ->setHelp('This command downloads, installs & publishes a release to a specific environment.')
+            ->setDescription('Deploy a release to a specific environment')
+            ->setHelp('This command installs a release to a specific environment and if the installation succeeds, it publishes it.')
             ->addArgument("release", InputArgument::REQUIRED, "name of the release")
             ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to deploy to. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addArgument("files", InputArgument::IS_ARRAY, "the files to deploy. Separate multiple files with a space. The file path is matched against the configured files, and the longest matching path is chosen as a target.")
-            ->addOption("skip-file-validation", "sfv", InputOption::VALUE_NONE, "if file validation should be skipped. the application no longer throws if required file is not supplied.");
+            ->addOption("skip-file-validation", null, InputOption::VALUE_NONE, "if file validation should be skipped. the application no longer throws if required file is not supplied.");
 
         parent::configure();
     }
 
     /**
+     * @param AgnesFactory $factory
+     * @return AbstractAction
+     */
+    protected function getAction(AgnesFactory $factory): AbstractAction
+    {
+        return $factory->createDeployAction();
+    }
+
+    /**
+     * @param AbstractAction $action
      * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|void|null
-     * @throws \Exception
+     * @return AbstractPayload[]
      * @throws Exception
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    protected function createPayloads(AbstractAction $action, InputInterface $input): array
     {
         $releaseName = $input->getArgument("release");
-        $release = $this->getRelease($releaseName);
-
         $target = $input->getArgument("target");
-        $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
-
-        $inputFiles = $input->getArgument("files");
+        $configFolder = $this->getConfigFolder();
         $skipValidation = (bool)$input->getOption("skip-file-validation");
-        $fileContents = $this->getFileContents($inputFiles, !$skipValidation);
 
-        /** @var Deploy[] $deploys */
-        $deploys = [];
-        foreach ($instances as $instance) {
-            $deploys[] = new Deploy($release, $instance, $fileContents);
-        }
-
-        $service = $this->getFactory()->createDeployAction();
-        $service->executeMultiple($deploys);
-    }
-
-    /**
-     * @param string $targetReleaseName
-     * @return ReleaseWithAsset
-     * @throws \Exception
-     * @throws Exception
-     * @throws Exception
-     */
-    private function getRelease(string $targetReleaseName): ReleaseWithAsset
-    {
-        $releases = $this->githubService->releases();
-
-        foreach ($releases as $release) {
-            if ($release->getName() === $targetReleaseName) {
-                return $release;
-            }
-        }
-
-        throw new \Exception("release with name " . $targetReleaseName . " not found.");
-    }
-
-    /**
-     * @param array $inputFiles
-     * @param bool $validate
-     * @return array
-     * @throws \Exception
-     */
-    private function getFileContents(array $inputFiles, bool $validate): array
-    {
-        $configuredFiles = $this->configurationService->getFiles();
-        $fileContents = [];
-        foreach ($configuredFiles as $configuredFile) {
-            $configuredFilePath = $configuredFile->getPath();
-
-            $highestMatch = null;
-            $highestMatchSize = 0;
-            foreach ($inputFiles as $inputFile) {
-                $matchSize = $this->getMatchingSizeFromEnd($configuredFilePath, $inputFile);
-                if ($matchSize > $highestMatchSize) {
-                    $highestMatchSize = $matchSize;
-                    $highestMatch = $inputFile;
-                }
-            }
-
-            // add the file content to the mapping
-            if ($highestMatch === null) {
-                if ($configuredFile->getIsRequired() && $validate) {
-                    throw new \Exception("no match found for file " . $configuredFile->getPath());
-                }
-            } else {
-                $fileContent = file_get_contents($highestMatch);
-                $fileContents[$configuredFilePath] = $fileContent;
-
-                $indexOfFile = array_search($highestMatch, $inputFiles);
-                unset($inputFiles[$indexOfFile]);
-            }
-        }
-
-        if (count($inputFiles) > 0) {
-            throw new \Exception("the file(s) " . implode($inputFiles) . " have no match");
-        }
-
-        return $fileContents;
-    }
-
-    /**
-     * @param string $string1
-     * @param string $string2
-     * @return int
-     */
-    private function getMatchingSizeFromEnd(string $string1, string $string2)
-    {
-        $sizeString1 = strlen($string1);
-        $sizeString2 = strlen($string2);
-
-        $minSize = min($sizeString1, $sizeString2);
-
-        for ($i = 0; $i < $minSize; $i++) {
-            if ($string1[$sizeString1 - $i - 1] !== $string2[$sizeString2 - $i - 1]) {
-                return $i;
-            }
-        }
-
-        return $minSize - 1;
+        /** @var DeployAction $action */
+        return $action->createMany($releaseName, $target, $configFolder, $skipValidation);
     }
 }

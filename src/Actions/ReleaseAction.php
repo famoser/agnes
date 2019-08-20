@@ -8,6 +8,7 @@ use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\PolicyService;
 use Http\Client\Exception;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ReleaseAction extends AbstractAction
 {
@@ -36,6 +37,16 @@ class ReleaseAction extends AbstractAction
     }
 
     /**
+     * @param string $name
+     * @param string $commitish
+     * @return Release
+     */
+    public function tryCreate(string $name, string $commitish)
+    {
+        return new Release($name, $commitish);
+    }
+
+    /**
      * check the instance of the payload is of the expected type to execute in execute()
      *
      * @param Release $payload
@@ -48,36 +59,31 @@ class ReleaseAction extends AbstractAction
 
     /**
      * @param Release $release
+     * @param OutputInterface $output
      * @throws Exception
      * @throws \Exception
      */
-    protected function doExecute($release)
-    {
-        $content = $this->buildRelease($release);
-
-        $this->githubService->publish($release, $release->getArchiveName(".tar.gz"), "application/zip", $content);
-    }
-
-    /**
-     * @param Release $release
-     * @return string
-     * @throws \Exception
-     */
-    private function buildRelease(Release $release): string
+    protected function doExecute($release, OutputInterface $output)
     {
         $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
 
+        $output->writeln("cleaning build folder");
         $connection->createOrClearFolder($buildPath);
 
+        $output->writeln("checking out repository");
         $githubConfig = $this->configurationService->getGithubConfig();
         $connection->checkoutRepository($buildPath, $githubConfig->getRepository(), $release->getCommitish());
 
+        $output->writeln("executing release script");
         $scripts = $this->configurationService->getScripts("release");
         $connection->executeScript($buildPath, $scripts);
 
-        // after release has been build, compress it to a single file
+        $output->writeln("compressing build folder");
         $filePath = $connection->compressTarGz($buildPath, $release->getArchiveName(".tar.gz"));
-        return $connection->readFile($filePath);
+        $content = $connection->readFile($filePath);
+
+        $output->writeln("publishing release to github");
+        $this->githubService->publish($release, $content, "application/zip", $release->getArchiveName(".tar.gz"));
     }
 }

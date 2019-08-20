@@ -7,6 +7,7 @@ use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Exception;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class CopySharedAction extends AbstractAction
 {
@@ -32,6 +33,29 @@ class CopySharedAction extends AbstractAction
 
         $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @return array
+     * @throws Exception
+     */
+    public function createMany(string $source, string $target): array
+    {
+        $sourceInstances = $this->instanceService->getInstancesFromInstanceSpecification($source);
+        $targetInstances = $this->instanceService->getInstancesFromInstanceSpecification($target);
+
+        /** @var CopyShared[] $copyShareds */
+        $copyShareds = [];
+        foreach ($targetInstances as $targetInstance) {
+            $matchingInstances = $targetInstance->getSameEnvironmentInstances($sourceInstances);
+            if (count($matchingInstances) === 1) {
+                $copyShareds[] = new CopyShared($matchingInstances[0], $targetInstance);
+            }
+        }
+
+        return $copyShareds;
     }
 
     /**
@@ -61,9 +85,10 @@ class CopySharedAction extends AbstractAction
 
     /**
      * @param CopyShared $copyShared
+     * @param OutputInterface $output
      * @throws Exception
      */
-    protected function doExecute($copyShared)
+    protected function doExecute($copyShared, OutputInterface $output)
     {
         $sourceSharedPath = $this->instanceService->getSharedPath($copyShared->getSource());
         $targetSharedPath = $this->instanceService->getSharedPath($copyShared->getTarget());
@@ -74,6 +99,7 @@ class CopySharedAction extends AbstractAction
             $sourceFolderPath = $sourceSharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
             $targetFolderPath = $targetSharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
 
+            $output->writeln("copying folder " . $sharedFolder);
             $connection->copyFolderContent($sourceFolderPath, $targetFolderPath);
         }
     }

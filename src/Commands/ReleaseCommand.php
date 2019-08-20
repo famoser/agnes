@@ -3,14 +3,17 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Actions\AbstractAction;
+use Agnes\Actions\AbstractPayload;
 use Agnes\Actions\Release;
+use Agnes\Actions\ReleaseAction;
 use Agnes\AgnesFactory;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ReleaseCommand extends ConfigurationAwareCommand
+class ReleaseCommand extends AgnesCommand
 {
     /**
      * ReleaseCommand constructor.
@@ -24,8 +27,8 @@ class ReleaseCommand extends ConfigurationAwareCommand
     public function configure()
     {
         $this->setName('release')
-            ->setDescription('Create a new release.')
-            ->setHelp('This command compiles & publishes a new release according to the passed configuration.')
+            ->setDescription('Create a new release')
+            ->setHelp('This command compiles the specified commitish and then publishes it to github.')
             ->addArgument("release", InputArgument::REQUIRED, "name of the release")
             ->addArgument("commitish", InputArgument::REQUIRED, "branch or commit of the release");
 
@@ -33,18 +36,31 @@ class ReleaseCommand extends ConfigurationAwareCommand
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|void|null
-     * @throws \Exception
+     * @param AgnesFactory $factory
+     * @return AbstractAction
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    protected function getAction(AgnesFactory $factory): AbstractAction
+    {
+        return $factory->createReleaseAction();
+    }
+
+    /**
+     * @param AbstractAction $action
+     * @param InputInterface $input
+     * @return AbstractPayload[]
+     */
+    protected function createPayloads(AbstractAction $action, InputInterface $input): array
     {
         $name = $input->getArgument("release");
         $commitish = $input->getArgument("commitish");
-        $release = new Release($name, $commitish);
 
-        $service = $this->getFactory()->createReleaseAction();
-        $service->execute($release);
+        /** @var ReleaseAction $action */
+        $release = $action->tryCreate($name, $commitish);
+
+        if ($release == null) {
+            return [];
+        }
+
+        return [$release];
     }
 }

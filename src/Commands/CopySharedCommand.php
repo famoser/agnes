@@ -3,7 +3,10 @@
 
 namespace Agnes\Commands;
 
+use Agnes\Actions\AbstractAction;
+use Agnes\Actions\AbstractPayload;
 use Agnes\Actions\CopyShared;
+use Agnes\Actions\CopySharedAction;
 use Agnes\AgnesFactory;
 use Agnes\Services\InstanceService;
 use Exception;
@@ -11,7 +14,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class CopySharedCommand extends ConfigurationAwareCommand
+class CopySharedCommand extends AgnesCommand
 {
     /**
      * @var InstanceService
@@ -34,7 +37,7 @@ class CopySharedCommand extends ConfigurationAwareCommand
     public function configure()
     {
         $this->setName('copy:shared')
-            ->setDescription('Copies the shared data from the source to the target.')
+            ->setDescription('Copies the shared data from the source to the target')
             ->setHelp('This copies the shared data from the source to the target to replicate environment(s).')
             ->addArgument("source", InputArgument::REQUIRED, "the instance(s) to copy data from. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
             ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to replace the data from the source." . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION);
@@ -43,29 +46,26 @@ class CopySharedCommand extends ConfigurationAwareCommand
     }
 
     /**
+     * @param AgnesFactory $factory
+     * @return AbstractAction
+     */
+    protected function getAction(AgnesFactory $factory): AbstractAction
+    {
+        return $factory->createCopySharedAction();
+    }
+
+    /**
+     * @param AbstractAction $action
      * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|void|null
+     * @return AbstractPayload[]
      * @throws Exception
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    protected function createPayloads(AbstractAction $action, InputInterface $input): array
     {
         $source = $input->getArgument("source");
-        $sourceInstances = $this->instanceService->getInstancesFromInstanceSpecification($source);
-
         $target = $input->getArgument("target");
-        $targetInstances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
-        /** @var CopyShared[] $copyShareds */
-        $copyShareds = [];
-        foreach ($targetInstances as $targetInstance) {
-            $matchingInstances = $targetInstance->getSameEnvironmentInstances($sourceInstances);
-            if (count($matchingInstances) === 1) {
-                $copyShareds[] = new CopyShared($matchingInstances[0], $targetInstance);
-            }
-        }
-
-        $service = $this->getFactory()->createCopySharedAction();
-        $service->executeMultiple($copyShareds);
+        /** @var CopySharedAction $action */
+        return $action->createMany($source, $target);
     }
 }

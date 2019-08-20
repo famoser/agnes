@@ -92,13 +92,13 @@ class GithubService
 
     /**
      * @param Release $release
-     * @param string $assetName
-     * @param string $assetContentType
      * @param string $assetContent
+     * @param string $assetContentType
+     * @param string $assetName
      * @throws Exception
      * @throws \Exception
      */
-    public function publish(Release $release, string $assetName, string $assetContentType, string $assetContent)
+    public function publish(Release $release, string $assetContent, string $assetContentType, string $assetName)
     {
         $response = $this->createRelease($release);
 

@@ -15,4 +15,9 @@ abstract class AbstractPayload
      * @throws Exception
      */
     abstract public function canExecute(PolicyService $policyService): bool;
+
+    /**
+     * @return string
+     */
+    abstract public function describe(): string;
 }
