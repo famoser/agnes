@@ -61,6 +61,10 @@ class DeployAction extends AbstractAction
     public function createMany(string $releaseName, string $target, ?string $configFolder, bool $skipValidation)
     {
         $release = $this->getRelease($releaseName);
+        if ($release === null) {
+            return [];
+        }
+        
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
         $configuredFiles = $this->configurationService->getFiles();
@@ -149,33 +153,11 @@ class DeployAction extends AbstractAction
     }
 
     /**
-     * @param \Agnes\Models\Instance $instance
-     * @param File[] $configuredFiles
-     * @param string[] $files
-     * @return string[]|bool
-     */
-    private function getFiles(\Agnes\Models\Instance $instance, array $configuredFiles, &$files)
-    {
-        $foundFiles = $this->getConfigService()->loadFilesForInstance($instance);
-
-        foreach ($configuredFiles as $configuredFile) {
-            $filePath = $configuredFile->getPath();
-            if (isset($foundFiles[$filePath])) {
-                $files[$filePath] = $foundFiles[$filePath];
-            } else if ($configuredFile->getIsRequired()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * @param string $releaseName
-     * @return ReleaseWithAsset
+     * @return ReleaseWithAsset|null
      * @throws Exception
      */
-    private function getRelease(string $releaseName): ReleaseWithAsset
+    private function getRelease(string $releaseName): ?ReleaseWithAsset
     {
         $releases = $this->githubService->releases();
 
