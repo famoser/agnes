@@ -14,10 +14,6 @@ application:
   files:
     - path: .env.local
       required: true
-    - path: var/transient/domainOverrides.json
-      required: false
-    - path: var/transient/authorization/whitelists/developers.txt
-      required: false
 
   scripts:
     release:
@@ -41,7 +37,7 @@ servers:
     script_overrides:
       php: /usr/local/php73/bin/php
     environments:
-      agnes: [production, education, staging, dev]
+      agnes: [dev, staging, education, production]
 
 policies:
   strategy: unanimous # all matching policies must be valid
