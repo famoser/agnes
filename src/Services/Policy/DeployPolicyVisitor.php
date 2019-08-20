@@ -56,6 +56,11 @@ class DeployPolicyVisitor extends PolicyVisitor
         $filter = new Filter(null, [$this->deployment->getTarget()->getEnvironmentName()], $stagesToCheck);
         $instances = $this->installationService->getInstancesByFilter($filter);
 
+        // if no instances exist of the specified stages fulfil the policy trivially
+        if (count($instances) === 0) {
+            return true;
+        }
+
         // check if the release was published there at any given time
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {

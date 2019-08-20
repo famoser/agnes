@@ -64,7 +64,7 @@ class DeployAction extends AbstractAction
         if ($release === null) {
             return [];
         }
-        
+
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
         $configuredFiles = $this->configurationService->getFiles();
