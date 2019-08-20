@@ -1,0 +1,13 @@
+agnes:
+  github_api_token: '%env(GITHUB_API_TOKEN)%'
+  build_target:
+    connection:
+      type: local
+    path: .build
+
+application:
+  repository: famoser/agnes
+
+  scripts:
+    release:  
+      - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
