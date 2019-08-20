@@ -5,13 +5,10 @@ namespace Agnes\Commands;
 
 use Agnes\Actions\AbstractAction;
 use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\Release;
 use Agnes\Actions\ReleaseAction;
 use Agnes\AgnesFactory;
-use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class ReleaseCommand extends AgnesCommand
 {

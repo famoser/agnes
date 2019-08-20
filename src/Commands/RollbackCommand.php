@@ -5,7 +5,6 @@ namespace Agnes\Commands;
 
 use Agnes\Actions\AbstractAction;
 use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\Rollback;
 use Agnes\Actions\RollbackAction;
 use Agnes\AgnesFactory;
 use Agnes\Services\InstanceService;
@@ -13,7 +12,6 @@ use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class RollbackCommand extends AgnesCommand
 {

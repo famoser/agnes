@@ -5,18 +5,15 @@ namespace Agnes\Commands;
 
 use Agnes\Actions\AbstractAction;
 use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\Deploy;
 use Agnes\Actions\DeployAction;
 use Agnes\AgnesFactory;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class DeployCommand extends AgnesCommand
 {

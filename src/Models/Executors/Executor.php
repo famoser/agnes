@@ -4,8 +4,6 @@
 namespace Agnes\Models\Executors;
 
 
-use Exception;
-
 abstract class Executor
 {
     /**

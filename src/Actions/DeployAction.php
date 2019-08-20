@@ -7,7 +7,6 @@ namespace Agnes\Actions;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Services\Configuration\File;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\GithubService;
