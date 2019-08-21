@@ -123,11 +123,7 @@ class SSHConnection extends Connection
             $command = $this->executor->listFolders($dir);
             $response = $this->executeCommand($command);
         } catch (Exception $exception) {
-            if (strpos($exception->getMessage(), "No such file or directory") !== false) {
-                return [];
-            }
-
-            throw $exception;
+            return [];
         }
 
         return explode("\n", $response);
