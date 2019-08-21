@@ -26,13 +26,6 @@ abstract class Executor
     }
 
     /**
-     * @param string $source
-     * @param string $target
-     * @return string
-     */
-    public abstract function moveAndReplace(string $source, string $target): string;
-
-    /**
      * @param string $filePath
      * @param string $destination
      * @return string
@@ -169,4 +162,21 @@ abstract class Executor
     {
         return "chmod $permissions $filePath";
     }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @return string
+     */
+    public function moveAndReplace(string $source, string $target)
+    {
+        return "rm -rf $target && mv -f $source $target";
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @return string
+     */
+    public abstract function replaceSymlink(string $source, string $target): string;
 }

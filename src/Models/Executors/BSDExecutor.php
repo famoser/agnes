@@ -11,8 +11,8 @@ class BSDExecutor extends Executor
      * @param string $target
      * @return string
      */
-    public function moveAndReplace(string $source, string $target): string
+    public function replaceSymlink(string $source, string $target): string
     {
-        return "rm -rf $target && mv -f $source $target";
+        return "mv -h $source $target";
     }
 }

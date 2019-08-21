@@ -11,8 +11,8 @@ class LinuxExecutor extends Executor
      * @param string $target
      * @return string
      */
-    public function moveAndReplace(string $source, string $target): string
+    public function replaceSymlink(string $source, string $target): string
     {
-        return "mv -Tf $source $target";
+        return "mv -T $source $target";
     }
 }

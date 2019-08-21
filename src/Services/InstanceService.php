@@ -153,7 +153,7 @@ class InstanceService
 
         // switch active release
         $this->onReleaseOffline($connection, $currentSymlink);
-        $connection->moveFile($tempCurrentSymlink, $currentSymlink);
+        $connection->replaceSymlink($tempCurrentSymlink, $currentSymlink);
         $this->onReleaseOnline($connection, $targetFolder);
     }
 

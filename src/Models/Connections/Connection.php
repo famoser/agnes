@@ -294,9 +294,9 @@ abstract class Connection
      * @param string $target
      * @throws Exception
      */
-    public function moveFile(string $source, string $target)
+    public function replaceSymlink(string $source, string $target)
     {
-        $command = $this->executor->moveAndReplace($source, $target);
+        $command = $this->executor->replaceSymlink($source, $target);
         $this->executeCommand($command);
     }
 
