@@ -110,7 +110,7 @@ class DeployAction extends AbstractAction
     private function getFilesPathsForInstance(Instance $instance, string $configFolderPath, array $whitelistFiles): array
     {
         $instanceFolder = $configFolderPath . DIRECTORY_SEPARATOR .
-            "files" . DIRECTORY_SEPARATOR .
+            "servers" . DIRECTORY_SEPARATOR .
             $instance->getServerName() . DIRECTORY_SEPARATOR .
             $instance->getEnvironmentName() . DIRECTORY_SEPARATOR .
             $instance->getStage();
