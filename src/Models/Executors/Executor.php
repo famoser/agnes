@@ -159,4 +159,14 @@ abstract class Executor
     {
         return "cd $workingFolder && $command";
     }
+
+    /**
+     * @param string $filePath
+     * @param int $permissions
+     * @return string
+     */
+    public function setPermissions(string $filePath, int $permissions)
+    {
+        return "chmod $permissions $filePath";
+    }
 }

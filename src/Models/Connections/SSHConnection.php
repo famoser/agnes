@@ -106,6 +106,10 @@ class SSHConnection extends Connection
         $destination = $this->getSSHRsyncPath($filePath);
         $command = $this->executor->rsync($tempFile, $destination);
         parent::executeCommand($command);
+
+        // set permissive permissions
+        $command = $this->executor->setPermissions($filePath, 644);
+        $this->executeCommand($command);
     }
 
     /**

@@ -13,6 +13,6 @@ class BSDExecutor extends Executor
      */
     public function moveAndReplace(string $source, string $target): string
     {
-        return "mv -hf $source $target";
+        return "rm -rf $target && mv -f $source $target";
     }
 }
