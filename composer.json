@@ -34,6 +34,13 @@
       "src"
     ]
   },
+  "scripts": {
+    "configure-environment": [
+      "cp -n .env .env.local"
+    ],
+    "pre-install-cmd": "@configure-environment",
+    "pre-update-cmd": "@configure-environment"
+  },
   "config": {
     "sort-packages": true,
     "platform": {
