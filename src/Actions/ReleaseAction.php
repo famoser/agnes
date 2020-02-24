@@ -86,5 +86,8 @@ class ReleaseAction extends AbstractAction
 
         $output->writeln("publishing release to github");
         $this->githubService->publish($release, $content, "application/zip", $release->getArchiveName(".tar.gz"));
+
+        $output->writeln("removing build folder");
+        $connection->removeFolder($buildPath);
     }
 }
