@@ -223,8 +223,9 @@ class DeployAction extends AbstractAction
         $output->writeln("executing deploy script");
         $currentInstallation = $deploy->getTarget()->getCurrentInstallation();
         $environment = [];
-        $environment["HAS_PREVIOUS_RELEASE"] = $currentInstallation !== null;
-        if ($environment["HAS_PREVIOUS_RELEASE"]) {
+        $hasPreviousRelease = $currentInstallation !== null;
+        $environment["HAS_PREVIOUS_RELEASE"] = $hasPreviousRelease ? "true" : "false";
+        if ($hasPreviousRelease) {
             $environment["PREVIOUS_RELEASE_PATH"] = $currentInstallation->getPath();
         }
         $deployScripts = $this->configurationService->getScripts("deploy");
