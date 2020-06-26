@@ -134,6 +134,10 @@ abstract class Connection
             $envPrefix .= "$key=$value ";
         }
 
+        if (count($envVariables) > 0) {
+            $envPrefix .= "&& ";
+        }
+
         // prefix env definition
         foreach ($commands as &$command) {
             $command = $envPrefix . $command;
