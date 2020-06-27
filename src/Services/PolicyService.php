@@ -6,13 +6,13 @@ use Agnes\Actions\CopyShared;
 use Agnes\Actions\Deploy;
 use Agnes\Actions\Release;
 use Agnes\Actions\Rollback;
-use Agnes\Models\Policies\Policy;
 use Agnes\Services\Policy\CopySharedPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\PolicyVisitor;
 use Agnes\Services\Policy\ReleasePolicyVisitor;
 use Agnes\Services\Policy\RollbackPolicyVisitor;
 use Exception;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class PolicyService
 {
@@ -38,56 +38,57 @@ class PolicyService
     /**
      * @throws Exception
      */
-    public function canRelease(Release $release): bool
+    public function canRelease(Release $release, OutputInterface $output): bool
     {
-        $releasePolicyVisitor = new ReleasePolicyVisitor($release);
+        $releasePolicyVisitor = new ReleasePolicyVisitor($output, $release);
 
-        return null === $this->getConflictingPolicy($releasePolicyVisitor, 'release');
+        return $this->noConflictingPolicies($releasePolicyVisitor, 'release');
     }
 
     /**
      * @throws Exception
      */
-    public function canDeploy(Deploy $deploy): bool
+    public function canDeploy(Deploy $deploy, OutputInterface $output): bool
     {
-        $deployPolicyVisitor = new DeployPolicyVisitor($this->instanceService, $deploy);
+        $deployPolicyVisitor = new DeployPolicyVisitor($output, $this->instanceService, $deploy);
 
-        return null === $this->getConflictingPolicy($deployPolicyVisitor, 'deploy');
+        return $this->noConflictingPolicies($deployPolicyVisitor, 'deploy');
     }
 
     /**
      * @throws Exception
      */
-    public function canRollback(Rollback $rollback): bool
+    public function canRollback(Rollback $rollback, OutputInterface $output): bool
     {
-        $roollbackPolicyVisitor = new RollbackPolicyVisitor($rollback);
+        $roollbackPolicyVisitor = new RollbackPolicyVisitor($output, $rollback);
 
-        return null === $this->getConflictingPolicy($roollbackPolicyVisitor, 'rollback');
+        return $this->noConflictingPolicies($roollbackPolicyVisitor, 'rollback');
     }
 
     /**
      * @throws Exception
      */
-    public function canCopyShared(CopyShared $copyShared): bool
+    public function canCopyShared(CopyShared $copyShared, OutputInterface $output): bool
     {
-        $copySharedPolicyVisitor = new CopySharedPolicyVisitor($copyShared);
+        $copySharedPolicyVisitor = new CopySharedPolicyVisitor($output, $copyShared);
 
-        return null === $this->getConflictingPolicy($copySharedPolicyVisitor, 'copy_shared');
+        return $this->noConflictingPolicies($copySharedPolicyVisitor, 'copy_shared');
     }
 
     /**
      * @throws Exception
      */
-    private function getConflictingPolicy(PolicyVisitor $visitor, string $task): ?Policy
+    private function noConflictingPolicies(PolicyVisitor $visitor, string $task): bool
     {
         $policies = $this->configurationService->getPolicies($task);
 
+        $noConflictingPolicies = true;
         foreach ($policies as $policy) {
             if ($visitor->isApplicable($policy) && !$policy->accept($visitor)) {
-                return $policy;
+                $noConflictingPolicies = false;
             }
         }
 
-        return null;
+        return $noConflictingPolicies;
     }
 }

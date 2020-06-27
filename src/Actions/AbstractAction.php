@@ -29,13 +29,13 @@ abstract class AbstractAction
     /**
      * @throws Exception
      */
-    public function canExecute(AbstractPayload $payload): bool
+    public function canExecute(AbstractPayload $payload, OutputInterface $output): bool
     {
-        if (!$this->canProcessPayload($payload)) {
+        if (!$this->canProcessPayload($payload, $output)) {
             return false;
         }
 
-        if (!$payload->canExecute($this->policyService)) {
+        if (!$payload->canExecute($this->policyService, $output)) {
             return false;
         }
 
@@ -47,7 +47,7 @@ abstract class AbstractAction
      *
      * @param $payload
      */
-    abstract protected function canProcessPayload($payload): bool;
+    abstract protected function canProcessPayload($payload, OutputInterface $output): bool;
 
     /**
      * @param $payload

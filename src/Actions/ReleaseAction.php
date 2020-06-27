@@ -47,9 +47,15 @@ class ReleaseAction extends AbstractAction
      *
      * @param Release $payload
      */
-    protected function canProcessPayload($payload): bool
+    protected function canProcessPayload($payload, OutputInterface $output): bool
     {
-        return $payload instanceof Release;
+        if (!$payload instanceof Release) {
+            $output->writeln('Not a '.Release::class);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

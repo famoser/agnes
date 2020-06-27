@@ -7,6 +7,7 @@ use Agnes\Models\Filter;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Exception;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class CopySharedPolicyVisitor extends PolicyVisitor
 {
@@ -18,8 +19,10 @@ class CopySharedPolicyVisitor extends PolicyVisitor
     /**
      * CopySharedPolicyVisitor constructor.
      */
-    public function __construct(CopyShared $copyShared)
+    public function __construct(OutputInterface $output, CopyShared $copyShared)
     {
+        parent::__construct($output);
+
         $this->copyShared = $copyShared;
     }
 
@@ -28,7 +31,13 @@ class CopySharedPolicyVisitor extends PolicyVisitor
         $sourceRelease = $this->copyShared->getSource()->getCurrentReleaseName();
         $targetRelease = $this->copyShared->getTarget()->getCurrentReleaseName();
 
-        return null !== $sourceRelease && $sourceRelease === $targetRelease;
+        if (null === $sourceRelease || $sourceRelease !== $targetRelease) {
+            $this->preventExecution($this->copyShared, "source release does not match target release. source: $sourceRelease target: $targetRelease.");
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -41,7 +50,9 @@ class CopySharedPolicyVisitor extends PolicyVisitor
 
         $stageIndex = $stageWriteDownPolicy->getLayerIndex($sourceStage);
         if (false === $stageIndex) {
-            throw new Exception('Stage not found in specified layers; policy undecidable.');
+            $this->preventExecution($this->copyShared, "stage $targetStage not found in specified layers; policy undecidable.");
+
+            return false;
         }
 
         // if the stageIndex is the highest layer, we are allowed to write
@@ -52,7 +63,13 @@ class CopySharedPolicyVisitor extends PolicyVisitor
         // get the next lower layer & the current layer and check if the target is contained in there
         $stagesToCheck = array_merge($stageWriteDownPolicy->getNextLowerLayer($stageIndex), $stageWriteDownPolicy->getLayer($stageIndex));
 
-        return in_array($targetStage, $stagesToCheck);
+        if (!in_array($targetStage, $stagesToCheck)) {
+            $this->preventExecution($this->copyShared, "target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

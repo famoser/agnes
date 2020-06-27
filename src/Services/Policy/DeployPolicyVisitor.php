@@ -7,6 +7,7 @@ use Agnes\Models\Filter;
 use Agnes\Models\Policies\StageWriteUpPolicy;
 use Agnes\Services\InstanceService;
 use Exception;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class DeployPolicyVisitor extends PolicyVisitor
 {
@@ -23,8 +24,10 @@ class DeployPolicyVisitor extends PolicyVisitor
     /**
      * DeployPolicyVisitor constructor.
      */
-    public function __construct(InstanceService $installationService, Deploy $deployment)
+    public function __construct(OutputInterface $output, InstanceService $installationService, Deploy $deployment)
     {
+        parent::__construct($output);
+
         $this->installationService = $installationService;
         $this->deployment = $deployment;
     }
@@ -37,7 +40,9 @@ class DeployPolicyVisitor extends PolicyVisitor
         $targetStage = $this->deployment->getTarget()->getStage();
         $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
         if (false === $stageIndex) {
-            throw new Exception("Stage $targetStage not found in specified layers; policy undecidable.");
+            $this->preventExecution($this->deployment, "Stage $targetStage not found in specified layers; policy undecidable.");
+
+            return false;
         }
 
         // if the stageIndex is the lowest layer, we are allowed to write
@@ -63,6 +68,8 @@ class DeployPolicyVisitor extends PolicyVisitor
                 }
             }
         }
+
+        $this->preventExecution($this->deployment, "$targetStage not lowest stage, and release was never published in the next lower layer.");
 
         return false;
     }

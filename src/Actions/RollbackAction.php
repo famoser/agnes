@@ -57,9 +57,15 @@ class RollbackAction extends AbstractAction
      *
      * @param Rollback $payload
      */
-    protected function canProcessPayload($payload): bool
+    protected function canProcessPayload($payload, OutputInterface $output): bool
     {
-        return $payload instanceof Rollback;
+        if (!$payload instanceof Rollback) {
+            $output->writeln('Not a '.Rollback::class);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

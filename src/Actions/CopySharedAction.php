@@ -58,19 +58,25 @@ class CopySharedAction extends AbstractAction
      *
      * @param CopyShared $copyShared
      */
-    protected function canProcessPayload($copyShared): bool
+    protected function canProcessPayload($copyShared, OutputInterface $output): bool
     {
         if (!$copyShared instanceof CopyShared) {
+            $output->writeln('Not a '.CopyShared::class);
+
             return false;
         }
 
         // technical limitation: only copy from same connection
         if (!$copyShared->getSource()->getConnection()->equals($copyShared->getTarget()->getConnection())) {
+            $output->writeln('Cannot execute '.$copyShared->describe().': copy shared only possible within same connection.');
+
             return false;
         }
 
         // does not make sense to copy from itself
         if ($copyShared->getSource()->equals($copyShared->getTarget())) {
+            $output->writeln('Cannot execute '.$copyShared->describe().': copy shared to itself does not make sense.');
+
             return false;
         }
 

@@ -88,7 +88,7 @@ abstract class AgnesCommand extends Command
         foreach ($payloads as $payload) {
             $description = $payload->describe();
 
-            if (!$action->canExecute($payload)) {
+            if (!$action->canExecute($payload, $output)) {
                 $output->writeln('execution of "'.$description.'" blocked by policy; skipping');
                 $output->writeln('');
             } elseif (!$isDryRun) {
@@ -140,7 +140,7 @@ abstract class AgnesCommand extends Command
         if (null !== $configFolder) {
             $path = realpath($configFolder);
             if (!is_dir($path)) {
-                $output->writeln('config folder not found at '.$configFilePath);
+                $output->writeln('config folder not found at '.$configFolder.' with working dir '.realpath(__DIR__));
 
                 return false;
             }

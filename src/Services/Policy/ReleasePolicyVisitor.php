@@ -5,6 +5,7 @@ namespace Agnes\Services\Policy;
 use Agnes\Actions\Release;
 use Agnes\Models\Filter;
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ReleasePolicyVisitor extends PolicyVisitor
 {
@@ -16,14 +17,22 @@ class ReleasePolicyVisitor extends PolicyVisitor
     /**
      * ReleasePolicyVisitor constructor.
      */
-    public function __construct(Release $release)
+    public function __construct(OutputInterface $output, Release $release)
     {
+        parent::__construct($output);
+
         $this->release = $release;
     }
 
     public function visitReleaseWhitelist(ReleaseWhitelistPolicy $releaseWhitelistPolicy): bool
     {
-        return in_array($this->release->getCommitish(), $releaseWhitelistPolicy->getCommitishes());
+        if (!in_array($this->release->getCommitish(), $releaseWhitelistPolicy->getCommitishes())) {
+            $this->preventExecution($this->release, $this->release->getCommitish().' not found in whitelist of '.implode(', ', $releaseWhitelistPolicy->getCommitishes()));
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

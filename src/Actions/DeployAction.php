@@ -63,6 +63,7 @@ class DeployAction extends AbstractAction
             $release = $this->releaseAction->tryCreate($releaseOrCommitish);
             $build = $this->releaseAction->buildRelease($release, $output);
         }
+        $output->writeln('');
 
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
 
@@ -153,15 +154,19 @@ class DeployAction extends AbstractAction
      *
      * @param Deploy $deploy
      */
-    protected function canProcessPayload($deploy): bool
+    protected function canProcessPayload($deploy, OutputInterface $output): bool
     {
         if (!$deploy instanceof Deploy) {
+            $output->writeln('Not a '.Deploy::class);
+
             return false;
         }
 
         // block if this installation is active
         $installation = $deploy->getTarget()->getCurrentInstallation();
         if (null !== $installation && $installation->isSameReleaseName($deploy->getBuild()->getName())) {
+            $output->writeln('Cannot execute '.$deploy->describe().': Same release name is already active on target.');
+
             return false;
         }
 

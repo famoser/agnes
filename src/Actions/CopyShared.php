@@ -5,6 +5,7 @@ namespace Agnes\Actions;
 use Agnes\Models\Instance;
 use Agnes\Services\PolicyService;
 use Exception;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class CopyShared extends AbstractPayload
 {
@@ -40,9 +41,9 @@ class CopyShared extends AbstractPayload
     /**
      * @throws Exception
      */
-    public function canExecute(PolicyService $policyService): bool
+    public function canExecute(PolicyService $policyService, OutputInterface $output): bool
     {
-        return $policyService->canCopyShared($this);
+        return $policyService->canCopyShared($this, $output);
     }
 
     public function describe(): string

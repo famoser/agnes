@@ -6,6 +6,7 @@ use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\PolicyService;
 use Exception;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Rollback extends AbstractPayload
 {
@@ -41,9 +42,9 @@ class Rollback extends AbstractPayload
     /**
      * @throws Exception
      */
-    public function canExecute(PolicyService $policyService): bool
+    public function canExecute(PolicyService $policyService, OutputInterface $output): bool
     {
-        return $policyService->canRollback($this);
+        return $policyService->canRollback($this, $output);
     }
 
     public function describe(): string
