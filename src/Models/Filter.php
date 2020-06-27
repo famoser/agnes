@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Models;
 
 class Filter
@@ -22,6 +21,7 @@ class Filter
 
     /**
      * Filter constructor.
+     *
      * @param string[]|null $servers
      * @param string[]|null $environments
      * @param string[]|null $stages
@@ -34,7 +34,6 @@ class Filter
     }
 
     /**
-     * @param Instance $installation
      * @return bool
      */
     public function instanceMatches(Instance $installation)
@@ -43,26 +42,22 @@ class Filter
     }
 
     /**
-     * @param string $server
-     * @param string $environment
-     * @param string $stage
      * @return bool
      */
     public function isMatch(string $server, string $environment, string $stage)
     {
-        if ($this->servers !== null && !in_array($server, $this->servers)) {
+        if (null !== $this->servers && !in_array($server, $this->servers)) {
             return false;
         }
 
-        if ($this->environments !== null && !in_array($environment, $this->environments)) {
+        if (null !== $this->environments && !in_array($environment, $this->environments)) {
             return false;
         }
 
-        if ($this->stages !== null && !in_array($stage, $this->stages)) {
+        if (null !== $this->stages && !in_array($stage, $this->stages)) {
             return false;
         }
 
         return true;
     }
-
 }

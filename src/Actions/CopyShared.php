@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Actions;
-
 
 use Agnes\Models\Instance;
 use Agnes\Services\PolicyService;
@@ -22,8 +20,6 @@ class CopyShared extends AbstractPayload
 
     /**
      * CopyShared constructor.
-     * @param Instance $source
-     * @param Instance $target
      */
     public function __construct(Instance $source, Instance $target)
     {
@@ -31,25 +27,17 @@ class CopyShared extends AbstractPayload
         $this->target = $target;
     }
 
-    /**
-     * @return Instance
-     */
     public function getSource(): Instance
     {
         return $this->source;
     }
 
-    /**
-     * @return Instance
-     */
     public function getTarget(): Instance
     {
         return $this->target;
     }
 
     /**
-     * @param PolicyService $policyService
-     * @return bool
      * @throws Exception
      */
     public function canExecute(PolicyService $policyService): bool
@@ -57,11 +45,8 @@ class CopyShared extends AbstractPayload
         return $policyService->canCopyShared($this);
     }
 
-    /**
-     * @return string
-     */
     public function describe(): string
     {
-        return "copy shared data from " . $this->getSource()->describe() . " to " . $this->getTarget()->describe();
+        return 'copy shared data from '.$this->getSource()->describe().' to '.$this->getTarget()->describe();
     }
 }

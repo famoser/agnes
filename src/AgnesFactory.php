@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes;
-
 
 use Agnes\Actions\CopySharedAction;
 use Agnes\Actions\DeployAction;
@@ -49,7 +47,7 @@ class AgnesFactory
      */
     public function __construct()
     {
-        $redirectPlugin = new RedirectPlugin(["preserve_header" => false]);
+        $redirectPlugin = new RedirectPlugin(['preserve_header' => false]);
         $pluginClient = new PluginClient(HttpClientDiscovery::find(), [$redirectPlugin]);
 
         // construct internal services
@@ -66,7 +64,6 @@ class AgnesFactory
     }
 
     /**
-     * @param string $path
      * @throws Exception
      */
     public function addConfig(string $path)
@@ -115,37 +112,25 @@ class AgnesFactory
             new ReleaseCommand($this),
             new DeployCommand($this, $this->configurationService, $this->instanceService, $this->githubService),
             new RollbackCommand($this, $this->instanceService),
-            new CopySharedCommand($this, $this->instanceService)
+            new CopySharedCommand($this, $this->instanceService),
         ];
     }
 
-    /**
-     * @return ConfigurationService
-     */
     public function getConfigurationService(): ConfigurationService
     {
         return $this->configurationService;
     }
 
-    /**
-     * @return GithubService
-     */
     public function getGithubService(): GithubService
     {
         return $this->githubService;
     }
 
-    /**
-     * @return InstanceService
-     */
     public function getInstanceService(): InstanceService
     {
         return $this->instanceService;
     }
 
-    /**
-     * @return PolicyService
-     */
     public function getPolicyService(): PolicyService
     {
         return $this->policyService;

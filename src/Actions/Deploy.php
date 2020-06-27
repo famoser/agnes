@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Actions;
-
 
 use Agnes\Models\Build;
 use Agnes\Models\Instance;
@@ -28,8 +26,7 @@ class Deploy extends AbstractPayload
 
     /**
      * Deployment constructor.
-     * @param Build $build
-     * @param Instance $target
+     *
      * @param string[] $files
      */
     public function __construct(Build $build, Instance $target, array $files)
@@ -39,17 +36,11 @@ class Deploy extends AbstractPayload
         $this->filePaths = $files;
     }
 
-    /**
-     * @return Instance
-     */
     public function getTarget(): Instance
     {
         return $this->target;
     }
 
-    /**
-     * @return Build
-     */
     public function getBuild(): Build
     {
         return $this->build;
@@ -64,8 +55,6 @@ class Deploy extends AbstractPayload
     }
 
     /**
-     * @param PolicyService $policyService
-     * @return bool
      * @throws Exception
      */
     public function canExecute(PolicyService $policyService): bool
@@ -73,11 +62,8 @@ class Deploy extends AbstractPayload
         return $policyService->canDeploy($this);
     }
 
-    /**
-     * @return string
-     */
     public function describe(): string
     {
-        return "deploy " . $this->getBuild()->getName() . " to " . $this->getTarget()->describe();
+        return 'deploy '.$this->getBuild()->getName().' to '.$this->getTarget()->describe();
     }
 }

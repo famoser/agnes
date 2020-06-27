@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Commands;
 
 use Agnes\Actions\AbstractAction;
@@ -21,7 +20,6 @@ abstract class AgnesCommand extends Command
 
     /**
      * ReleaseCommand constructor.
-     * @param AgnesFactory $factory
      */
     public function __construct(AgnesFactory $factory)
     {
@@ -31,13 +29,13 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * add options for config file & additional config folder
+     * add options for config file & additional config folder.
      */
     public function configure()
     {
-        $this->addOption('dry-run', null, InputOption::VALUE_NONE, "should the command skip the actual execution (useful for you to preview the potential impact)");
-        $this->addOption('config-file', null, InputOption::VALUE_OPTIONAL, "agnes main config file");
-        $this->addOption('config-folder', null, InputOption::VALUE_OPTIONAL, "agnes config folder");
+        $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'should the command skip the actual execution (useful for you to preview the potential impact)');
+        $this->addOption('config-file', null, InputOption::VALUE_OPTIONAL, 'agnes main config file');
+        $this->addOption('config-folder', null, InputOption::VALUE_OPTIONAL, 'agnes config folder');
     }
 
     /**
@@ -45,18 +43,14 @@ abstract class AgnesCommand extends Command
      */
     private $agnesConfigFolder;
 
-    /**
-     * @return string|null
-     */
     protected function getConfigFolder(): ?string
     {
         return $this->agnesConfigFolder;
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return int|void|null
+     *
      * @throws Exception
      */
     public function execute(InputInterface $input, OutputInterface $output)
@@ -67,77 +61,74 @@ abstract class AgnesCommand extends Command
 
         $isDryRun = $input->getOption('dry-run');
         if ($isDryRun) {
-            $output->writeln("dry run active; none of the commands will be actually executed.");
+            $output->writeln('dry run active; none of the commands will be actually executed.');
         }
 
         $action = $this->getAction($this->factory);
 
-        $output->writeln("");
+        $output->writeln('');
         $payloads = $this->createPayloads($action, $input, $output);
-        if (count($payloads) === 0) {
-            $output->writeln("nothing to execute");
+        if (0 === count($payloads)) {
+            $output->writeln('nothing to execute');
 
             return 0;
         } else {
-            $output->writeln(count($payloads) . " tasks created:");
+            $output->writeln(count($payloads).' tasks created:');
             foreach ($payloads as $payload) {
                 $output->writeln($payload->describe());
             }
 
-            $output->writeln("");
+            $output->writeln('');
         }
 
-        $output->writeln("starting execution...");
-        $output->writeln("======================");
-        $output->writeln("");
+        $output->writeln('starting execution...');
+        $output->writeln('======================');
+        $output->writeln('');
 
         foreach ($payloads as $payload) {
             $description = $payload->describe();
 
             if (!$action->canExecute($payload)) {
-                $output->writeln("execution of \"" . $description . "\" blocked by policy; skipping");
-                $output->writeln("");
-            } else if (!$isDryRun) {
+                $output->writeln('execution of "'.$description.'" blocked by policy; skipping');
+                $output->writeln('');
+            } elseif (!$isDryRun) {
                 $output->writeln($description);
                 $action->execute($payload, $output);
-                $output->writeln("execution finished");
-                $output->writeln("");
+                $output->writeln('execution finished');
+                $output->writeln('');
             }
         }
-        $output->writeln("======================");
-        $output->writeln("all tasks completed.");
+        $output->writeln('======================');
+        $output->writeln('all tasks completed.');
 
         return 0;
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return bool
      * @throws Exception
      */
     protected function tryLoadConfig(InputInterface $input, OutputInterface $output): bool
     {
-        $configFilePath = $input->getOption("config-file");
-        $configFolder = $input->getOption("config-folder");
+        $configFilePath = $input->getOption('config-file');
+        $configFolder = $input->getOption('config-folder');
 
         // default config file
-        if ($configFilePath === null) {
-            if (file_exists("agnes.yml")) {
-                $configFilePath = "agnes.yml";
-                $output->writeln("found agnes.yml in project root and will use it");
-            } else if ($configFolder === null) {
-                $output->writeln("no configuration found or supplied");
+        if (null === $configFilePath) {
+            if (file_exists('agnes.yml')) {
+                $configFilePath = 'agnes.yml';
+                $output->writeln('found agnes.yml in project root and will use it');
+            } elseif (null === $configFolder) {
+                $output->writeln('no configuration found or supplied');
 
                 return false;
             }
         }
 
         // read config file
-        if ($configFilePath !== null) {
+        if (null !== $configFilePath) {
             $path = realpath($configFilePath);
             if (!is_file($path)) {
-                $output->writeln("config file not found at " . $configFilePath);
+                $output->writeln('config file not found at '.$configFilePath);
 
                 return false;
             }
@@ -146,17 +137,17 @@ abstract class AgnesCommand extends Command
         }
 
         // read config folder
-        if ($configFolder !== null) {
+        if (null !== $configFolder) {
             $path = realpath($configFolder);
             if (!is_dir($path)) {
-                $output->writeln("config folder not found at " . $configFilePath);
+                $output->writeln('config folder not found at '.$configFilePath);
 
                 return false;
             }
 
             $this->agnesConfigFolder = $path;
 
-            $configFilePaths = glob($path . DIRECTORY_SEPARATOR . "*.yml");
+            $configFilePaths = glob($path.DIRECTORY_SEPARATOR.'*.yml');
             foreach ($configFilePaths as $configFilePath) {
                 $this->factory->addConfig($configFilePath);
             }
@@ -165,16 +156,9 @@ abstract class AgnesCommand extends Command
         return true;
     }
 
-    /**
-     * @param AgnesFactory $factory
-     * @return AbstractAction
-     */
     abstract protected function getAction(AgnesFactory $factory): AbstractAction;
 
     /**
-     * @param AbstractAction $action
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return AbstractPayload[]
      */
     abstract protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array;

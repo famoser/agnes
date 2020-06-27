@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Actions;
-
 
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
@@ -24,9 +22,6 @@ class RollbackAction extends AbstractAction
 
     /**
      * RollbackService constructor.
-     * @param ConfigurationService $configurationService
-     * @param PolicyService $policyService
-     * @param InstanceService $instanceService
      */
     public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService)
     {
@@ -37,10 +32,8 @@ class RollbackAction extends AbstractAction
     }
 
     /**
-     * @param string $target
-     * @param string|null $rollbackTo
-     * @param string|null $rollbackFrom
      * @return Rollback[]
+     *
      * @throws Exception
      */
     public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom)
@@ -51,7 +44,7 @@ class RollbackAction extends AbstractAction
         $rollbacks = [];
         foreach ($instances as $instance) {
             $rollbackTarget = $instance->getRollbackTarget($rollbackTo, $rollbackFrom);
-            if ($rollbackTarget !== null) {
+            if (null !== $rollbackTarget) {
                 $rollbacks[] = new Rollback($instance, $rollbackTarget);
             }
         }
@@ -60,10 +53,9 @@ class RollbackAction extends AbstractAction
     }
 
     /**
-     * check the instance of the payload is of the expected type to execute in execute()
+     * check the instance of the payload is of the expected type to execute in execute().
      *
      * @param Rollback $payload
-     * @return bool
      */
     protected function canProcessPayload($payload): bool
     {
@@ -72,7 +64,7 @@ class RollbackAction extends AbstractAction
 
     /**
      * @param Rollback $rollback
-     * @param OutputInterface $output
+     *
      * @throws Exception
      */
     protected function doExecute($rollback, OutputInterface $output)
@@ -80,12 +72,12 @@ class RollbackAction extends AbstractAction
         $previousReleasePath = $rollback->getTarget()->getPath();
         $releaseFolder = $rollback->getInstance()->getCurrentInstallation()->getPath();
 
-        $output->writeln("executing rollback script");
-        $deployScripts = $this->configurationService->getScripts("rollback");
-        $rollback->getInstance()->getConnection()->executeScript($releaseFolder, $deployScripts, ["PREVIOUS_RELEASE_PATH" => $previousReleasePath]);
+        $output->writeln('executing rollback script');
+        $deployScripts = $this->configurationService->getScripts('rollback');
+        $rollback->getInstance()->getConnection()->executeScript($releaseFolder, $deployScripts, ['PREVIOUS_RELEASE_PATH' => $previousReleasePath]);
 
-        $output->writeln("switching to previous release");
+        $output->writeln('switching to previous release');
         $this->instanceService->switchRelease($rollback->getInstance(), $rollback->getTarget()->getRelease());
-        $output->writeln("previous release online");
+        $output->writeln('previous release online');
     }
 }

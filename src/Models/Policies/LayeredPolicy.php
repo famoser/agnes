@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Models\Policies;
-
 
 use Agnes\Models\Filter;
 
@@ -15,7 +13,7 @@ abstract class LayeredPolicy extends Policy
 
     /**
      * LayeredPolicy constructor.
-     * @param Filter|null $filter
+     *
      * @param string[][] $layers
      */
     public function __construct(?Filter $filter, array $layers)
@@ -23,14 +21,13 @@ abstract class LayeredPolicy extends Policy
         parent::__construct($filter);
 
         foreach ($layers as $key => $entries) {
-            $this->layers[(int)$key] = $entries;
+            $this->layers[(int) $key] = $entries;
         }
 
         ksort($this->layers);
     }
 
     /**
-     * @param string $value
      * @return int|string
      */
     public function getLayerIndex(string $value)
@@ -47,7 +44,6 @@ abstract class LayeredPolicy extends Policy
     }
 
     /**
-     * @param int $stageIndex
      * @return string[]
      */
     public function getLayer(int $stageIndex)
@@ -56,7 +52,6 @@ abstract class LayeredPolicy extends Policy
     }
 
     /**
-     * @param int $index
      * @return bool
      */
     public function isLowestLayer(int $index)
@@ -67,7 +62,6 @@ abstract class LayeredPolicy extends Policy
     }
 
     /**
-     * @param string $index
      * @return bool
      */
     public function isHighestLayer(string $index)
@@ -78,7 +72,6 @@ abstract class LayeredPolicy extends Policy
     }
 
     /**
-     * @param int $index
      * @return string[]
      */
     public function getNextLowerLayer(int $index): array

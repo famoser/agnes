@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Services\Configuration;
-
 
 class Environment
 {
@@ -18,7 +16,7 @@ class Environment
 
     /**
      * Environment constructor.
-     * @param string $name
+     *
      * @param string[] $stages
      */
     public function __construct(string $name, array $stages)
@@ -27,9 +25,6 @@ class Environment
         $this->stages = $stages;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;

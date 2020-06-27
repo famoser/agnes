@@ -1,6 +1,7 @@
 .build
 .release
 .idea
+.php_cs.cache
 vendor
 
 .env.local

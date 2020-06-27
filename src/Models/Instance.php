@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Models;
-
 
 use Agnes\Models\Connections\Connection;
 use Agnes\Services\Configuration\Environment;
@@ -37,11 +35,8 @@ class Instance
 
     /**
      * Instance constructor.
-     * @param Server $server
-     * @param Environment $environment
-     * @param string $stage
+     *
      * @param Installation[] $installations
-     * @param Installation|null $currentInstallation
      */
     public function __construct(Server $server, Environment $environment, string $stage, array $installations, ?Installation $currentInstallation)
     {
@@ -57,49 +52,31 @@ class Instance
         $this->currentInstallation = $currentInstallation;
     }
 
-    /**
-     * @return Server
-     */
     public function getServer(): Server
     {
         return $this->server;
     }
 
-    /**
-     * @return Environment
-     */
     public function getEnvironment(): Environment
     {
         return $this->environment;
     }
 
-    /**
-     * @return Connection
-     */
     public function getConnection(): Connection
     {
         return $this->server->getConnection();
     }
 
-    /**
-     * @return string
-     */
     public function getServerName(): string
     {
         return $this->server->getName();
     }
 
-    /**
-     * @return string
-     */
     public function getEnvironmentName(): string
     {
         return $this->environment->getName();
     }
 
-    /**
-     * @return string
-     */
     public function getStage(): string
     {
         return $this->stage;
@@ -121,23 +98,15 @@ class Instance
         return $this->currentInstallation;
     }
 
-    /**
-     * @param string $releaseName
-     * @return bool
-     */
     public function isCurrentRelease(string $releaseName): bool
     {
-        if ($this->getCurrentInstallation() === null) {
+        if (null === $this->getCurrentInstallation()) {
             return false;
         }
 
         return $this->getCurrentInstallation()->isSameReleaseName($releaseName);
     }
 
-    /**
-     * @param string $releaseName
-     * @return Installation|null
-     */
     public function getInstallation(string $releaseName): ?Installation
     {
         foreach ($this->installations as $installation) {
@@ -158,11 +127,11 @@ class Instance
     }
 
     /**
-     * get previous installation
+     * get previous installation.
      */
     public function getPreviousInstallation(): ?Installation
     {
-        if ($this->getCurrentInstallation() === null) {
+        if (null === $this->getCurrentInstallation()) {
             return null;
         }
 
@@ -172,9 +141,9 @@ class Instance
         $upperBoundRelease = null;
 
         foreach ($this->getInstallations() as $installation) {
-            if ($installation->getNumber() !== null &&
+            if (null !== $installation->getNumber() &&
                 $installation->getNumber() < $currentReleaseNumber &&
-                ($upperBoundRelease === null || $upperBoundRelease->getNumber() < $installation->getNumber())) {
+                (null === $upperBoundRelease || $upperBoundRelease->getNumber() < $installation->getNumber())) {
                 $upperBoundRelease = $installation;
             }
         }
@@ -187,7 +156,7 @@ class Instance
      */
     public function getCurrentReleaseName()
     {
-        if ($this->getCurrentInstallation() != null && $this->getCurrentInstallation()->getRelease() !== null) {
+        if (null != $this->getCurrentInstallation() && null !== $this->getCurrentInstallation()->getRelease()) {
             return $this->getCurrentInstallation()->getRelease()->getName();
         }
 
@@ -196,6 +165,7 @@ class Instance
 
     /**
      * @param Instance[] $instances
+     *
      * @return Instance[]
      */
     public function getSameEnvironmentInstances(array $instances)
@@ -211,25 +181,20 @@ class Instance
         return $matching;
     }
 
-    /**
-     * @param string|null $rollbackTo
-     * @param string|null $rollbackFrom
-     * @return Installation|null
-     */
     public function getRollbackTarget(?string $rollbackTo, ?string $rollbackFrom): ?Installation
     {
         // ensure instance active
-        if ($this->getCurrentInstallation() === null) {
+        if (null === $this->getCurrentInstallation()) {
             return null;
         }
 
         // ensure rollbackFrom is what is currently active
-        if ($rollbackFrom !== null && !$this->isCurrentRelease($rollbackFrom)) {
+        if (null !== $rollbackFrom && !$this->isCurrentRelease($rollbackFrom)) {
             return null;
         }
 
         // if no rollback target specified, return the previous installation
-        if ($rollbackTo === null) {
+        if (null === $rollbackTo) {
             return $this->getPreviousInstallation();
         }
 
@@ -240,7 +205,7 @@ class Instance
 
         // find matching installation & ensure it is indeed a previous release
         $targetInstallation = $this->getInstallation($rollbackTo);
-        if ($targetInstallation !== null && $targetInstallation->getNumber() < $this->getCurrentInstallation()->getNumber()) {
+        if (null !== $targetInstallation && $targetInstallation->getNumber() < $this->getCurrentInstallation()->getNumber()) {
             return $targetInstallation;
         }
 
@@ -248,7 +213,6 @@ class Instance
     }
 
     /**
-     * @param Instance $other
      * @return bool
      */
     public function equals(Instance $other)
@@ -271,6 +235,6 @@ class Instance
      */
     public function describe()
     {
-        return $this->getServerName() . ":" . $this->getEnvironmentName() . ":" . $this->getStage();
+        return $this->getServerName().':'.$this->getEnvironmentName().':'.$this->getStage();
     }
 }

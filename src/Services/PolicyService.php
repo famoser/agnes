@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Services;
 
 use Agnes\Actions\CopyShared;
@@ -29,8 +28,6 @@ class PolicyService
 
     /**
      * PolicyService constructor.
-     * @param ConfigurationService $configurationService
-     * @param InstanceService $instanceService
      */
     public function __construct(ConfigurationService $configurationService, InstanceService $instanceService)
     {
@@ -39,57 +36,46 @@ class PolicyService
     }
 
     /**
-     * @param Release $release
-     * @return bool
      * @throws Exception
      */
     public function canRelease(Release $release): bool
     {
         $releasePolicyVisitor = new ReleasePolicyVisitor($release);
 
-        return $this->getConflictingPolicy($releasePolicyVisitor, "release") === null;
+        return null === $this->getConflictingPolicy($releasePolicyVisitor, 'release');
     }
 
     /**
-     * @param Deploy $deploy
-     * @return bool
      * @throws Exception
      */
     public function canDeploy(Deploy $deploy): bool
     {
         $deployPolicyVisitor = new DeployPolicyVisitor($this->instanceService, $deploy);
 
-        return $this->getConflictingPolicy($deployPolicyVisitor, "deploy") === null;
+        return null === $this->getConflictingPolicy($deployPolicyVisitor, 'deploy');
     }
 
     /**
-     * @param Rollback $rollback
-     * @return bool
      * @throws Exception
      */
     public function canRollback(Rollback $rollback): bool
     {
         $roollbackPolicyVisitor = new RollbackPolicyVisitor($rollback);
 
-        return $this->getConflictingPolicy($roollbackPolicyVisitor, "rollback") === null;
+        return null === $this->getConflictingPolicy($roollbackPolicyVisitor, 'rollback');
     }
 
     /**
-     * @param CopyShared $copyShared
-     * @return bool
      * @throws Exception
      */
     public function canCopyShared(CopyShared $copyShared): bool
     {
         $copySharedPolicyVisitor = new CopySharedPolicyVisitor($copyShared);
 
-        return $this->getConflictingPolicy($copySharedPolicyVisitor, "copy_shared") === null;
+        return null === $this->getConflictingPolicy($copySharedPolicyVisitor, 'copy_shared');
     }
 
     /**
-     * @param PolicyVisitor $visitor
-     * @param string $task
-     * @return Policy|null
      * @throws Exception
      */
     private function getConflictingPolicy(PolicyVisitor $visitor, string $task): ?Policy

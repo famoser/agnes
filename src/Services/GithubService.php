@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Services;
 
 use Agnes\Actions\Release;
@@ -24,8 +23,6 @@ class GithubService
 
     /**
      * GithubService constructor.
-     * @param HttpClient $httpClient
-     * @param ConfigurationService $configurationService
      */
     public function __construct(HttpClient $httpClient, ConfigurationService $configurationService)
     {
@@ -40,11 +37,12 @@ class GithubService
 
     /**
      * @return Client
+     *
      * @throws \Exception
      */
     private function getClient()
     {
-        if ($this->clientCache === null) {
+        if (null === $this->clientCache) {
             $config = $this->configurationService->getGithubConfig();
             $this->clientCache = new Client($this->httpClient, $config);
         }
@@ -53,8 +51,8 @@ class GithubService
     }
 
     /**
-     * @param string $releaseName
      * @return Build|null
+     *
      * @throws Exception
      */
     public function findBuild(string $releaseName)
@@ -63,7 +61,7 @@ class GithubService
         $releases = json_decode($response->getBody()->getContents());
 
         foreach ($releases as $release) {
-            if ($release->name !== $releaseName || count($release->assets) === 0) {
+            if ($release->name !== $releaseName || 0 === count($release->assets)) {
                 continue;
             }
 
@@ -77,8 +75,8 @@ class GithubService
     }
 
     /**
-     * @param string $assetId
      * @return string
+     *
      * @throws Exception
      * @throws \Exception
      */
@@ -87,7 +85,6 @@ class GithubService
     }
 
     /**
-     * @param Build $build
      * @throws Exception
      */
     public function publish(Build $build)
@@ -96,15 +93,13 @@ class GithubService
 
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
-        $releaseId = (int)$responseObject->id;
-        $assetName = $build->getArchiveName(".tar.gz");
+        $releaseId = (int) $responseObject->id;
+        $assetName = $build->getArchiveName('.tar.gz');
 
-        $this->getClient()->addReleaseAsset($releaseId, $assetName, "application/zip", $build->getContent());
+        $this->getClient()->addReleaseAsset($releaseId, $assetName, 'application/zip', $build->getContent());
     }
 
     /**
-     * @param Release $release
-     * @return ResponseInterface
      * @throws Exception
      * @throws \Exception
      */
@@ -112,23 +107,22 @@ class GithubService
     {
         $body = '
         {
-          "tag_name": "' . $release->getName() . '",
-          "target_commitish": "' . $release->getCommitish() . '",
-          "name": "' . $release->getName() . '",
-          "body": "Release of ' . $release->getName() . '",
+          "tag_name": "'.$release->getName().'",
+          "target_commitish": "'.$release->getCommitish().'",
+          "name": "'.$release->getName().'",
+          "body": "Release of '.$release->getName().'",
           "draft": false,
-          "prerelease": ' . $this->booleanToString(strpos($release->getName(), "-") > 0) . '
+          "prerelease": '.$this->booleanToString(strpos($release->getName(), '-') > 0).'
         }';
 
         return $this->getClient()->createRelease($body);
     }
 
     /**
-     * @param bool $input
      * @return string
      */
     private function booleanToString(bool $input)
     {
-        return $input ? "true" : "false";
+        return $input ? 'true' : 'false';
     }
 }

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Actions;
 
 use Agnes\Services\ConfigurationService;
@@ -23,9 +22,6 @@ class CopySharedAction extends AbstractAction
 
     /**
      * CopySharedService constructor.
-     * @param PolicyService $policyService
-     * @param ConfigurationService $configurationService
-     * @param InstanceService $instanceService
      */
     public function __construct(PolicyService $policyService, ConfigurationService $configurationService, InstanceService $instanceService)
     {
@@ -36,9 +32,8 @@ class CopySharedAction extends AbstractAction
     }
 
     /**
-     * @param string $source
-     * @param string $target
      * @return CopyShared[]
+     *
      * @throws Exception
      */
     public function createMany(string $source, string $target): array
@@ -50,7 +45,7 @@ class CopySharedAction extends AbstractAction
         $copyShareds = [];
         foreach ($targetInstances as $targetInstance) {
             $matchingInstances = $targetInstance->getSameEnvironmentInstances($sourceInstances);
-            if (count($matchingInstances) === 1) {
+            if (1 === count($matchingInstances)) {
                 $copyShareds[] = new CopyShared($matchingInstances[0], $targetInstance);
             }
         }
@@ -59,10 +54,9 @@ class CopySharedAction extends AbstractAction
     }
 
     /**
-     * check the instance of the payload is of the expected type to execute in execute()
+     * check the instance of the payload is of the expected type to execute in execute().
      *
      * @param CopyShared $copyShared
-     * @return bool
      */
     protected function canProcessPayload($copyShared): bool
     {
@@ -85,7 +79,7 @@ class CopySharedAction extends AbstractAction
 
     /**
      * @param CopyShared $copyShared
-     * @param OutputInterface $output
+     *
      * @throws Exception
      */
     protected function doExecute($copyShared, OutputInterface $output)
@@ -96,10 +90,10 @@ class CopySharedAction extends AbstractAction
 
         $sharedFolders = $this->configurationService->getSharedFolders();
         foreach ($sharedFolders as $sharedFolder) {
-            $sourceFolderPath = $sourceSharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
-            $targetFolderPath = $targetSharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
+            $sourceFolderPath = $sourceSharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
+            $targetFolderPath = $targetSharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
 
-            $output->writeln("copying folder " . $sharedFolder);
+            $output->writeln('copying folder '.$sharedFolder);
             $connection->copyFolderContent($sourceFolderPath, $targetFolderPath);
         }
     }

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Models;
-
 
 use Agnes\Actions\Release;
 
@@ -15,9 +13,6 @@ class Build extends Release
 
     /**
      * Build constructor.
-     * @param string $name
-     * @param string $commitish
-     * @param string $content
      */
     public function __construct(string $name, string $commitish, string $content)
     {
@@ -27,9 +22,6 @@ class Build extends Release
     }
 
     /**
-     * @param Release $release
-     * @param string $content
-     *
      * @return self
      */
     public static function fromRelease(Release $release, string $content)
@@ -37,9 +29,6 @@ class Build extends Release
         return new self($release->getName(), $release->getCommitish(), $content);
     }
 
-    /**
-     * @return string
-     */
     public function getContent(): string
     {
         return $this->content;

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Actions;
-
 
 use Agnes\Services\PolicyService;
 use Exception;
@@ -17,25 +15,18 @@ abstract class AbstractAction
 
     /**
      * AbstractAction constructor.
-     * @param PolicyService $policyService
      */
     public function __construct(PolicyService $policyService)
     {
         $this->policyService = $policyService;
     }
 
-    /**
-     * @param AbstractPayload $payload
-     * @param OutputInterface $output
-     */
     public function execute(AbstractPayload $payload, OutputInterface $output)
     {
         $this->doExecute($payload, $output);
     }
 
     /**
-     * @param AbstractPayload $payload
-     * @return bool
      * @throws Exception
      */
     public function canExecute(AbstractPayload $payload): bool
@@ -52,16 +43,14 @@ abstract class AbstractAction
     }
 
     /**
-     * check the instance of the payload is of the expected type to execute in execute()
+     * check the instance of the payload is of the expected type to execute in execute().
      *
      * @param $payload
-     * @return bool
      */
-    protected abstract function canProcessPayload($payload): bool;
+    abstract protected function canProcessPayload($payload): bool;
 
     /**
      * @param $payload
-     * @param OutputInterface $output
      */
     abstract protected function doExecute($payload, OutputInterface $output);
 }

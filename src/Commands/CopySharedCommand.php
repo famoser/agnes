@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Commands;
 
 use Agnes\Actions\AbstractAction;
@@ -22,8 +21,6 @@ class CopySharedCommand extends AgnesCommand
 
     /**
      * CopySharedCommand constructor.
-     * @param AgnesFactory $factory
-     * @param InstanceService $instanceService
      */
     public function __construct(AgnesFactory $factory, InstanceService $instanceService)
     {
@@ -32,39 +29,33 @@ class CopySharedCommand extends AgnesCommand
         $this->instanceService = $instanceService;
     }
 
-
     public function configure()
     {
         $this->setName('copy:shared')
             ->setDescription('Copies the shared data from the source to the target')
             ->setHelp('This copies the shared data from the source to the target to replicate environment(s).')
-            ->addArgument("source", InputArgument::REQUIRED, "the instance(s) to copy data from. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to replace the data from the source." . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION);
+            ->addArgument('source', InputArgument::REQUIRED, 'the instance(s) to copy data from. '.DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
+            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to replace the data from the source.'.DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION);
 
         parent::configure();
     }
 
-    /**
-     * @param AgnesFactory $factory
-     * @return AbstractAction
-     */
     protected function getAction(AgnesFactory $factory): AbstractAction
     {
         return $factory->createCopySharedAction();
     }
 
     /**
-     * @param AbstractAction $action
-     * @param InputInterface $input
      * @return AbstractPayload[]
+     *
      * @throws Exception
      */
     protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {
-        $source = $input->getArgument("source");
-        $target = $input->getArgument("target");
+        $source = $input->getArgument('source');
+        $target = $input->getArgument('target');
 
-        /** @var CopySharedAction $action */
+        /* @var CopySharedAction $action */
         return $action->createMany($source, $target);
     }
 }

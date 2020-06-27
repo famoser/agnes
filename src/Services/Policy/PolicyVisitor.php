@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Services\Policy;
-
 
 use Agnes\Models\Filter;
 use Agnes\Models\Policies\Policy;
@@ -15,8 +13,6 @@ use Exception;
 abstract class PolicyVisitor
 {
     /**
-     * @param StageWriteUpPolicy $stageWriteUpPolicy
-     * @return bool
      * @throws Exception
      */
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
@@ -25,8 +21,6 @@ abstract class PolicyVisitor
     }
 
     /**
-     * @param StageWriteDownPolicy $stageWriteDownPolicy
-     * @return bool
      * @throws Exception
      */
     public function visitStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
@@ -35,8 +29,6 @@ abstract class PolicyVisitor
     }
 
     /**
-     * @param ReleaseWhitelistPolicy $releaseWhitelistPolicy
-     * @return bool
      * @throws Exception
      */
     public function visitReleaseWhitelist(ReleaseWhitelistPolicy $releaseWhitelistPolicy): bool
@@ -45,8 +37,6 @@ abstract class PolicyVisitor
     }
 
     /**
-     * @param SameReleasePolicy $sameReleasePolicy
-     * @return bool
      * @throws Exception
      */
     public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
@@ -54,30 +44,25 @@ abstract class PolicyVisitor
         return $this->visitDefault($sameReleasePolicy);
     }
 
-    /**
-     * @param Policy $policy
-     * @return bool
-     */
     public function isApplicable(Policy $policy): bool
     {
         return $this->filterApplies($policy->getFilter());
     }
 
     /**
-     * checks if the policy has to be checked for
+     * checks if the policy has to be checked for.
      *
      * @param Filter $filter
+     *
      * @return bool
      */
-    protected abstract function filterApplies(?Filter $filter);
+    abstract protected function filterApplies(?Filter $filter);
 
     /**
-     * @param Policy $stageWriteDownPolicy
-     * @return bool
      * @throws Exception
      */
     private function visitDefault(Policy $stageWriteDownPolicy): bool
     {
-        throw new Exception("The policy " . get_class($stageWriteDownPolicy) . " has not been implemented for the executing task.");
+        throw new Exception('The policy '.get_class($stageWriteDownPolicy).' has not been implemented for the executing task.');
     }
 }

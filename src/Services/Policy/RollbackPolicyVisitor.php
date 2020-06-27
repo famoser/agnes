@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Services\Policy;
-
 
 use Agnes\Actions\Rollback;
 use Agnes\Models\Filter;
@@ -16,7 +14,6 @@ class RollbackPolicyVisitor extends PolicyVisitor
 
     /**
      * RollbackVisitor constructor.
-     * @param Rollback $rollback
      */
     public function __construct(Rollback $rollback)
     {
@@ -24,13 +21,14 @@ class RollbackPolicyVisitor extends PolicyVisitor
     }
 
     /**
-     * checks if the policy has to be checked for
+     * checks if the policy has to be checked for.
      *
      * @param Filter $filter
+     *
      * @return bool
      */
     protected function filterApplies(?Filter $filter)
     {
-        return $filter === null || $filter->instanceMatches($this->rollback->getInstance());
+        return null === $filter || $filter->instanceMatches($this->rollback->getInstance());
     }
 }

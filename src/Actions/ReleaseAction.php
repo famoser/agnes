@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Actions;
-
 
 use Agnes\Models\Build;
 use Agnes\Services\ConfigurationService;
@@ -25,9 +23,6 @@ class ReleaseAction extends AbstractAction
 
     /**
      * PublishService constructor.
-     * @param ConfigurationService $configurationService
-     * @param PolicyService $policyService
-     * @param GithubService $githubService
      */
     public function __construct(ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService)
     {
@@ -39,7 +34,7 @@ class ReleaseAction extends AbstractAction
 
     /**
      * @param string $name
-     * @param string $commitish
+     *
      * @return Release
      */
     public function tryCreate(string $commitish, string $name = null)
@@ -48,10 +43,9 @@ class ReleaseAction extends AbstractAction
     }
 
     /**
-     * check the instance of the payload is of the expected type to execute in execute()
+     * check the instance of the payload is of the expected type to execute in execute().
      *
      * @param Release $payload
-     * @return bool
      */
     protected function canProcessPayload($payload): bool
     {
@@ -60,7 +54,7 @@ class ReleaseAction extends AbstractAction
 
     /**
      * @param Release $release
-     * @param OutputInterface $output
+     *
      * @throws Exception
      * @throws \Exception
      */
@@ -68,14 +62,13 @@ class ReleaseAction extends AbstractAction
     {
         $build = $this->buildRelease($release, $output);
 
-        $output->writeln("publishing release to github");
+        $output->writeln('publishing release to github');
         $this->githubService->publish($build);
     }
 
     /**
-     * @param Release $release
-     * @param OutputInterface $output
      * @return Build
+     *
      * @throws \Exception
      */
     public function buildRelease(Release $release, OutputInterface $output)
@@ -83,23 +76,23 @@ class ReleaseAction extends AbstractAction
         $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
 
-        $output->writeln("cleaning build folder");
+        $output->writeln('cleaning build folder');
         $connection->createOrClearFolder($buildPath);
 
-        $output->writeln("checking out repository");
+        $output->writeln('checking out repository');
         $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
         $gitHash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $release->getCommitish());
         $release->setHash($gitHash);
 
-        $output->writeln("executing release script");
-        $scripts = $this->configurationService->getScripts("release");
+        $output->writeln('executing release script');
+        $scripts = $this->configurationService->getScripts('release');
         $connection->executeScript($buildPath, $scripts);
 
-        $output->writeln("compressing build folder");
-        $filePath = $connection->compressTarGz($buildPath, $release->getArchiveName(".tar.gz"));
+        $output->writeln('compressing build folder');
+        $filePath = $connection->compressTarGz($buildPath, $release->getArchiveName('.tar.gz'));
         $content = $connection->readFile($filePath);
 
-        $output->writeln("removing build folder");
+        $output->writeln('removing build folder');
         $connection->removeFolder($buildPath);
 
         return Build::fromRelease($release, $content);

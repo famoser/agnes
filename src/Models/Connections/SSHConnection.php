@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Models\Connections;
-
 
 use Agnes\Models\Executors\Executor;
 use Exception;
@@ -25,8 +23,6 @@ class SSHConnection extends Connection
 
     /**
      * SSHConnection constructor.
-     * @param Executor $executor
-     * @param string $destination
      */
     public function __construct(Executor $executor, string $destination)
     {
@@ -37,8 +33,6 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @param string $command
-     * @return string
      * @throws Exception
      */
     public function executeCommand(string $command): string
@@ -49,8 +43,8 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @param string $workingFolder
      * @param string[] $commands
+     *
      * @throws Exception
      */
     protected function executeWithinWorkingFolder(string $workingFolder, array $commands)
@@ -64,17 +58,12 @@ class SSHConnection extends Connection
         $this->executeCommands($commands);
     }
 
-    /**
-     * @return string
-     */
     public function getDestination(): string
     {
         return $this->destination;
     }
 
     /**
-     * @param string $filePath
-     * @return string
      * @throws Exception
      */
     public function readFile(string $filePath): string
@@ -93,8 +82,6 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @param string $filePath
-     * @param string $content
      * @throws Exception
      */
     public function writeFile(string $filePath, string $content)
@@ -113,8 +100,8 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @param string $dir
      * @return string[]
+     *
      * @throws Exception
      */
     public function getFolders(string $dir): array
@@ -130,30 +117,26 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @param string $filePath
-     * @return bool
      * @throws Exception
      */
     public function checkFileExists(string $filePath): bool
     {
-        $command = $this->executor->testFileExists($filePath, "yes");
-        return $this->testForOutput($command, "yes");
+        $command = $this->executor->testFileExists($filePath, 'yes');
+
+        return $this->testForOutput($command, 'yes');
     }
 
     /**
-     * @param string $folderPath
-     * @return bool
      * @throws Exception
      */
     public function checkFolderExists(string $folderPath): bool
     {
-        $command = $this->executor->testFolderExists($folderPath, "yes");
-        return $this->testForOutput($command, "yes");
+        $command = $this->executor->testFolderExists($folderPath, 'yes');
+
+        return $this->testForOutput($command, 'yes');
     }
 
     /**
-     * @param string $command
-     * @param string $expected
      * @return bool
      */
     private function testForOutput(string $command, string $expected)
@@ -164,16 +147,15 @@ class SSHConnection extends Connection
             return false;
         }
 
-        return strpos($output, $expected) !== false;
+        return false !== strpos($output, $expected);
     }
 
     /**
-     * @param string $filePath
      * @return string
      */
     private function getSSHRsyncPath(string $filePath)
     {
-        return $this->getDestination() . ":" . $filePath;
+        return $this->getDestination().':'.$filePath;
     }
 
     /**
@@ -184,10 +166,6 @@ class SSHConnection extends Connection
         return tempnam(sys_get_temp_dir(), 'Agnes');
     }
 
-    /**
-     * @param Connection $connection
-     * @return bool
-     */
     public function equals(Connection $connection): bool
     {
         return $connection instanceof SSHConnection && $connection->getDestination() === $this->getDestination();

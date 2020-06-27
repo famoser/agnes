@@ -26,6 +26,10 @@
     "php-http/client-common": "^2.0",
     "php-http/curl-client": "^2.0"
   },
+  "require-dev": {
+    "brainmaestro/composer-git-hooks": "^2.8",
+    "friendsofphp/php-cs-fixer": "^2.16"
+  },
   "autoload": {
     "psr-4": {
       "Agnes\\": "src"
@@ -35,16 +39,31 @@
     ]
   },
   "scripts": {
+    "prepare-environment": [
+      "vendor/bin/cghooks update"
+    ],
     "configure-environment": [
-      "cp -n .env .env.local"
+      "touch .env.local"
     ],
     "pre-install-cmd": "@configure-environment",
-    "pre-update-cmd": "@configure-environment"
+    "post-install-cmd": "@prepare-environment",
+    "pre-update-cmd": "@configure-environment",
+    "post-update-cmd": "@prepare-environment"
   },
   "config": {
     "sort-packages": true,
     "platform": {
       "php": "7.3.8"
+    }
+  },
+  "extra": {
+    "hooks": {
+      "pre-commit": [
+        "echo committing as $(git config user.name)",
+        "./vendor/bin/php-cs-fixer fix",
+        "git update-index --again"
+      ],
+      "post-merge": "composer install"
     }
   }
 }

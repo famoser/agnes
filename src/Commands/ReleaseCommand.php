@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Commands;
 
 use Agnes\Actions\AbstractAction;
@@ -15,7 +14,6 @@ class ReleaseCommand extends AgnesCommand
 {
     /**
      * ReleaseCommand constructor.
-     * @param AgnesFactory $factory
      */
     public function __construct(AgnesFactory $factory)
     {
@@ -27,31 +25,24 @@ class ReleaseCommand extends AgnesCommand
         $this->setName('release')
             ->setDescription('Create a new release')
             ->setHelp('This command compiles the specified commitish and then publishes it to github.')
-            ->addArgument("release", InputArgument::REQUIRED, "name of the release")
-            ->addArgument("commitish", InputArgument::REQUIRED, "branch or commit of the release");
+            ->addArgument('release', InputArgument::REQUIRED, 'name of the release')
+            ->addArgument('commitish', InputArgument::REQUIRED, 'branch or commit of the release');
 
         parent::configure();
     }
 
-    /**
-     * @param AgnesFactory $factory
-     * @return AbstractAction
-     */
     protected function getAction(AgnesFactory $factory): AbstractAction
     {
         return $factory->createReleaseAction();
     }
 
     /**
-     * @param AbstractAction $action
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return AbstractPayload[]
      */
     protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {
-        $name = $input->getArgument("release");
-        $commitish = $input->getArgument("commitish");
+        $name = $input->getArgument('release');
+        $commitish = $input->getArgument('commitish');
 
         /** @var ReleaseAction $action */
         $release = $action->tryCreate($commitish, $name);

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Services\Policy;
-
 
 use Agnes\Actions\Deploy;
 use Agnes\Models\Filter;
@@ -24,8 +22,6 @@ class DeployPolicyVisitor extends PolicyVisitor
 
     /**
      * DeployPolicyVisitor constructor.
-     * @param InstanceService $installationService
-     * @param Deploy $deployment
      */
     public function __construct(InstanceService $installationService, Deploy $deployment)
     {
@@ -34,15 +30,13 @@ class DeployPolicyVisitor extends PolicyVisitor
     }
 
     /**
-     * @param StageWriteUpPolicy $stageWriteUpPolicy
-     * @return bool
      * @throws Exception
      */
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
         $targetStage = $this->deployment->getTarget()->getStage();
         $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
-        if ($stageIndex === false) {
+        if (false === $stageIndex) {
             throw new Exception("Stage $targetStage not found in specified layers; policy undecidable.");
         }
 
@@ -57,14 +51,14 @@ class DeployPolicyVisitor extends PolicyVisitor
         $instances = $this->installationService->getInstancesByFilter($filter);
 
         // if no instances exist of the specified stages fulfil the policy trivially
-        if (count($instances) === 0) {
+        if (0 === count($instances)) {
             return true;
         }
 
         // check if the release was published there at any given time
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {
-                if ($installation->hasOnlinePeriods() !== null && $installation->isSameReleaseName($this->deployment->getBuild()->getName())) {
+                if (null !== $installation->hasOnlinePeriods() && $installation->isSameReleaseName($this->deployment->getBuild()->getName())) {
                     return true;
                 }
             }
@@ -74,11 +68,10 @@ class DeployPolicyVisitor extends PolicyVisitor
     }
 
     /**
-     * @param Filter|null $filter
      * @return bool
      */
     protected function filterApplies(?Filter $filter)
     {
-        return $filter === null || $filter->instanceMatches($this->deployment->getTarget());
+        return null === $filter || $filter->instanceMatches($this->deployment->getTarget());
     }
 }

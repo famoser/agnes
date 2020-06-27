@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Actions;
-
 
 use Agnes\Services\PolicyService;
 use Exception;
@@ -26,7 +24,7 @@ class Release extends AbstractPayload
 
     /**
      * Release constructor.
-     * @param string $commitish
+     *
      * @param string $name
      */
     public function __construct(string $commitish, string $name = null)
@@ -35,42 +33,27 @@ class Release extends AbstractPayload
         $this->name = $name;
     }
 
-    /**
-     * @param string $hash
-     */
     public function setHash(string $hash)
     {
         $this->hash = $hash;
     }
 
-    /**
-     * @return string
-     */
     public function getCommitish(): string
     {
         return $this->commitish;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
-        return $this->name !== null ? $this->name : $this->hash;
+        return null !== $this->name ? $this->name : $this->hash;
     }
 
-    /**
-     * @param string $ending
-     * @return string
-     */
     public function getArchiveName(string $ending): string
     {
-        return "release-" . $this->getName() . $ending;
+        return 'release-'.$this->getName().$ending;
     }
 
     /**
-     * @param PolicyService $policyService
-     * @return bool
      * @throws Exception
      */
     public function canExecute(PolicyService $policyService): bool
@@ -78,11 +61,8 @@ class Release extends AbstractPayload
         return $policyService->canRelease($this);
     }
 
-    /**
-     * @return string
-     */
     public function describe(): string
     {
-        return "build " . $this->getCommitish();
+        return 'build '.$this->getCommitish();
     }
 }

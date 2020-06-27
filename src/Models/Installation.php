@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Models;
 
 use Agnes\Actions\Release;
@@ -31,10 +30,8 @@ class Installation
 
     /**
      * Installation constructor.
-     * @param string $path
+     *
      * @param int $number
-     * @param Release|null $release
-     * @param array $onlinePeriods
      */
     public function __construct(string $path, ?int $number = null, ?Release $release = null, array $onlinePeriods = [])
     {
@@ -44,17 +41,11 @@ class Installation
         $this->onlinePeriods = $onlinePeriods;
     }
 
-    /**
-     * @return string
-     */
     public function getPath(): string
     {
         return $this->path;
     }
 
-    /**
-     * @return int|null
-     */
     public function getNumber(): ?int
     {
         return $this->number;
@@ -69,7 +60,7 @@ class Installation
     }
 
     /**
-     * if this installation was online at some time
+     * if this installation was online at some time.
      *
      * @return bool
      */
@@ -79,7 +70,7 @@ class Installation
     }
 
     /**
-     * if this installation is online right now
+     * if this installation is online right now.
      *
      * @return bool
      */
@@ -87,7 +78,7 @@ class Installation
     {
         $lastPeriod = $this->getLastOnlinePeriod();
 
-        return $lastPeriod !== null && $lastPeriod->getEnd() === null;
+        return null !== $lastPeriod && null === $lastPeriod->getEnd();
     }
 
     /**
@@ -99,7 +90,7 @@ class Installation
     }
 
     /**
-     * persists that the installation is now taken online
+     * persists that the installation is now taken online.
      */
     public function takeOnline()
     {
@@ -108,21 +99,18 @@ class Installation
     }
 
     /**
-     * persists that the installation is now taken offline
+     * persists that the installation is now taken offline.
+     *
      * @throws Exception
      */
     public function takeOffline()
     {
         $lastPeriod = $this->getLastOnlinePeriod();
-        if ($lastPeriod !== null) {
+        if (null !== $lastPeriod) {
             $lastPeriod->setEnd(new DateTime());
         }
     }
 
-    /**
-     * @param int $number
-     * @param Release $release
-     */
     public function setRelease(int $number, Release $release)
     {
         $this->number = $number;
@@ -136,11 +124,11 @@ class Installation
     {
         $lastPeriod = $this->getLastOnlinePeriod();
 
-        if ($lastPeriod === null) {
+        if (null === $lastPeriod) {
             return null;
         }
 
-        return $lastPeriod->getEnd() !== null ? $lastPeriod->getEnd() : $lastPeriod->getStart();
+        return null !== $lastPeriod->getEnd() ? $lastPeriod->getEnd() : $lastPeriod->getStart();
     }
 
     /**
@@ -148,7 +136,7 @@ class Installation
      */
     private function getLastOnlinePeriod()
     {
-        if (count($this->onlinePeriods) === 0) {
+        if (0 === count($this->onlinePeriods)) {
             return null;
         }
 
@@ -156,11 +144,10 @@ class Installation
     }
 
     /**
-     * @param string $releaseName
      * @return bool
      */
     public function isSameReleaseName(string $releaseName)
     {
-        return $this->getRelease() != null && $this->getRelease()->getName() === $releaseName;
+        return null != $this->getRelease() && $this->getRelease()->getName() === $releaseName;
     }
 }

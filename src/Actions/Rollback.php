@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Actions;
 
 use Agnes\Models\Installation;
@@ -22,8 +21,6 @@ class Rollback extends AbstractPayload
 
     /**
      * Rollback constructor.
-     * @param Instance $instance
-     * @param Installation $target
      */
     public function __construct(Instance $instance, Installation $target)
     {
@@ -31,25 +28,17 @@ class Rollback extends AbstractPayload
         $this->target = $target;
     }
 
-    /**
-     * @return Instance
-     */
     public function getInstance(): Instance
     {
         return $this->instance;
     }
 
-    /**
-     * @return Installation
-     */
     public function getTarget(): Installation
     {
         return $this->target;
     }
 
     /**
-     * @param PolicyService $policyService
-     * @return bool
      * @throws Exception
      */
     public function canExecute(PolicyService $policyService): bool
@@ -57,11 +46,8 @@ class Rollback extends AbstractPayload
         return $policyService->canRollback($this);
     }
 
-    /**
-     * @return string
-     */
     public function describe(): string
     {
-        return "rollback " . $this->getInstance()->describe() . " to " . $this->getTarget()->getRelease()->getName();
+        return 'rollback '.$this->getInstance()->describe().' to '.$this->getTarget()->getRelease()->getName();
     }
 }

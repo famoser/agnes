@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Models\Policies;
-
 
 use Agnes\Models\Filter;
 use Agnes\Services\Policy\PolicyVisitor;
@@ -17,7 +15,6 @@ abstract class Policy
 
     /**
      * Policy constructor.
-     * @param Filter|null $filter
      */
     public function __construct(?Filter $filter)
     {
@@ -25,15 +22,12 @@ abstract class Policy
     }
 
     /**
-     * @param PolicyVisitor $visitor
      * @return bool
+     *
      * @throws Exception
      */
-    public abstract function accept(PolicyVisitor $visitor);
+    abstract public function accept(PolicyVisitor $visitor);
 
-    /**
-     * @return Filter|null
-     */
     public function getFilter(): ?Filter
     {
         return $this->filter;

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Agnes\Models\Policies;
-
 
 use Agnes\Models\Filter;
 use Agnes\Services\Policy\PolicyVisitor;
@@ -17,8 +15,6 @@ class ReleaseWhitelistPolicy extends Policy
 
     /**
      * ReleaseWhitelistPolicy constructor.
-     * @param Filter|null $filter
-     * @param array $commitishes
      */
     public function __construct(?Filter $filter, array $commitishes)
     {
@@ -28,8 +24,8 @@ class ReleaseWhitelistPolicy extends Policy
     }
 
     /**
-     * @param PolicyVisitor $visitor
      * @return bool
+     *
      * @throws Exception
      */
     public function accept(PolicyVisitor $visitor)

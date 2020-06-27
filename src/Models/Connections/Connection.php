@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Models\Connections;
 
 use Agnes\Models\Executors\Executor;
@@ -20,7 +19,6 @@ abstract class Connection
 
     /**
      * Connection constructor.
-     * @param Executor $executor
      */
     public function __construct(Executor $executor)
     {
@@ -36,9 +34,6 @@ abstract class Connection
     }
 
     /**
-     * @param string $workingFolder
-     * @param array $commands
-     * @param array $envVariables
      * @throws Exception
      */
     public function executeScript(string $workingFolder, array $commands, array $envVariables = [])
@@ -50,60 +45,37 @@ abstract class Connection
     }
 
     /**
-     * @param string $workingFolder
      * @param string[] $commands
+     *
      * @throws Exception
      */
-    protected abstract function executeWithinWorkingFolder(string $workingFolder, array $commands);
+    abstract protected function executeWithinWorkingFolder(string $workingFolder, array $commands);
+
+    abstract public function readFile(string $filePath): string;
+
+    abstract public function writeFile(string $filePath, string $content);
 
     /**
-     * @param string $filePath
-     * @return string
-     */
-    public abstract function readFile(string $filePath): string;
-
-    /**
-     * @param string $filePath
-     * @param string $content
-     */
-    public abstract function writeFile(string $filePath, string $content);
-
-    /**
-     * @param string $dir
      * @return string[]
      */
-    public abstract function getFolders(string $dir): array;
+    abstract public function getFolders(string $dir): array;
+
+    abstract public function checkFileExists(string $filePath): bool;
+
+    abstract public function checkFolderExists(string $folderPath): bool;
+
+    abstract public function equals(Connection $connection): bool;
 
     /**
-     * @param string $filePath
-     * @return bool
-     */
-    public abstract function checkFileExists(string $filePath): bool;
-
-    /**
-     * @param string $folderPath
-     * @return bool
-     */
-    public abstract function checkFolderExists(string $folderPath): bool;
-
-    /**
-     * @param Connection $connection
-     * @return bool
-     */
-    public abstract function equals(Connection $connection): bool;
-
-    /**
-     * @param string $command
-     * @return string
      * @throws Exception
      */
     protected function executeCommand(string $command): string
     {
-        exec($command . " 2>&1", $output, $returnVar);
+        exec($command.' 2>&1', $output, $returnVar);
 
         $outputMessage = implode("\n", $output);
-        if ($returnVar !== 0) {
-            throw new Exception("command execution of " . $command . " failed with " . $returnVar . " because $outputMessage.");
+        if (0 !== $returnVar) {
+            throw new Exception('command execution of '.$command.' failed with '.$returnVar." because $outputMessage.");
         }
 
         return $outputMessage;
@@ -111,6 +83,7 @@ abstract class Connection
 
     /**
      * @param string[] $commands
+     *
      * @throws Exception
      */
     public function executeCommands(array $commands): void
@@ -124,32 +97,30 @@ abstract class Connection
     /**
      * @param string[] $commands
      * @param string[] $envVariables
+     *
      * @return string[]
      */
     private function prependEnvVariables(array $commands, array $envVariables): array
     {
         // create env definition
-        $envPrefix = "";
+        $envPrefix = '';
         foreach ($envVariables as $key => $value) {
             $envPrefix .= "$key=$value ";
         }
 
         if (count($envVariables) > 0) {
-            $envPrefix .= "&& ";
+            $envPrefix .= '&& ';
         }
 
         // prefix env definition
         foreach ($commands as &$command) {
-            $command = $envPrefix . $command;
+            $command = $envPrefix.$command;
         }
 
         return $commands;
     }
 
     /**
-     * @param string $buildPath
-     * @param string $repository
-     * @param string $commitish
      * @throws Exception
      */
     public function checkoutRepository(string $buildPath, string $repository, string $commitish)
@@ -163,14 +134,13 @@ abstract class Connection
         $gitShowHash = $this->executor->gitShowHash($buildPath);
         $hash = $this->executeCommand($gitShowHash);
 
-        $removeRecursively = $this->executor->removeRecursive($buildPath . "/.git");
+        $removeRecursively = $this->executor->removeRecursive($buildPath.'/.git');
         $this->executeCommand($removeRecursively);
 
         return $hash;
     }
 
     /**
-     * @param string $folder
      * @throws Exception
      */
     public function createOrClearFolder(string $folder)
@@ -181,7 +151,6 @@ abstract class Connection
     }
 
     /**
-     * @param string $folder
      * @throws Exception
      */
     public function createFolder(string $folder)
@@ -191,9 +160,8 @@ abstract class Connection
     }
 
     /**
-     * @param string $folder
-     * @param string $fileName
      * @return string
+     *
      * @throws Exception
      */
     public function compressTarGz(string $folder, string $fileName)
@@ -201,12 +169,10 @@ abstract class Connection
         $command = $this->executor->compressTarGz($folder, $fileName);
         $this->executeCommand($command);
 
-        return $folder . DIRECTORY_SEPARATOR . $fileName;
+        return $folder.DIRECTORY_SEPARATOR.$fileName;
     }
 
     /**
-     * @param string $archivePath
-     * @param string $targetFolder
      * @throws Exception
      */
     public function uncompressTarGz(string $archivePath, string $targetFolder)
@@ -216,7 +182,6 @@ abstract class Connection
     }
 
     /**
-     * @param string $path
      * @throws Exception
      */
     public function removeFile(string $path)
@@ -226,8 +191,6 @@ abstract class Connection
     }
 
     /**
-     * @param string $source
-     * @param string $target
      * @throws Exception
      */
     public function createSymlink(string $source, string $target)
@@ -238,8 +201,6 @@ abstract class Connection
     }
 
     /**
-     * @param string $source
-     * @param string $target
      * @return string
      */
     private function getRelativeSymlinkPath(string $source, string $target)
@@ -250,7 +211,7 @@ abstract class Connection
         // get count of entries equal for both paths
         $equalEntries = 0;
         while (($sourceArray[$equalEntries] === $targetArray[$equalEntries])) {
-            $equalEntries++;
+            ++$equalEntries;
         }
 
         // if some equal found, then cut how much path we need from the target in the resulting relative path
@@ -261,12 +222,10 @@ abstract class Connection
         // find out how many levels we need to go back until we can start the relative target path
         $levelsBack = count($sourceArray) - $equalEntries - 1;
 
-        return str_repeat(".." . DIRECTORY_SEPARATOR, $levelsBack) . implode(DIRECTORY_SEPARATOR, $targetArray);
+        return str_repeat('..'.DIRECTORY_SEPARATOR, $levelsBack).implode(DIRECTORY_SEPARATOR, $targetArray);
     }
 
     /**
-     * @param string $source
-     * @param string $target
      * @throws Exception
      */
     public function moveFolder(string $source, string $target)
@@ -276,19 +235,16 @@ abstract class Connection
     }
 
     /**
-     * @param string $source
-     * @param string $target
      * @throws Exception
      */
     public function copyFolderContent(string $source, string $target)
     {
-        $sourceContent = $source . DIRECTORY_SEPARATOR . ".";
+        $sourceContent = $source.DIRECTORY_SEPARATOR.'.';
         $command = $this->executor->copyRecursive($sourceContent, $target);
         $this->executeCommand($command);
     }
 
     /**
-     * @param string $folder
      * @throws Exception
      */
     public function removeFolder(string $folder)
@@ -298,8 +254,6 @@ abstract class Connection
     }
 
     /**
-     * @param string $source
-     * @param string $target
      * @throws Exception
      */
     public function replaceSymlink(string $source, string $target)
@@ -310,11 +264,12 @@ abstract class Connection
 
     /**
      * @param string[] $commands
+     *
      * @return array|string[]
      */
     private function applyScriptOverrides(array $commands)
     {
-        $overrideMatch = "/{{[^{}]*}}/";
+        $overrideMatch = '/{{[^{}]*}}/';
 
         foreach ($commands as &$command) {
             preg_match_all($overrideMatch, $command, $matches);

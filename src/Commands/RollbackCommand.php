@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Agnes\Commands;
 
 use Agnes\Actions\AbstractAction;
@@ -23,8 +22,6 @@ class RollbackCommand extends AgnesCommand
 
     /**
      * DeployCommand constructor.
-     * @param AgnesFactory $factory
-     * @param InstanceService $instanceService
      */
     public function __construct(AgnesFactory $factory, InstanceService $instanceService)
     {
@@ -41,36 +38,30 @@ class RollbackCommand extends AgnesCommand
 If target is supplied, it will only rollback instances which had that release active at some time.
 If source is supplied, it will only rollback instances with that release version active.
 If neither target nor source is supplied, it will rollback to the last release which was active')
-            ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to rollback. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addOption("rollback-to", null, InputOption::VALUE_OPTIONAL, "name of the release to rollback to")
-            ->addOption("rollback-from", null, InputOption::VALUE_OPTIONAL, "name of the release to rollback from");
+            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to rollback. '.DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
+            ->addOption('rollback-to', null, InputOption::VALUE_OPTIONAL, 'name of the release to rollback to')
+            ->addOption('rollback-from', null, InputOption::VALUE_OPTIONAL, 'name of the release to rollback from');
 
         parent::configure();
     }
 
-    /**
-     * @param AgnesFactory $factory
-     * @return AbstractAction
-     */
     protected function getAction(AgnesFactory $factory): AbstractAction
     {
         return $factory->createRollbackAction();
     }
 
     /**
-     * @param AbstractAction $action
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return AbstractPayload[]
+     *
      * @throws Exception
      */
     protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {
-        $target = $input->getArgument("target");
-        $rollbackTo = $input->getOption("rollback-to");
-        $rollbackFrom = $input->getOption("rollback-from");
+        $target = $input->getArgument('target');
+        $rollbackTo = $input->getOption('rollback-to');
+        $rollbackFrom = $input->getOption('rollback-from');
 
-        /** @var RollbackAction $action */
+        /* @var RollbackAction $action */
         return $action->createMany($target, $rollbackTo, $rollbackFrom);
     }
 }
