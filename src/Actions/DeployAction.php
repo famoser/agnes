@@ -4,11 +4,11 @@
 namespace Agnes\Actions;
 
 
+use Agnes\Models\Build;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\ConfigurationService;
-use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
@@ -161,23 +161,6 @@ class DeployAction extends AbstractAction
     }
 
     /**
-     * @param string $releaseName
-     * @return ReleaseWithAsset|null
-     * @throws Exception
-     */
-    private function findGithubRelease(string $releaseName): ?ReleaseWithAsset
-    {
-
-        foreach ($releases as $release) {
-            if ($release->getName() === $releaseName) {
-                return $release;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * check the instance of the payload is of the expected type to execute in execute()
      *
      * @param Deploy $deploy
@@ -206,20 +189,17 @@ class DeployAction extends AbstractAction
      */
     protected function doExecute($deploy, OutputInterface $output)
     {
-        $release = $deploy->getBuild();
+        $build = $deploy->getBuild();
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
-        $releaseFolder = $this->instanceService->getReleasePath($target, $release);
-
-        $output->writeln("preparing release");
-        $releaseContent = $this->prepareRelease($release);
+        $releaseFolder = $this->instanceService->getReleasePath($target, $build);
 
         $output->writeln("uploading release");
-        $this->uploadRelease($releaseFolder, $connection, $releaseContent);
+        $this->uploadBuild($releaseFolder, $connection, $build);
 
         $output->writeln("registering new release");
-        $this->instanceService->onReleaseInstalled($target, $releaseFolder, $release);
+        $this->instanceService->onReleaseInstalled($target, $releaseFolder, $build);
 
         $output->writeln("creating and linking shared folders");
         $this->createAndLinkSharedFolders($connection, $target, $releaseFolder);
@@ -243,7 +223,7 @@ class DeployAction extends AbstractAction
         $connection->executeScript($releaseFolder, $deployScripts, $environment);
 
         $output->writeln("switching to new release");
-        $this->instanceService->switchRelease($target, $release);
+        $this->instanceService->switchRelease($target, $build);
         $output->writeln("release online");
 
         $output->writeln("cleaning old releases if required");
@@ -317,34 +297,22 @@ class DeployAction extends AbstractAction
     /**
      * @param string $releaseFolder
      * @param Connection $connection
-     * @param string $releaseZip
+     * @param Build $build
      * @throws \Exception
      */
-    private function uploadRelease(string $releaseFolder, Connection $connection, string $releaseZip): void
+    private function uploadBuild(string $releaseFolder, Connection $connection, Build $build): void
     {
         // make empty dir for new release
         $connection->createOrClearFolder($releaseFolder);
 
         // transfer release packet
-        $assetPath = $releaseFolder . DIRECTORY_SEPARATOR . "release.tar.gz";
-        $connection->writeFile($assetPath, $releaseZip);
+        $assetPath = $releaseFolder . DIRECTORY_SEPARATOR . $build->getArchiveName(".tar.gz");
+        $connection->writeFile($assetPath, $build->getContent());
 
         // unpack release packet
         $connection->uncompressTarGz($assetPath, $releaseFolder);
 
         // remove release packet
         $connection->removeFile($assetPath);
-    }
-
-    /**
-     * @param Release $release
-     * @return string
-     * @throws Exception
-     */
-    private function prepareRelease(Release $release)
-    {
-        if ($release instanceof ReleaseWithAsset) {
-            return $this->githubService->asset($release->getAssetId());
-        }
     }
 }

@@ -6,7 +6,6 @@ namespace Agnes\Actions;
 
 use Agnes\Models\Build;
 use Agnes\Models\Instance;
-use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\PolicyService;
 use Exception;
 

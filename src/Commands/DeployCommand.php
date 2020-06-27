@@ -59,7 +59,7 @@ class DeployCommand extends AgnesCommand
         $this->setName('deploy')
             ->setDescription('Deploy a release to a specific environment')
             ->setHelp('This command installs a release to a specific environment and if the installation succeeds, it publishes it.')
-            ->addArgument("release", InputArgument::REQUIRED, "name of the release")
+            ->addArgument("release or committish", InputArgument::REQUIRED, "name of the (github) release or committish")
             ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to deploy to. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
             ->addOption("skip-file-validation", null, InputOption::VALUE_NONE, "if file validation should be skipped. the application no longer throws if a required file is not supplied.");
 

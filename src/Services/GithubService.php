@@ -6,7 +6,6 @@ namespace Agnes\Services;
 use Agnes\Actions\Release;
 use Agnes\Models\Build;
 use Agnes\Services\Github\Client;
-use Agnes\Services\Github\ReleaseWithAsset;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
 use Psr\Http\Message\ResponseInterface;
