@@ -58,12 +58,15 @@ application:
 
     # executed after the release packet from above is put in its final location, before putting it online
     # initialize caches, migrate databases & other
+    # if a previous release exists it is indicated in $HAS_PREVIOUS_RELEASE (value either true or false)
+    # if a previous release exists then the path is given with $PREVIOUS_RELEASE_PATH
+    # for example `if [[ "$HAS_PREVIOUS_RELEASE" == true ]]; then cp -r $PREVIOUS_RELEASE_PATH/var/transient var/transient; fi`
     deploy:
       - echo "deployed"
 
     # executed on the current instance before rolling back to the previous instance
-    # the path of the previous instance is given by the environment variable $PREVIOUS_RELEASE_PATH
     # execute migrations
+    # the path of the previous release is given in $PREVIOUS_RELEASE_PATH
     rollback:
       - echo "rollbacked"
 
