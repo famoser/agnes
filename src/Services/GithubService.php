@@ -122,7 +122,7 @@ class GithubService
           "tag_name": "' . $release->getName() . '",
           "target_commitish": "' . $release->getCommitish() . '",
           "name": "' . $release->getName() . '",
-          "body": "' . $release->getBody() . '",
+          "body": "Release of ' . $release->getName() . '",
           "draft": false,
           "prerelease": ' . $this->booleanToString(strpos($release->getName(), "-") > 0) . '
         }';

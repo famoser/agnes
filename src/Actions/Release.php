@@ -30,7 +30,7 @@ class Release extends AbstractPayload
      * @param string $commitish
      * @param string|null $body
      */
-    public function __construct(string $name, string $commitish, ?string $body = null)
+    public function __construct(string $name, string $commitish)
     {
         $this->commitish = $commitish;
         $this->name = $name;
@@ -51,14 +51,6 @@ class Release extends AbstractPayload
     public function getName(): string
     {
         return $this->name;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBody(): string
-    {
-        return $this->body;
     }
 
     /**
