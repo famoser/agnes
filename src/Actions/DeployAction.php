@@ -59,7 +59,7 @@ class DeployAction extends AbstractAction
      */
     public function createMany(string $releaseName, string $target, ?string $configFolder, bool $skipValidation)
     {
-        $release = $this->getRelease($releaseName);
+        $release = $this->findGithubRelease($releaseName);
         if ($release === null) {
             return [];
         }
@@ -156,7 +156,7 @@ class DeployAction extends AbstractAction
      * @return ReleaseWithAsset|null
      * @throws Exception
      */
-    private function getRelease(string $releaseName): ?ReleaseWithAsset
+    private function findGithubRelease(string $releaseName): ?ReleaseWithAsset
     {
         $releases = $this->githubService->releases();
 
@@ -204,8 +204,11 @@ class DeployAction extends AbstractAction
 
         $releaseFolder = $this->instanceService->getReleasePath($target, $release);
 
+        $output->writeln("preparing release");
+        $releaseContent = $this->prepareRelease($release);
+
         $output->writeln("uploading release");
-        $this->uploadRelease($releaseFolder, $connection, $release);
+        $this->uploadRelease($releaseFolder, $connection, $releaseContent);
 
         $output->writeln("registering new release");
         $this->instanceService->onReleaseInstalled($target, $releaseFolder, $release);
@@ -306,24 +309,34 @@ class DeployAction extends AbstractAction
     /**
      * @param string $releaseFolder
      * @param Connection $connection
-     * @param ReleaseWithAsset $release
-     * @throws Exception
+     * @param string $releaseZip
      * @throws \Exception
      */
-    private function uploadRelease(string $releaseFolder, Connection $connection, ReleaseWithAsset $release): void
+    private function uploadRelease(string $releaseFolder, Connection $connection, string $releaseZip): void
     {
         // make empty dir for new release
         $connection->createOrClearFolder($releaseFolder);
 
         // transfer release packet
-        $assetContent = $this->githubService->asset($release->getAssetId());
-        $assetPath = $releaseFolder . DIRECTORY_SEPARATOR . $release->getAssetName();
-        $connection->writeFile($assetPath, $assetContent);
+        $assetPath = $releaseFolder . DIRECTORY_SEPARATOR . "release.tar.gz";
+        $connection->writeFile($assetPath, $releaseZip);
 
         // unpack release packet
         $connection->uncompressTarGz($assetPath, $releaseFolder);
 
         // remove release packet
         $connection->removeFile($assetPath);
+    }
+
+    /**
+     * @param Release $release
+     * @return string
+     * @throws Exception
+     */
+    private function prepareRelease(Release $release)
+    {
+        if ($release instanceof ReleaseWithAsset) {
+            return $this->githubService->asset($release->getAssetId());
+        }
     }
 }

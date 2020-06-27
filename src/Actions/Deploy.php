@@ -17,7 +17,7 @@ class Deploy extends AbstractPayload
     private $target;
 
     /**
-     * @var ReleaseWithAsset
+     * @var Release
      */
     private $release;
 
@@ -28,11 +28,11 @@ class Deploy extends AbstractPayload
 
     /**
      * Deployment constructor.
-     * @param ReleaseWithAsset $release
+     * @param Release $release
      * @param Instance $target
      * @param string[] $files
      */
-    public function __construct(ReleaseWithAsset $release, Instance $target, array $files)
+    public function __construct(Release $release, Instance $target, array $files)
     {
         $this->target = $target;
         $this->release = $release;
@@ -48,9 +48,9 @@ class Deploy extends AbstractPayload
     }
 
     /**
-     * @return ReleaseWithAsset
+     * @return Release
      */
-    public function getRelease(): ReleaseWithAsset
+    public function getRelease(): Release
     {
         return $this->release;
     }
