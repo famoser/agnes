@@ -4,6 +4,7 @@
 namespace Agnes\Actions;
 
 
+use Agnes\Models\Build;
 use Agnes\Models\Instance;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Agnes\Services\PolicyService;
@@ -17,9 +18,9 @@ class Deploy extends AbstractPayload
     private $target;
 
     /**
-     * @var Release
+     * @var Build
      */
-    private $release;
+    private $build;
 
     /**
      * @var string[]
@@ -28,14 +29,14 @@ class Deploy extends AbstractPayload
 
     /**
      * Deployment constructor.
-     * @param Release $release
+     * @param Build $build
      * @param Instance $target
      * @param string[] $files
      */
-    public function __construct(Release $release, Instance $target, array $files)
+    public function __construct(Build $build, Instance $target, array $files)
     {
         $this->target = $target;
-        $this->release = $release;
+        $this->build = $build;
         $this->filePaths = $files;
     }
 
@@ -48,11 +49,11 @@ class Deploy extends AbstractPayload
     }
 
     /**
-     * @return Release
+     * @return Build
      */
-    public function getRelease(): Release
+    public function getBuild(): Build
     {
-        return $this->release;
+        return $this->build;
     }
 
     /**
@@ -78,6 +79,6 @@ class Deploy extends AbstractPayload
      */
     public function describe(): string
     {
-        return "deploy " . $this->getRelease()->getName() . " to " . $this->getTarget()->describe();
+        return "deploy " . $this->getBuild()->getName() . " to " . $this->getTarget()->describe();
     }
 }

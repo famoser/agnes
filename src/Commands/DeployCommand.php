@@ -14,6 +14,7 @@ use Http\Client\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class DeployCommand extends AgnesCommand
 {
@@ -77,10 +78,11 @@ class DeployCommand extends AgnesCommand
     /**
      * @param AbstractAction $action
      * @param InputInterface $input
+     * @param OutputInterface $output
      * @return AbstractPayload[]
-     * @throws Exception
+     * @throws \Exception
      */
-    protected function createPayloads(AbstractAction $action, InputInterface $input): array
+    protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {
         $releaseName = $input->getArgument("release");
         $target = $input->getArgument("target");
@@ -88,6 +90,6 @@ class DeployCommand extends AgnesCommand
         $skipValidation = (bool)$input->getOption("skip-file-validation");
 
         /** @var DeployAction $action */
-        return $action->createMany($releaseName, $target, $configFolder, $skipValidation);
+        return $action->createMany($releaseName, $target, $configFolder, $skipValidation, $output);
     }
 }

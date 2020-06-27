@@ -33,19 +33,25 @@ class DeployAction extends AbstractAction
     private $githubService;
 
     /**
+     * @var ReleaseAction
+     */
+    private $releaseAction;
+
+    /**
      * DeployService constructor.
      * @param ConfigurationService $configurationService
      * @param PolicyService $policyService
      * @param InstanceService $instanceService
      * @param GithubService $githubService
      */
-    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, GithubService $githubService)
+    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, GithubService $githubService, ReleaseAction $releaseAction)
     {
         parent::__construct($policyService);
 
         $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
         $this->githubService = $githubService;
+        $this->releaseAction = $releaseAction;
     }
 
     /**
@@ -54,14 +60,17 @@ class DeployAction extends AbstractAction
      * @param string|null $configFolder
      * @param bool $skipValidation
      * @return Deploy[]
-     * @throws Exception
-     * @throws \Exception
+     * @throws \Exception|Exception
      */
-    public function createMany(string $releaseName, string $target, ?string $configFolder, bool $skipValidation)
+    public function createMany(string $releaseName, string $target, ?string $configFolder, bool $skipValidation, OutputInterface $output)
     {
-        $release = $this->findGithubRelease($releaseName);
-        if ($release === null) {
-            return [];
+        $build = $this->githubService->findBuild($releaseName);
+        if ($build !== null) {
+            $output->writeln("Using release found on github.");
+        } else  {
+            $output->writeln("Release does not exist on github; trying to build it.");
+            $release = $this->releaseAction->tryCreate($releaseName);
+            $build = $this->releaseAction->buildRelease($release, $output);
         }
 
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
@@ -93,7 +102,7 @@ class DeployAction extends AbstractAction
             }
 
             if ($valid) {
-                $deploys[] = new Deploy($release, $instance, $filePaths);
+                $deploys[] = new Deploy($build, $instance, $filePaths);
             }
         }
 
@@ -158,7 +167,6 @@ class DeployAction extends AbstractAction
      */
     private function findGithubRelease(string $releaseName): ?ReleaseWithAsset
     {
-        $releases = $this->githubService->releases();
 
         foreach ($releases as $release) {
             if ($release->getName() === $releaseName) {
@@ -183,7 +191,7 @@ class DeployAction extends AbstractAction
 
         // block if this installation is active
         $installation = $deploy->getTarget()->getCurrentInstallation();
-        if ($installation !== null && $installation->isSameReleaseName($deploy->getRelease()->getName())) {
+        if ($installation !== null && $installation->isSameReleaseName($deploy->getBuild()->getName())) {
             return false;
         }
 
@@ -198,7 +206,7 @@ class DeployAction extends AbstractAction
      */
     protected function doExecute($deploy, OutputInterface $output)
     {
-        $release = $deploy->getRelease();
+        $release = $deploy->getBuild();
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 

@@ -12,6 +12,7 @@ use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class RollbackCommand extends AgnesCommand
 {
@@ -59,10 +60,11 @@ If neither target nor source is supplied, it will rollback to the last release w
     /**
      * @param AbstractAction $action
      * @param InputInterface $input
+     * @param OutputInterface $output
      * @return AbstractPayload[]
      * @throws Exception
      */
-    protected function createPayloads(AbstractAction $action, InputInterface $input): array
+    protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {
         $target = $input->getArgument("target");
         $rollbackTo = $input->getOption("rollback-to");

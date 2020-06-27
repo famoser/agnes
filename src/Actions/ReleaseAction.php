@@ -4,6 +4,7 @@
 namespace Agnes\Actions;
 
 
+use Agnes\Models\Build;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\PolicyService;
@@ -39,12 +40,11 @@ class ReleaseAction extends AbstractAction
     /**
      * @param string $name
      * @param string $commitish
-     * @param string|null $body
      * @return Release
      */
-    public function tryCreate(string $name, string $commitish)
+    public function tryCreate(string $commitish, string $name = null)
     {
-        return new Release($name, $commitish);
+        return new Release($commitish, $name);
     }
 
     /**
@@ -66,16 +66,16 @@ class ReleaseAction extends AbstractAction
      */
     protected function doExecute($release, OutputInterface $output)
     {
-        $content = $this->buildRelease($release, $output);
+        $build = $this->buildRelease($release, $output);
 
         $output->writeln("publishing release to github");
-        $this->githubService->publish($release, $content, "application/zip", $release->getArchiveName(".tar.gz"));
+        $this->githubService->publish($build);
     }
 
     /**
      * @param Release $release
      * @param OutputInterface $output
-     * @return string
+     * @return Build
      * @throws \Exception
      */
     public function buildRelease(Release $release, OutputInterface $output)
@@ -88,7 +88,8 @@ class ReleaseAction extends AbstractAction
 
         $output->writeln("checking out repository");
         $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
-        $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $release->getCommitish());
+        $gitHash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $release->getCommitish());
+        $release->setHash($gitHash);
 
         $output->writeln("executing release script");
         $scripts = $this->configurationService->getScripts("release");
@@ -101,6 +102,6 @@ class ReleaseAction extends AbstractAction
         $output->writeln("removing build folder");
         $connection->removeFolder($buildPath);
 
-        return $content;
+        return Build::fromRelease($release, $content);
     }
 }

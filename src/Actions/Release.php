@@ -15,20 +15,32 @@ class Release extends AbstractPayload
     private $commitish;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $name;
 
     /**
-     * Release constructor.
-     * @param string $name
-     * @param string $commitish
-     * @param string|null $body
+     * @var string
      */
-    public function __construct(string $name, string $commitish)
+    private $hash;
+
+    /**
+     * Release constructor.
+     * @param string $commitish
+     * @param string $name
+     */
+    public function __construct(string $commitish, string $name = null)
     {
         $this->commitish = $commitish;
         $this->name = $name;
+    }
+
+    /**
+     * @param string $hash
+     */
+    public function setHash(string $hash)
+    {
+        $this->hash = $hash;
     }
 
     /**
@@ -44,7 +56,7 @@ class Release extends AbstractPayload
      */
     public function getName(): string
     {
-        return $this->name;
+        return $this->name !== null ? $this->name : $this->hash;
     }
 
     /**
@@ -71,6 +83,6 @@ class Release extends AbstractPayload
      */
     public function describe(): string
     {
-        return "build " . $this->getCommitish() . " and then publish it under the name " . $this->getName();
+        return "build " . $this->getCommitish();
     }
 }

@@ -11,6 +11,7 @@ use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class CopySharedCommand extends AgnesCommand
 {
@@ -58,7 +59,7 @@ class CopySharedCommand extends AgnesCommand
      * @return AbstractPayload[]
      * @throws Exception
      */
-    protected function createPayloads(AbstractAction $action, InputInterface $input): array
+    protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {
         $source = $input->getArgument("source");
         $target = $input->getArgument("target");

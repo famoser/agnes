@@ -4,6 +4,7 @@
 namespace Agnes\Services;
 
 use Agnes\Actions\Release;
+use Agnes\Models\Build;
 use Agnes\Services\Github\Client;
 use Agnes\Services\Github\ReleaseWithAsset;
 use Http\Client\Exception;
@@ -53,28 +54,27 @@ class GithubService
     }
 
     /**
-     * @return ReleaseWithAsset[]
+     * @param string $releaseName
+     * @return Build|null
      * @throws Exception
-     * @throws \Exception
      */
-    public function releases()
+    public function findBuild(string $releaseName)
     {
         $response = $this->getClient()->getReleases();
         $releases = json_decode($response->getBody()->getContents());
 
-        $parsedRelease = [];
         foreach ($releases as $release) {
-            $name = $release->name;
-            $commitish = $release->target_commitish;
-            if (count($release->assets) > 0) {
-                $assetId = $release->assets[0]->id;
-                $assetName = $release->assets[0]->name;
-
-                $parsedRelease[] = new ReleaseWithAsset($name, $commitish, $assetId, $assetName);
+            if ($release->name !== $releaseName || count($release->assets) === 0) {
+                continue;
             }
+
+            $response = $this->getClient()->downloadAsset($release->assets[0]->id);
+            $content = $response->getBody()->getContents();
+
+            return new Build($release->name, $release->target_commitish, $content);
         }
 
-        return $parsedRelease;
+        return null;
     }
 
     /**
@@ -85,28 +85,22 @@ class GithubService
      */
     public function asset(string $assetId)
     {
-        $response = $this->getClient()->downloadAsset($assetId);
-
-        return $response->getBody()->getContents();
     }
 
     /**
-     * @param Release $release
-     * @param string $assetContent
-     * @param string $assetContentType
-     * @param string $assetName
+     * @param Build $build
      * @throws Exception
-     * @throws \Exception
      */
-    public function publish(Release $release, string $assetContent, string $assetContentType, string $assetName)
+    public function publish(Build $build)
     {
-        $response = $this->createRelease($release);
+        $response = $this->createRelease($build);
 
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
         $releaseId = (int)$responseObject->id;
+        $assetName = $build->getArchiveName(".tar.gz");
 
-        $this->getClient()->addReleaseAsset($releaseId, $assetName, $assetContentType, $assetContent);
+        $this->getClient()->addReleaseAsset($releaseId, $assetName, "application/zip", $build->getContent());
     }
 
     /**

@@ -73,7 +73,7 @@ abstract class AgnesCommand extends Command
         $action = $this->getAction($this->factory);
 
         $output->writeln("");
-        $payloads = $this->createPayloads($action, $input);
+        $payloads = $this->createPayloads($action, $input, $output);
         if (count($payloads) === 0) {
             $output->writeln("nothing to execute");
 
@@ -174,7 +174,8 @@ abstract class AgnesCommand extends Command
     /**
      * @param AbstractAction $action
      * @param InputInterface $input
+     * @param OutputInterface $output
      * @return AbstractPayload[]
      */
-    abstract protected function createPayloads(AbstractAction $action, InputInterface $input): array;
+    abstract protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array;
 }

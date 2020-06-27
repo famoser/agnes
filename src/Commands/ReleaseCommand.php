@@ -9,6 +9,7 @@ use Agnes\Actions\ReleaseAction;
 use Agnes\AgnesFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ReleaseCommand extends AgnesCommand
 {
@@ -44,19 +45,16 @@ class ReleaseCommand extends AgnesCommand
     /**
      * @param AbstractAction $action
      * @param InputInterface $input
+     * @param OutputInterface $output
      * @return AbstractPayload[]
      */
-    protected function createPayloads(AbstractAction $action, InputInterface $input): array
+    protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {
         $name = $input->getArgument("release");
         $commitish = $input->getArgument("commitish");
 
         /** @var ReleaseAction $action */
-        $release = $action->tryCreate($name, $commitish);
-
-        if ($release == null) {
-            return [];
-        }
+        $release = $action->tryCreate($commitish, $name);
 
         return [$release];
     }

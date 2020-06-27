@@ -66,6 +66,15 @@ abstract class Executor
     }
 
     /**
+     * @param string $path
+     * @return string
+     */
+    public function gitShowHash(string $path)
+    {
+        return "git --git-dir=$path/.git  --work-tree=$path show -s --format=%H";
+    }
+
+    /**
      * @param string $folder
      * @return string
      */
