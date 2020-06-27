@@ -66,6 +66,20 @@ class ReleaseAction extends AbstractAction
      */
     protected function doExecute($release, OutputInterface $output)
     {
+        $content = $this->buildRelease($release, $output);
+
+        $output->writeln("publishing release to github");
+        $this->githubService->publish($release, $content, "application/zip", $release->getArchiveName(".tar.gz"));
+    }
+
+    /**
+     * @param Release $release
+     * @param OutputInterface $output
+     * @return string
+     * @throws \Exception
+     */
+    public function buildRelease(Release $release, OutputInterface $output)
+    {
         $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
 
@@ -73,8 +87,8 @@ class ReleaseAction extends AbstractAction
         $connection->createOrClearFolder($buildPath);
 
         $output->writeln("checking out repository");
-        $githubConfig = $this->configurationService->getGithubConfig();
-        $connection->checkoutRepository($buildPath, $githubConfig->getRepository(), $release->getCommitish());
+        $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
+        $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $release->getCommitish());
 
         $output->writeln("executing release script");
         $scripts = $this->configurationService->getScripts("release");
@@ -84,10 +98,9 @@ class ReleaseAction extends AbstractAction
         $filePath = $connection->compressTarGz($buildPath, $release->getArchiveName(".tar.gz"));
         $content = $connection->readFile($filePath);
 
-        $output->writeln("publishing release to github");
-        $this->githubService->publish($release, $content, "application/zip", $release->getArchiveName(".tar.gz"));
-
         $output->writeln("removing build folder");
         $connection->removeFolder($buildPath);
+
+        return $content;
     }
 }

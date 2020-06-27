@@ -52,7 +52,7 @@ abstract class Executor
      */
     public function gitClone(string $path, string $repository): string
     {
-        return "git clone git@github.com:" . $repository . " $path";
+        return "git clone " . $repository . " $path";
     }
 
     /**

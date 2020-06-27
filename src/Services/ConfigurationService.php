@@ -43,13 +43,24 @@ class ConfigurationService
     }
 
     /**
+     * @return string
+     * @throws Exception
+     */
+    public function getRepositoryCloneUrl()
+    {
+        $repository = $this->getNestedConfig(["github", "repository"]);
+
+        return "git@github.com:" . $repository;
+    }
+
+    /**
      * @return GithubConfig
      * @throws Exception
      */
     public function getGithubConfig()
     {
-        $apiToken = $this->getNestedConfig(["agnes", "github_api_token"]);
-        $repository = $this->getNestedConfig(["application", "repository"]);
+        $apiToken = $this->getNestedConfig(["github", "api_token"]);
+        $repository = $this->getNestedConfig(["github", "repository"]);
 
         return new GithubConfig($apiToken, $repository);
     }
@@ -85,7 +96,7 @@ class ConfigurationService
     }
 
     /**
-     * @param string[] ...$keys
+     * @param string ...$keys
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws Exception
      */
@@ -102,7 +113,7 @@ class ConfigurationService
 
     /**
      * @param $default
-     * @param string[] ...$keys
+     * @param string ...$keys
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      * @throws Exception
      */
