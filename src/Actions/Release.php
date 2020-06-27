@@ -20,11 +20,6 @@ class Release extends AbstractPayload
     private $name;
 
     /**
-     * @var string
-     */
-    private $body;
-
-    /**
      * Release constructor.
      * @param string $name
      * @param string $commitish
@@ -34,7 +29,6 @@ class Release extends AbstractPayload
     {
         $this->commitish = $commitish;
         $this->name = $name;
-        $this->body = $body === null ? 'Release of ' . $name : $body;
     }
 
     /**
