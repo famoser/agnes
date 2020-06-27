@@ -28,15 +28,16 @@ Full example config:
 
 ```yml
 agnes:
-  github_api_token: '%env(GITHUB_API_TOKEN)%'
   build_target: # where the release will be built
     connection: # the connection
       type: local # can also be of type ssh, then additionally destination must be specified
     path: .build
 
-application:
+github:
+  api_token: '%env(GITHUB_API_TOKEN)%'
   repository: famoser/agnes
 
+application:
   shared_folders: # these folders will be shared between releases
     - var/persistent
 
