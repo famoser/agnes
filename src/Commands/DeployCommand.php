@@ -59,7 +59,7 @@ class DeployCommand extends AgnesCommand
         $this->setName('deploy')
             ->setDescription('Deploy a release to a specific environment')
             ->setHelp('This command installs a release to a specific environment and if the installation succeeds, it publishes it.')
-            ->addArgument("release or committish", InputArgument::REQUIRED, "name of the (github) release or committish")
+            ->addArgument("release or commitish", InputArgument::REQUIRED, "name of the (github) release or commitish")
             ->addArgument("target", InputArgument::REQUIRED, "the instance(s) to deploy to. " . DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
             ->addOption("skip-file-validation", null, InputOption::VALUE_NONE, "if file validation should be skipped. the application no longer throws if a required file is not supplied.");
 
@@ -84,12 +84,12 @@ class DeployCommand extends AgnesCommand
      */
     protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {
-        $releaseName = $input->getArgument("release");
+        $releaseOrCommitish = $input->getArgument("release or commitish");
         $target = $input->getArgument("target");
         $configFolder = $this->getConfigFolder();
         $skipValidation = (bool)$input->getOption("skip-file-validation");
 
         /** @var DeployAction $action */
-        return $action->createMany($releaseName, $target, $configFolder, $skipValidation, $output);
+        return $action->createMany($releaseOrCommitish, $target, $configFolder, $skipValidation, $output);
     }
 }

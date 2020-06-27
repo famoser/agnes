@@ -87,7 +87,7 @@ class AgnesFactory
      */
     public function createDeployAction()
     {
-        return new DeployAction($this->configurationService, $this->policyService, $this->instanceService, $this->githubService);
+        return new DeployAction($this->configurationService, $this->policyService, $this->instanceService, $this->githubService, $this->createReleaseAction());
     }
 
     /**

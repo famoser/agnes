@@ -55,21 +55,21 @@ class DeployAction extends AbstractAction
     }
 
     /**
-     * @param string $releaseName
+     * @param string $releaseOrCommitish
      * @param string $target
      * @param string|null $configFolder
      * @param bool $skipValidation
      * @return Deploy[]
      * @throws \Exception|Exception
      */
-    public function createMany(string $releaseName, string $target, ?string $configFolder, bool $skipValidation, OutputInterface $output)
+    public function createMany(string $releaseOrCommitish, string $target, ?string $configFolder, bool $skipValidation, OutputInterface $output)
     {
-        $build = $this->githubService->findBuild($releaseName);
+        $build = $this->githubService->findBuild($releaseOrCommitish);
         if ($build !== null) {
             $output->writeln("Using release found on github.");
         } else  {
             $output->writeln("Release does not exist on github; trying to build it.");
-            $release = $this->releaseAction->tryCreate($releaseName);
+            $release = $this->releaseAction->tryCreate($releaseOrCommitish);
             $build = $this->releaseAction->buildRelease($release, $output);
         }
 
