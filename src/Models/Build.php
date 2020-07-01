@@ -14,9 +14,9 @@ class Build extends Release
     /**
      * Build constructor.
      */
-    public function __construct(string $name, string $commitish, string $content)
+    public function __construct(string $commitish, string $name, string $content)
     {
-        parent::__construct($name, $commitish);
+        parent::__construct($commitish, $name);
 
         $this->content = $content;
     }
@@ -26,7 +26,7 @@ class Build extends Release
      */
     public static function fromRelease(Release $release, string $content)
     {
-        return new self($release->getName(), $release->getCommitish(), $content);
+        return new self($release->getCommitish(), $release->getName(), $content);
     }
 
     public function getContent(): string

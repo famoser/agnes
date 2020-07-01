@@ -228,7 +228,7 @@ class InstanceService
         $metaJson = $connection->readFile($agnesFilePath);
         $meta = json_decode($metaJson);
         $number = $meta->number;
-        $release = new Release($meta->release->name, $meta->release->commitish);
+        $release = new Release($meta->release->commitish, $meta->release->name);
 
         $onlinePeriods = [];
         foreach ($meta->online_periods as $onlinePeriod) {

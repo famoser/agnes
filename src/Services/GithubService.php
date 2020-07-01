@@ -69,7 +69,7 @@ class GithubService
             $response = $this->getClient()->downloadAsset($release->assets[0]->id);
             $content = $response->getBody()->getContents();
 
-            return new Build($release->name, $release->target_commitish, $content);
+            return new Build($release->target_commitish, $release->name, $content);
         }
 
         return null;
