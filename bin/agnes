@@ -23,9 +23,13 @@ function findFileByTraversingUp(string $dir, string $filePath)
 }
 
 $absolutePath = realpath(__DIR__);
-
 $autoloadRelativePath = "vendor" . DIRECTORY_SEPARATOR . "autoload.php";
-$projectRootDir = findFileByTraversingUp($absolutePath, $autoloadRelativePath);
+
+$projectRootDir = findFileByTraversingUp(dirname(dirname($absolutePath)), $autoloadRelativePath);
+if ($projectRootDir === false) {
+    $autoloadRelativePath = "vendor" . DIRECTORY_SEPARATOR . "autoload.php";
+    $projectRootDir = findFileByTraversingUp($absolutePath, $autoloadRelativePath);
+}
 if ($projectRootDir === false) {
     writeErrorAndExit("There was no autoload.php file found, hence the dependencies could not be loaded.");
 } else {
