@@ -107,15 +107,19 @@ class Instance
         return $this->getCurrentInstallation()->isSameReleaseName($releaseName);
     }
 
-    public function getInstallation(string $releaseName): ?Installation
+    /**
+     * @return Installation[]
+     */
+    public function getInstallationsByReleaseName(string $releaseName): array
     {
+        $installations = [];
         foreach ($this->installations as $installation) {
             if ($installation->isSameReleaseName($releaseName)) {
-                return $installation;
+                $installations[] = $installation;
             }
         }
 
-        return null;
+        return $installations;
     }
 
     /**
@@ -204,12 +208,17 @@ class Instance
         }
 
         // find matching installation & ensure it is indeed a previous release
-        $targetInstallation = $this->getInstallation($rollbackTo);
-        if (null !== $targetInstallation && $targetInstallation->getNumber() < $this->getCurrentInstallation()->getNumber()) {
-            return $targetInstallation;
+        $targetInstallations = $this->getInstallationsByReleaseName($rollbackTo);
+        /** @var Installation $maxTargetInstallation */
+        $maxTargetInstallation = null;
+        foreach ($targetInstallations as $targetInstallation) {
+            if ($targetInstallation->getNumber() < $this->getCurrentInstallation()->getNumber() &&
+                (null === $maxTargetInstallation || $targetInstallation->getNumber() > $maxTargetInstallation->getNumber())) {
+                $maxTargetInstallation = $targetInstallation;
+            }
         }
 
-        return null;
+        return $maxTargetInstallation;
     }
 
     /**
