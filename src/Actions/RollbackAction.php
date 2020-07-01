@@ -36,9 +36,14 @@ class RollbackAction extends AbstractAction
      *
      * @throws Exception
      */
-    public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom)
+    public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom, OutputInterface $output)
     {
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
+        if (0 === count($instances)) {
+            $output->writeln('For target specification '.$target.' no matching instances were found.');
+
+            return [];
+        }
 
         /** @var Rollback[] $rollbacks */
         $rollbacks = [];

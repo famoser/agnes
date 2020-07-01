@@ -56,6 +56,6 @@ class CopySharedCommand extends AgnesCommand
         $target = $input->getArgument('target');
 
         /* @var CopySharedAction $action */
-        return $action->createMany($source, $target);
+        return $action->createMany($source, $target, $output);
     }
 }

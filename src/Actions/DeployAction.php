@@ -66,6 +66,11 @@ class DeployAction extends AbstractAction
         $output->writeln('');
 
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
+        if (0 === count($instances)) {
+            $output->writeln('For target specification '.$target.' no matching instances were found.');
+
+            return [];
+        }
 
         $configuredFiles = $this->configurationService->getFiles();
         $requiredFiles = [];
@@ -87,15 +92,14 @@ class DeployAction extends AbstractAction
                 $filePaths = $this->getFilesPathsForInstance($instance, $configFolder, $whitelistFiles);
             }
 
-            $valid = true;
-            if (!$skipValidation) {
-                $containedFiles = array_keys($filePaths);
-                $valid = empty(array_diff($requiredFiles, $containedFiles));
+            $containedFiles = array_keys($filePaths);
+            $missingFiles = array_diff($requiredFiles, $containedFiles);
+            if (!empty($missingFiles) && !$skipValidation) {
+                $output->writeln('For instance '.$instance->describe().' the following files are missing: '.implode(', ', $missingFiles));
+                continue;
             }
 
-            if ($valid) {
-                $deploys[] = new Deploy($build, $instance, $filePaths);
-            }
+            $deploys[] = new Deploy($build, $instance, $filePaths);
         }
 
         return $deploys;
@@ -158,14 +162,6 @@ class DeployAction extends AbstractAction
     {
         if (!$deploy instanceof Deploy) {
             $output->writeln('Not a '.Deploy::class);
-
-            return false;
-        }
-
-        // block if this installation is active
-        $installation = $deploy->getTarget()->getCurrentInstallation();
-        if (null !== $installation && $installation->isSameReleaseName($deploy->getBuild()->getName())) {
-            $output->writeln('Cannot execute '.$deploy->describe().': Same release name is already active on target.');
 
             return false;
         }

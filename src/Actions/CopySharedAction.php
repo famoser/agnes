@@ -36,10 +36,21 @@ class CopySharedAction extends AbstractAction
      *
      * @throws Exception
      */
-    public function createMany(string $source, string $target): array
+    public function createMany(string $source, string $target, OutputInterface $output): array
     {
         $sourceInstances = $this->instanceService->getInstancesFromInstanceSpecification($source);
+        if (0 === count($sourceInstances)) {
+            $output->writeln('For source specification '.$source.' no matching instances were found.');
+
+            return [];
+        }
+
         $targetInstances = $this->instanceService->getInstancesFromInstanceSpecification($target);
+        if (0 === count($sourceInstances)) {
+            $output->writeln('For target specification '.$target.' no matching instances were found.');
+
+            return [];
+        }
 
         /** @var CopyShared[] $copyShareds */
         $copyShareds = [];
