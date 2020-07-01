@@ -115,4 +115,9 @@ class AgnesFactory
             new CopySharedCommand($this, $this->instanceService),
         ];
     }
+
+    public function getConfigurationService(): ConfigurationService
+    {
+        return $this->configurationService;
+    }
 }

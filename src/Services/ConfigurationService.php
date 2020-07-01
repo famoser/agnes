@@ -88,6 +88,16 @@ class ConfigurationService
     }
 
     /**
+     * @return string
+     *
+     * @throws Exception
+     */
+    public function getAgnesVersion()
+    {
+        return $this->getNestedConfig(['agnes', 'version']);
+    }
+
+    /**
      * @return string[]
      *
      * @throws Exception

@@ -153,6 +153,13 @@ abstract class AgnesCommand extends Command
             }
         }
 
+        $agnesVersion = 3;
+        if ($this->factory->getConfigurationService()->getAgnesVersion() !== $agnesVersion) {
+            $output->writeln('expected '.$agnesVersion.' as the agnes.version value');
+
+            return false;
+        }
+
         return true;
     }
 
