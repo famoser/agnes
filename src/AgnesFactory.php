@@ -115,24 +115,4 @@ class AgnesFactory
             new CopySharedCommand($this, $this->instanceService),
         ];
     }
-
-    public function getConfigurationService(): ConfigurationService
-    {
-        return $this->configurationService;
-    }
-
-    public function getGithubService(): GithubService
-    {
-        return $this->githubService;
-    }
-
-    public function getInstanceService(): InstanceService
-    {
-        return $this->instanceService;
-    }
-
-    public function getPolicyService(): PolicyService
-    {
-        return $this->policyService;
-    }
 }

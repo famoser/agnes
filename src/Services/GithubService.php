@@ -54,6 +54,7 @@ class GithubService
      * @return Build|null
      *
      * @throws Exception
+     * @throws \Exception
      */
     public function findBuild(string $releaseName)
     {
@@ -72,16 +73,6 @@ class GithubService
         }
 
         return null;
-    }
-
-    /**
-     * @return string
-     *
-     * @throws Exception
-     * @throws \Exception
-     */
-    public function asset(string $assetId)
-    {
     }
 
     /**
