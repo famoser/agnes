@@ -6,6 +6,8 @@ use Agnes\Models\Build;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Models\Setup;
+use Agnes\Services\BuildService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
@@ -19,6 +21,11 @@ class DeployAction extends AbstractAction
      * @var ConfigurationService
      */
     private $configurationService;
+
+    /**
+     * @var BuildService
+     */
+    private $buildService;
 
     /**
      * @var InstanceService
@@ -38,10 +45,11 @@ class DeployAction extends AbstractAction
     /**
      * DeployService constructor.
      */
-    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, GithubService $githubService, ReleaseAction $releaseAction)
+    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, GithubService $githubService, ReleaseAction $releaseAction)
     {
         parent::__construct($policyService);
 
+        $this->buildService = $buildService;
         $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
         $this->githubService = $githubService;
@@ -55,16 +63,6 @@ class DeployAction extends AbstractAction
      */
     public function createMany(string $releaseOrCommitish, string $target, ?string $configFolder, bool $skipValidation, OutputInterface $output)
     {
-        $build = $this->githubService->findBuild($releaseOrCommitish);
-        if (null !== $build) {
-            $output->writeln('Using release found on github.');
-        } else {
-            $output->writeln('Release does not exist on github; trying to build it.');
-            $release = $this->releaseAction->tryCreate($releaseOrCommitish);
-            $build = $this->releaseAction->buildRelease($release, $output);
-        }
-        $output->writeln('');
-
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
         if (0 === count($instances)) {
             $output->writeln('For target specification '.$target.' no matching instances were found.');
@@ -84,8 +82,7 @@ class DeployAction extends AbstractAction
             }
         }
 
-        /** @var Deploy[] $deploys */
-        $deploys = [];
+        $validatedInstances = [];
         foreach ($instances as $instance) {
             $filePaths = [];
             if (null != $configFolder) {
@@ -99,10 +96,38 @@ class DeployAction extends AbstractAction
                 continue;
             }
 
-            $deploys[] = new Deploy($build, $instance, $filePaths);
+            $validatedInstances[] = [$instance, $filePaths]; // used as argument for Deploy __construct
+        }
+
+        /** @var Deploy[] $deploys */
+        $deploys = [];
+        if (count($validatedInstances) > 0) {
+            $setup = $this->getSetup($releaseOrCommitish, $output);
+
+            foreach ($validatedInstances as $validatedInstance) {
+                $deploys[] = new Deploy($setup, ...$validatedInstance);
+            }
         }
 
         return $deploys;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getSetup(string $releaseOrCommitish, OutputInterface $output): Setup
+    {
+        $setup = $this->githubService->createSetupByReleaseName($releaseOrCommitish);
+        if (null !== $setup) {
+            $output->writeln('Using release found on github.');
+        } else {
+            $output->writeln('No release by that name found on github. Building from commitish...');
+            $build = $this->buildService->build($releaseOrCommitish, $output);
+            $setup = Setup::fromBuild($build, $releaseOrCommitish);
+        }
+        $output->writeln('');
+
+        return $setup;
     }
 
     /**
@@ -177,17 +202,18 @@ class DeployAction extends AbstractAction
      */
     protected function doExecute($deploy, OutputInterface $output)
     {
-        $build = $deploy->getBuild();
+        $setup = $deploy->getSetup();
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
-        $releaseFolder = $this->instanceService->getReleasePath($target, $build);
+        $installation = $this->instanceService->createInstallation($target, $setup);
+        $releaseFolder = $this->instanceService->getReleasePath($target, $setup);
 
-        $output->writeln('uploading release');
-        $this->uploadBuild($releaseFolder, $connection, $build);
+        $output->writeln('uploading build');
+        $this->uploadBuild($releaseFolder, $connection, $setup);
 
-        $output->writeln('registering new release');
-        $this->instanceService->onReleaseInstalled($target, $releaseFolder, $build);
+        $output->writeln('registering new build');
+        $this->instanceService->onReleaseInstalled($target, $releaseFolder, $setup);
 
         $output->writeln('creating and linking shared folders');
         $this->createAndLinkSharedFolders($connection, $target, $releaseFolder);
@@ -205,13 +231,13 @@ class DeployAction extends AbstractAction
         $hasPreviousRelease = null !== $currentInstallation;
         $environment['HAS_PREVIOUS_RELEASE'] = $hasPreviousRelease ? 'true' : 'false';
         if ($hasPreviousRelease) {
-            $environment['PREVIOUS_RELEASE_PATH'] = $currentInstallation->getPath();
+            $environment['PREVIOUS_RELEASE_PATH'] = $currentInstallation->getFolder();
         }
         $deployScripts = $this->configurationService->getScripts('deploy');
         $connection->executeScript($releaseFolder, $deployScripts, $environment);
 
         $output->writeln('switching to new release');
-        $this->instanceService->switchRelease($target, $build);
+        $this->instanceService->switchInstallation($target, $setup);
         $output->writeln('release online');
 
         $output->writeln('cleaning old releases if required');
@@ -223,25 +249,25 @@ class DeployAction extends AbstractAction
      */
     private function clearOldReleases(Deploy $deploy, Connection $connection)
     {
-        /** @var Installation[] $offlineInstallationsByLastOnlineTimestamp */
-        $offlineInstallationsByLastOnlineTimestamp = [];
+        $onlineNumber = $deploy->getTarget()->getCurrentInstallation()->getNumber();
+        /** @var Installation[] $oldInstallations */
+        $oldInstallations = [];
         foreach ($deploy->getTarget()->getInstallations() as $installation) {
-            $lastOnline = $installation->getLastOnline();
-            if (null !== $lastOnline && !$installation->isOnline()) {
-                $offlineInstallationsByLastOnlineTimestamp[$lastOnline->getTimestamp()] = $installation;
+            if ($installation->getNumber() < $onlineNumber) {
+                $oldInstallations[$installation->getNumber()] = $installation;
             }
         }
 
-        ksort($offlineInstallationsByLastOnlineTimestamp);
+        ksort($oldInstallations);
 
         // remove excess releases
-        $releasesToDelete = count($offlineInstallationsByLastOnlineTimestamp) - $deploy->getTarget()->getKeepReleases();
-        foreach ($offlineInstallationsByLastOnlineTimestamp as $installation) {
+        $releasesToDelete = count($oldInstallations) - $deploy->getTarget()->getKeepReleases();
+        foreach ($oldInstallations as $installation) {
             if ($releasesToDelete-- <= 0) {
                 break;
             }
 
-            $connection->removeFolder($installation->getPath());
+            $connection->removeFolder($installation->getFolder());
         }
     }
 

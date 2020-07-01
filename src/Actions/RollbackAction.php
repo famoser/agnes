@@ -80,15 +80,15 @@ class RollbackAction extends AbstractAction
      */
     protected function doExecute($rollback, OutputInterface $output)
     {
-        $previousReleasePath = $rollback->getTarget()->getPath();
-        $releaseFolder = $rollback->getInstance()->getCurrentInstallation()->getPath();
+        $previousReleasePath = $rollback->getTarget()->getFolder();
+        $releaseFolder = $rollback->getInstance()->getCurrentInstallation()->getFolder();
 
         $output->writeln('executing rollback script');
         $deployScripts = $this->configurationService->getScripts('rollback');
         $rollback->getInstance()->getConnection()->executeScript($releaseFolder, $deployScripts, ['PREVIOUS_RELEASE_PATH' => $previousReleasePath]);
 
         $output->writeln('switching to previous release');
-        $this->instanceService->switchRelease($rollback->getInstance(), $rollback->getTarget()->getRelease());
+        $this->instanceService->switchInstallation($rollback->getInstance(), $rollback->getTarget());
         $output->writeln('previous release online');
     }
 }

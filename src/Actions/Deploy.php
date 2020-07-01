@@ -2,8 +2,8 @@
 
 namespace Agnes\Actions;
 
-use Agnes\Models\Build;
 use Agnes\Models\Instance;
+use Agnes\Models\Setup;
 use Agnes\Services\PolicyService;
 use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,9 +16,9 @@ class Deploy extends AbstractPayload
     private $target;
 
     /**
-     * @var Build
+     * @var Setup
      */
-    private $build;
+    private $setup;
 
     /**
      * @var string[]
@@ -30,10 +30,10 @@ class Deploy extends AbstractPayload
      *
      * @param string[] $files
      */
-    public function __construct(Build $build, Instance $target, array $files)
+    public function __construct(Setup $setup, Instance $target, array $files)
     {
+        $this->setup = $setup;
         $this->target = $target;
-        $this->build = $build;
         $this->filePaths = $files;
     }
 
@@ -42,9 +42,9 @@ class Deploy extends AbstractPayload
         return $this->target;
     }
 
-    public function getBuild(): Build
+    public function getSetup(): Setup
     {
-        return $this->build;
+        return $this->setup;
     }
 
     /**
@@ -65,6 +65,6 @@ class Deploy extends AbstractPayload
 
     public function describe(): string
     {
-        return 'deploy '.$this->getBuild()->getName().' to '.$this->getTarget()->describe();
+        return 'deploy '.$this->getSetup()->getName().' to '.$this->getTarget()->describe();
     }
 }

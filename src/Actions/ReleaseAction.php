@@ -2,8 +2,7 @@
 
 namespace Agnes\Actions;
 
-use Agnes\Models\Build;
-use Agnes\Services\ConfigurationService;
+use Agnes\Services\BuildService;
 use Agnes\Services\GithubService;
 use Agnes\Services\PolicyService;
 use Http\Client\Exception;
@@ -12,9 +11,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ReleaseAction extends AbstractAction
 {
     /**
-     * @var ConfigurationService
+     * @var BuildService
      */
-    private $configurationService;
+    private $buildService;
 
     /**
      * @var GithubService
@@ -24,11 +23,11 @@ class ReleaseAction extends AbstractAction
     /**
      * PublishService constructor.
      */
-    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService)
+    public function __construct(BuildService $buildService, PolicyService $policyService, GithubService $githubService)
     {
         parent::__construct($policyService);
 
-        $this->configurationService = $configurationService;
+        $this->buildService = $buildService;
         $this->githubService = $githubService;
     }
 
@@ -66,41 +65,9 @@ class ReleaseAction extends AbstractAction
      */
     protected function doExecute($release, OutputInterface $output)
     {
-        $build = $this->buildRelease($release, $output);
+        $build = $this->buildService->build($release->getCommitish(), $output);
 
         $output->writeln('publishing release to github');
-        $this->githubService->publish($build);
-    }
-
-    /**
-     * @return Build
-     *
-     * @throws \Exception
-     */
-    public function buildRelease(Release $release, OutputInterface $output)
-    {
-        $connection = $this->configurationService->getBuildConnection();
-        $buildPath = $this->configurationService->getBuildPath();
-
-        $output->writeln('cleaning build folder');
-        $connection->createOrClearFolder($buildPath);
-
-        $output->writeln('checking out repository');
-        $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
-        $gitHash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $release->getCommitish());
-        $release->setHash($gitHash);
-
-        $output->writeln('executing release script');
-        $scripts = $this->configurationService->getScripts('release');
-        $connection->executeScript($buildPath, $scripts);
-
-        $output->writeln('compressing build folder');
-        $filePath = $connection->compressTarGz($buildPath, $release->getArchiveName('.tar.gz'));
-        $content = $connection->readFile($filePath);
-
-        $output->writeln('removing build folder');
-        $connection->removeFolder($buildPath);
-
-        return Build::fromRelease($release, $content);
+        $this->githubService->publish($release->getName(), $build);
     }
 }

@@ -98,23 +98,28 @@ class Instance
         return $this->currentInstallation;
     }
 
-    public function isCurrentRelease(string $releaseName): bool
+    public function setCurrentInstallation(Installation $target)
+    {
+        $this->currentInstallation = $target;
+    }
+
+    public function currentInstallationMatches(string $setupIdentification): bool
     {
         if (null === $this->getCurrentInstallation()) {
             return false;
         }
 
-        return $this->getCurrentInstallation()->isSameReleaseName($releaseName);
+        return $this->getCurrentInstallation()->getSetup() === $setupIdentification;
     }
 
     /**
      * @return Installation[]
      */
-    public function getInstallationsByReleaseName(string $releaseName): array
+    public function getInstallationsMatching(string $setupIdentification): array
     {
         $installations = [];
         foreach ($this->installations as $installation) {
-            if ($installation->isSameReleaseName($releaseName)) {
+            if ($installation->getSetup() === $setupIdentification) {
                 $installations[] = $installation;
             }
         }
@@ -193,7 +198,7 @@ class Instance
         }
 
         // ensure rollbackFrom is what is currently active
-        if (null !== $rollbackFrom && !$this->isCurrentRelease($rollbackFrom)) {
+        if (null !== $rollbackFrom && !$this->currentInstallationMatches($rollbackFrom)) {
             return null;
         }
 
@@ -203,12 +208,12 @@ class Instance
         }
 
         // ensure target is not same than current release
-        if ($this->isCurrentRelease($rollbackTo)) {
+        if ($this->currentInstallationMatches($rollbackTo)) {
             return null;
         }
 
         // find matching installation & ensure it is indeed a previous release
-        $targetInstallations = $this->getInstallationsByReleaseName($rollbackTo);
+        $targetInstallations = $this->getInstallationsMatching($rollbackTo);
         /** @var Installation $maxTargetInstallation */
         $maxTargetInstallation = null;
         foreach ($targetInstallations as $targetInstallation) {

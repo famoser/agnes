@@ -9,11 +9,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Release extends AbstractPayload
 {
     /**
-     * @var string
-     */
-    private $commitish;
-
-    /**
      * @var string|null
      */
     private $name;
@@ -21,7 +16,7 @@ class Release extends AbstractPayload
     /**
      * @var string
      */
-    private $hash;
+    private $commitish;
 
     /**
      * Release constructor.
@@ -46,7 +41,7 @@ class Release extends AbstractPayload
 
     public function getName(): string
     {
-        return null !== $this->name ? $this->name : $this->hash;
+        return null !== $this->name ? $this->name : $this->commitish;
     }
 
     public function getArchiveName(string $ending): string

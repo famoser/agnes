@@ -2,8 +2,8 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\Release;
 use Agnes\Models\Build;
+use Agnes\Models\Setup;
 use Agnes\Services\Github\Client;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
@@ -51,12 +51,10 @@ class GithubService
     }
 
     /**
-     * @return Build|null
-     *
      * @throws Exception
      * @throws \Exception
      */
-    public function findBuild(string $releaseName)
+    public function createSetupByReleaseName(string $releaseName): ?Setup
     {
         $response = $this->getClient()->getReleases();
         $releases = json_decode($response->getBody()->getContents());
@@ -69,7 +67,7 @@ class GithubService
             $response = $this->getClient()->downloadAsset($release->assets[0]->id);
             $content = $response->getBody()->getContents();
 
-            return new Build($release->target_commitish, $release->name, $content);
+            return Setup::fromRelease($releaseName, $release->target_commitish, $content);
         }
 
         return null;
@@ -78,14 +76,14 @@ class GithubService
     /**
      * @throws Exception
      */
-    public function publish(Build $build)
+    public function publish(string $name, Build $build)
     {
-        $response = $this->createRelease($build);
+        $response = $this->createRelease($name, $build->getCommitish());
 
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
         $releaseId = (int) $responseObject->id;
-        $assetName = $build->getArchiveName('.tar.gz');
+        $assetName = $name.'.tar.gz';
 
         $this->getClient()->addReleaseAsset($releaseId, $assetName, 'application/zip', $build->getContent());
     }
@@ -94,16 +92,18 @@ class GithubService
      * @throws Exception
      * @throws \Exception
      */
-    private function createRelease(Release $release): ResponseInterface
+    private function createRelease(string $name, string $commitish): ResponseInterface
     {
+        $isPrerelease = strpos($name, '-') > 0; // matches v1.0.0-alpha3
+
         $body = '
         {
-          "tag_name": "'.$release->getName().'",
-          "target_commitish": "'.$release->getCommitish().'",
-          "name": "'.$release->getName().'",
-          "body": "Release of '.$release->getName().'",
+          "tag_name": "'.$name.'",
+          "target_commitish": "'.$commitish.'",
+          "name": "'.$name.'",
+          "body": "Release of '.$name.'",
           "draft": false,
-          "prerelease": '.$this->booleanToString(strpos($release->getName(), '-') > 0).'
+          "prerelease": '.$this->booleanToString($isPrerelease).'
         }';
 
         return $this->getClient()->createRelease($body);

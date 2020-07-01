@@ -63,7 +63,7 @@ class DeployPolicyVisitor extends PolicyVisitor
         // check if the release was published there at any given time
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {
-                if (null !== $installation->hasOnlinePeriods() && $installation->isSameReleaseName($this->deployment->getBuild()->getName())) {
+                if ($installation->setupMatches($this->deployment->getSetup()->getIdentification())) {
                     return true;
                 }
             }

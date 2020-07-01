@@ -53,11 +53,12 @@ application:
   scripts:
     # executed on a freshly cloned repository
     # prepare the application for deployment; gathering dependencies & such
-    release:  
+    # produces a build which is attached to a release or deployed 
+    build:  
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
       - '{{php}} -v' # place
 
-    # executed after the release packet from above is put in its final location, before putting it online
+    # executed after the build is put in its final location, before putting it online
     # initialize caches, migrate databases & other
     # if a previous release exists it is indicated in $HAS_PREVIOUS_RELEASE (value either true or false)
     # if a previous release exists then the path is given with $PREVIOUS_RELEASE_PATH
@@ -136,3 +137,9 @@ Host *
   ControlMaster auto
   ControlPersist yes
 ```
+## terminology
+
+- use a commitish to specify which git state you want to process.
+- create release to publish it
+- attached to a release is the build (zipped files + folders)
+- publish builds using the 

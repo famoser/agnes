@@ -10,6 +10,7 @@ use Agnes\Commands\CopySharedCommand;
 use Agnes\Commands\DeployCommand;
 use Agnes\Commands\ReleaseCommand;
 use Agnes\Commands\RollbackCommand;
+use Agnes\Services\BuildService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
@@ -22,6 +23,11 @@ use Symfony\Component\Console\Command\Command;
 
 class AgnesFactory
 {
+    /**
+     * @var BuildService
+     */
+    private $buildService;
+
     /**
      * @var ConfigurationService
      */
@@ -52,11 +58,13 @@ class AgnesFactory
 
         // construct internal services
         $configurationService = new ConfigurationService();
+        $buildService = new BuildService($configurationService);
         $githubService = new GithubService($pluginClient, $configurationService);
         $instanceService = new InstanceService($configurationService);
         $policyService = new PolicyService($configurationService, $instanceService);
 
         // set properties
+        $this->buildService = $buildService;
         $this->configurationService = $configurationService;
         $this->githubService = $githubService;
         $this->instanceService = $instanceService;
@@ -76,7 +84,7 @@ class AgnesFactory
      */
     public function createReleaseAction()
     {
-        return new ReleaseAction($this->configurationService, $this->policyService, $this->githubService);
+        return new ReleaseAction($this->buildService, $this->policyService, $this->githubService);
     }
 
     /**
@@ -84,7 +92,7 @@ class AgnesFactory
      */
     public function createDeployAction()
     {
-        return new DeployAction($this->configurationService, $this->policyService, $this->instanceService, $this->githubService, $this->createReleaseAction());
+        return new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->githubService, $this->createReleaseAction());
     }
 
     /**
