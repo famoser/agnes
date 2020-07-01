@@ -125,7 +125,7 @@ class InstanceService
         }
 
         foreach ($installations as $installation) {
-            if (null !== $installation->getRelease() && $installation->isSameReleaseName($currentInstallation->getRelease()->getName())) {
+            if (null !== $installation->getRelease() && $installation->getNumber() === $currentInstallation->getNumber()) {
                 return $installation;
             }
         }
