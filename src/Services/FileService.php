@@ -2,8 +2,6 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Connections\SSHConnection;
-
 class FileService
 {
     /*
