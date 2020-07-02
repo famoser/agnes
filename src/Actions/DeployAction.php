@@ -152,6 +152,10 @@ class DeployAction extends AbstractAction
             $instance->getEnvironmentName().DIRECTORY_SEPARATOR.
             $instance->getStage();
 
+        if (!is_dir($instanceFolder)) {
+            return [];
+        }
+
         $filePaths = $this->getFilesRecursively($instanceFolder);
 
         $result = [];
