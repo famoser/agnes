@@ -33,24 +33,33 @@ class Filter
         $this->stages = $stages;
     }
 
-    /**
-     * @return bool
-     */
-    public function instanceMatches(Instance $installation)
+    public static function createFromInstanceSpecification(string $instanceSpecification): Filter
     {
-        return $this->isMatch($installation->getServerName(), $installation->getEnvironmentName(), $installation->getStage());
+        $entries = explode(':', $instanceSpecification);
+
+        $parseToArray = function ($entry) {
+            return '*' !== $entry ? explode(',', $entry) : null;
+        };
+
+        $entryCount = count($entries);
+        $servers = $entryCount > 0 ? $parseToArray($entries[0]) : null;
+        $environments = $entryCount > 1 ? $parseToArray($entries[1]) : null;
+        $stages = $entryCount > 2 ? $parseToArray($entries[2]) : null;
+
+        return new self($servers, $environments, $stages);
     }
 
-    /**
-     * @return bool
-     */
-    public function isMatch(string $server, string $environment, string $stage)
+    public function instanceMatches(Instance $installation): bool
     {
-        if (null !== $this->servers && !in_array($server, $this->servers)) {
+        $serverName = $installation->getServerName();
+        $environmentName = $installation->getEnvironmentName();
+        $stage = $installation->getStage();
+
+        if (null !== $this->servers && !in_array($serverName, $this->servers)) {
             return false;
         }
 
-        if (null !== $this->environments && !in_array($environment, $this->environments)) {
+        if (null !== $this->environments && !in_array($environmentName, $this->environments)) {
             return false;
         }
 
@@ -59,5 +68,10 @@ class Filter
         }
 
         return true;
+    }
+
+    public function filtersBySingleStage(): bool
+    {
+        return null !== $this->stages && 1 === count($this->stages);
     }
 }

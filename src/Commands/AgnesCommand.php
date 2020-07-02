@@ -13,6 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AgnesCommand extends Command
 {
+    const INSTANCE_SPECIFICATION_EXPLANATION = '
+            Instances are specified in the form server:environment:stage (like aws:example.com:production deploys to production of example.com on the aws server). 
+            Replace entries with stars to not enforce a constraint (like *:*:production would deploy to all production stages).
+            Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).';
+
     /**
      * @var AgnesFactory
      */
@@ -134,6 +139,10 @@ abstract class AgnesCommand extends Command
             }
 
             $this->factory->addConfig($path);
+        }
+
+        if (null === $configFolder) {
+            $configFolder = $this->factory->getConfigurationService()->getAgnesConfigFolder();
         }
 
         // read config folder

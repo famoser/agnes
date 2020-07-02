@@ -2,10 +2,18 @@
 
 namespace Agnes\Models;
 
-use Agnes\Actions\Release;
-
-class Build extends Release
+class Build
 {
+    /**
+     * @var string
+     */
+    private $commitish;
+
+    /**
+     * @var string
+     */
+    private $hash;
+
     /**
      * @var string
      */
@@ -14,19 +22,21 @@ class Build extends Release
     /**
      * Build constructor.
      */
-    public function __construct(string $commitish, string $name, string $content)
+    public function __construct(string $commitish, string $hash, string $content)
     {
-        parent::__construct($commitish, $name);
-
+        $this->commitish = $commitish;
+        $this->hash = $hash;
         $this->content = $content;
     }
 
-    /**
-     * @return self
-     */
-    public static function fromRelease(Release $release, string $content)
+    public function getCommitish(): string
     {
-        return new self($release->getCommitish(), $release->getName(), $content);
+        return $this->commitish;
+    }
+
+    public function getHash(): string
+    {
+        return $this->hash;
     }
 
     public function getContent(): string

@@ -38,9 +38,9 @@ class RollbackCommand extends AgnesCommand
 If target is supplied, it will only rollback instances which had that release active at some time.
 If source is supplied, it will only rollback instances with that release version active.
 If neither target nor source is supplied, it will rollback to the last release which was active')
-            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to rollback. '.DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addOption('rollback-to', null, InputOption::VALUE_OPTIONAL, 'name of the release to rollback to')
-            ->addOption('rollback-from', null, InputOption::VALUE_OPTIONAL, 'name of the release to rollback from');
+            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to rollback. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION)
+            ->addOption('rollback-to', null, InputOption::VALUE_OPTIONAL, 'name of the release or hash to rollback to')
+            ->addOption('rollback-from', null, InputOption::VALUE_OPTIONAL, 'name of the release or hash to rollback from');
 
         parent::configure();
     }

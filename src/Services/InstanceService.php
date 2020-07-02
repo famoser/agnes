@@ -2,15 +2,9 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\Release;
-use Agnes\Models\Connections\Connection;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Models\OnlinePeriod;
-use Agnes\Services\Configuration\Environment;
-use Agnes\Services\Configuration\Server;
-use DateTime;
 use Exception;
 
 class InstanceService
@@ -21,6 +15,11 @@ class InstanceService
     private $configurationService;
 
     /**
+     * @var InstallationService
+     */
+    private $installationService;
+
+    /**
      * @var Instance[]|null
      */
     private $instancesCache = null;
@@ -28,30 +27,10 @@ class InstanceService
     /**
      * InstallationService constructor.
      */
-    public function __construct(ConfigurationService $configurationService)
+    public function __construct(ConfigurationService $configurationService, InstallationService $installationService)
     {
         $this->configurationService = $configurationService;
-    }
-
-    /**
-     * @return Instance[]
-     *
-     * @throws Exception
-     */
-    public function getInstancesFromInstanceSpecification(string $target)
-    {
-        $entries = explode(':', $target);
-
-        $parseToArray = function ($entry) {
-            return '*' !== $entry ? explode(',', $entry) : null;
-        };
-
-        $servers = $parseToArray($entries[0]);
-        $environments = $parseToArray($entries[1]);
-        $stages = $parseToArray($entries[2]);
-        $filter = new Filter($servers, $environments, $stages);
-
-        return $this->getInstancesByFilter($filter);
+        $this->installationService = $installationService;
     }
 
     /**
@@ -93,11 +72,7 @@ class InstanceService
         foreach ($servers as $server) {
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
-                    $releasesFolder = $this->getReleasesFolder($server, $environment, $stage);
-
-                    $installations = $this->loadInstallations($server->getConnection(), $releasesFolder);
-                    $currentInstallation = $this->getCurrentInstallation($server, $environment, $stage, $installations);
-                    $instances[] = new Instance($server, $environment, $stage, $installations, $currentInstallation);
+                    $instances[] = $this->createInstance($server, $environment, $stage);
                 }
             }
         }
@@ -106,212 +81,52 @@ class InstanceService
     }
 
     /**
-     * @param Installation[] $installations
-     *
-     * @return mixed|null
-     *
      * @throws Exception
      */
-    private function getCurrentInstallation(Server $server, Environment $environment, string $stage, array $installations)
+    public function switchInstallation(Instance $instance, Installation $target): void
     {
-        $currentReleaseFolder = $this->getCurrentReleaseSymlink($server, $environment, $stage);
-        if (!$server->getConnection()->checkFolderExists($currentReleaseFolder)) {
-            return null;
-        }
-
-        $currentInstallation = $this->getInstallationFromPath($server->getConnection(), $currentReleaseFolder);
-        if (null === $currentInstallation->getRelease()) {
-            return null;
-        }
-
-        foreach ($installations as $installation) {
-            if (null !== $installation->getRelease() && $installation->getNumber() === $currentInstallation->getNumber()) {
-                return $installation;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function switchRelease(Instance $target, Release $release): void
-    {
-        $currentSymlink = $this->getCurrentReleaseSymlinkPath($target);
-        $targetFolder = $this->getReleasePath($target, $release);
-        $connection = $target->getConnection();
+        $currentSymlink = $instance->getCurrentSymlink();
+        $connection = $instance->getConnection();
 
         // create new symlink
         $tempCurrentSymlink = $currentSymlink.'_';
-        $connection->createSymlink($tempCurrentSymlink, $targetFolder);
+        $connection->createSymlink($tempCurrentSymlink, $target->getFolder());
 
-        // switch active release
-        $this->onReleaseOffline($connection, $currentSymlink);
+        // take old offline
+        $old = $instance->getCurrentInstallation();
+        if (null !== $old) {
+            $this->installationService->isTakenOffline($instance, $old);
+        }
+
+        // switch
         $connection->replaceSymlink($tempCurrentSymlink, $currentSymlink);
-        $this->onReleaseOnline($connection, $targetFolder);
-    }
+        $instance->setCurrentInstallation($target);
 
-    /**
-     * @return Installation[]
-     *
-     * @throws Exception
-     */
-    private function loadInstallations(Connection $connection, string $releasesFolder)
-    {
-        $folders = $connection->getFolders($releasesFolder);
-
-        $installations = [];
-
-        foreach ($folders as $folder) {
-            $installations[] = $this->getInstallationFromPath($connection, $folder);
-        }
-
-        return $installations;
+        // take new online
+        $this->installationService->wasTakenOnline($instance, $target);
     }
 
     /**
      * @throws Exception
      */
-    public function onReleaseInstalled(Instance $instance, string $installationPath, Release $release)
+    private function createInstance(Configuration\Server $server, Configuration\Environment $environment, string $stage): Instance
     {
-        $connection = $instance->getConnection();
-        $maxReleaseNumber = 0;
-        foreach ($instance->getInstallations() as $installation) {
-            $maxReleaseNumber = max((int) $installation->getNumber(), $maxReleaseNumber);
+        $instance = new Instance($server, $environment, $stage);
+
+        $installations = $this->installationService->loadInstallations($instance);
+        if (count($installations) > 0) {
+            $symlink = $instance->getCurrentSymlink();
+            $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
+            $currentFolder = $symlinkExists ? $instance->getConnection()->readSymlink($symlink) : null;
+
+            foreach ($installations as $installation) {
+                $instance->addInstallation($installation);
+                if ($installation->getFolder() === $currentFolder) {
+                    $instance->setCurrentInstallation($installation);
+                }
+            }
         }
 
-        $installation = $this->getInstallationFromPath($connection, $installationPath);
-        $installation->setRelease($maxReleaseNumber + 1, $release);
-
-        $this->saveInstallationToPath($connection, $installationPath, $installation);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function onReleaseOnline(Connection $connection, string $installationPath)
-    {
-        $installation = $this->getInstallationFromPath($connection, $installationPath);
-        $installation->takeOnline();
-
-        $this->saveInstallationToPath($connection, $installationPath, $installation);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function onReleaseOffline(Connection $connection, string $installationPath)
-    {
-        $installation = $this->getInstallationFromPath($connection, $installationPath);
-        // no release at that path; hence lets not save
-        if (null === $installation->getRelease()) {
-            return;
-        }
-
-        $installation->takeOffline();
-
-        $this->saveInstallationToPath($connection, $installationPath, $installation);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function getInstallationFromPath(Connection $connection, string $installationPath): Installation
-    {
-        $agnesFilePath = $this->getAgnesMetaFilePath($installationPath);
-
-        if (!$connection->checkFileExists($agnesFilePath)) {
-            return new Installation($installationPath);
-        }
-
-        $metaJson = $connection->readFile($agnesFilePath);
-        $meta = json_decode($metaJson);
-        $number = $meta->number;
-        $release = new Release($meta->release->commitish, $meta->release->name);
-
-        $onlinePeriods = [];
-        foreach ($meta->online_periods as $onlinePeriod) {
-            $start = new DateTime($onlinePeriod->start);
-            $end = null !== $onlinePeriod->end ? new DateTime($onlinePeriod->end) : null;
-            $onlinePeriods[] = new OnlinePeriod($start, $end);
-        }
-
-        return new Installation($installationPath, $number, $release, $onlinePeriods);
-    }
-
-    private function saveInstallationToPath(Connection $connection, string $installationPath, Installation $installation)
-    {
-        $meta = [];
-        $meta['number'] = $installation->getNumber();
-        $meta['release'] = ['name' => $installation->getRelease()->getName(), 'commitish' => $installation->getRelease()->getCommitish()];
-
-        $onlinePeriods = [];
-        foreach ($installation->getOnlinePeriods() as $onlinePeriod) {
-            $onlinePeriods[] = [
-                'start' => $onlinePeriod->getStart()->format('c'),
-                'end' => $onlinePeriod->getEnd() ? $onlinePeriod->getEnd()->format('c') : null,
-            ];
-        }
-
-        $meta['online_periods'] = $onlinePeriods;
-
-        $metaJson = json_encode($meta, JSON_PRETTY_PRINT);
-        $agnesFilePath = $this->getAgnesMetaFilePath($installationPath);
-        $connection->writeFile($agnesFilePath, $metaJson);
-    }
-
-    /**
-     * @return string
-     */
-    public function getReleasePath(Instance $target, Release $release)
-    {
-        return $this->getReleaseFolder($target->getServer(), $target->getEnvironment(), $target->getStage(), $release);
-    }
-
-    /**
-     * @return string
-     */
-    public function getCurrentReleaseSymlinkPath(Instance $target)
-    {
-        return $this->getCurrentReleaseSymlink($target->getServer(), $target->getEnvironment(), $target->getStage());
-    }
-
-    /**
-     * @return string
-     */
-    public function getSharedPath(Instance $target)
-    {
-        return $this->getSharedFolder($target->getServer(), $target->getEnvironment(), $target->getStage());
-    }
-
-    private function getStageFolder(Configuration\Server $server, Configuration\Environment $environment, string $stage): string
-    {
-        return $server->getPath().DIRECTORY_SEPARATOR.$environment->getName().DIRECTORY_SEPARATOR.$stage;
-    }
-
-    private function getReleasesFolder(Configuration\Server $server, Configuration\Environment $environment, string $stage): string
-    {
-        return $this->getStageFolder($server, $environment, $stage).DIRECTORY_SEPARATOR.'releases';
-    }
-
-    private function getCurrentReleaseSymlink(Configuration\Server $server, Configuration\Environment $environment, string $stage): string
-    {
-        return $this->getStageFolder($server, $environment, $stage).DIRECTORY_SEPARATOR.'current';
-    }
-
-    private function getSharedFolder(Configuration\Server $server, Configuration\Environment $environment, string $stage): string
-    {
-        return $this->getStageFolder($server, $environment, $stage).DIRECTORY_SEPARATOR.'shared';
-    }
-
-    private function getReleaseFolder(Configuration\Server $server, Configuration\Environment $environment, string $stage, Release $release): string
-    {
-        return $this->getReleasesFolder($server, $environment, $stage).DIRECTORY_SEPARATOR.$release->getName();
-    }
-
-    private function getAgnesMetaFilePath(string $installationPath): string
-    {
-        return $installationPath.DIRECTORY_SEPARATOR.'.agnes';
+        return $instance;
     }
 }

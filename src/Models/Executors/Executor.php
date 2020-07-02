@@ -19,6 +19,11 @@ abstract class Executor
         return "ln -s $destination $filePath";
     }
 
+    public function readSymbolicLink(string $filePath): string
+    {
+        return "readlink -f $filePath";
+    }
+
     public function uncompressTarGz(string $archivePath, string $targetFolder): string
     {
         return "tar -xzf $archivePath -C $targetFolder";
@@ -57,9 +62,14 @@ abstract class Executor
         return $this->testFor("-d $folderPath", $outputIfTrue);
     }
 
-    public function testFileExists(string $folderPath, string $outputIfTrue): string
+    public function testFileExists(string $filePath, string $outputIfTrue): string
     {
-        return $this->testFor("-f $folderPath", $outputIfTrue);
+        return $this->testFor("-f $filePath", $outputIfTrue);
+    }
+
+    public function testSymlinkExists(string $symlinkPath, string $outputIfTrue): string
+    {
+        return $this->testFor("-L $symlinkPath", $outputIfTrue);
     }
 
     private function testFor(string $testArgs, string $outputIfTrue): string

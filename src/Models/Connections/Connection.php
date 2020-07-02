@@ -62,6 +62,8 @@ abstract class Connection
 
     abstract public function checkFileExists(string $filePath): bool;
 
+    abstract public function checkSymlinkExists(string $symlinkPath): bool;
+
     abstract public function checkFolderExists(string $folderPath): bool;
 
     abstract public function equals(Connection $connection): bool;
@@ -201,6 +203,16 @@ abstract class Connection
     }
 
     /**
+     * @throws Exception
+     */
+    public function readSymlink(string $symlink): string
+    {
+        $command = $this->executor->readSymbolicLink($symlink);
+
+        return $this->executeCommand($command);
+    }
+
+    /**
      * @return string
      */
     private function getRelativeSymlinkPath(string $source, string $target)
@@ -286,5 +298,25 @@ abstract class Connection
         }
 
         return $commands;
+    }
+
+    /**
+     * @param string[] $fullPaths
+     *
+     * @return string[]
+     */
+    protected function keepFolderOnly(array $fullPaths): array
+    {
+        $folder = [];
+        foreach ($fullPaths as $fullPath) {
+            $lastSlash = strrpos($fullPath, '/');
+            if (false === $lastSlash) {
+                $folder[] = $fullPath;
+            } else {
+                $folder[] = substr($fullPath, $lastSlash + 1);
+            }
+        }
+
+        return $folder;
     }
 }

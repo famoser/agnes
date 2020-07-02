@@ -2,6 +2,7 @@
 
 namespace Agnes\Actions;
 
+use Agnes\Models\Filter;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
@@ -36,29 +37,34 @@ class CopySharedAction extends AbstractAction
      *
      * @throws Exception
      */
-    public function createMany(string $source, string $target, OutputInterface $output): array
+    public function createMany(string $source, string $targetStage, OutputInterface $output): array
     {
-        $sourceInstances = $this->instanceService->getInstancesFromInstanceSpecification($source);
+        $filter = Filter::createFromInstanceSpecification($source);
+        if (!$filter->filtersBySingleStage()) {
+            $output->writeln('To avoid ambiguities, please specify a single source stage to copy from (hence your source should be of the form *:*:prod).');
+
+            return [];
+        }
+
+        $sourceInstances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($sourceInstances)) {
             $output->writeln('For source specification '.$source.' no matching instances were found.');
 
             return [];
         }
 
-        $targetInstances = $this->instanceService->getInstancesFromInstanceSpecification($target);
-        if (0 === count($sourceInstances)) {
-            $output->writeln('For target specification '.$target.' no matching instances were found.');
-
-            return [];
-        }
-
         /** @var CopyShared[] $copyShareds */
         $copyShareds = [];
-        foreach ($targetInstances as $targetInstance) {
-            $matchingInstances = $targetInstance->getSameEnvironmentInstances($sourceInstances);
-            if (1 === count($matchingInstances)) {
-                $copyShareds[] = new CopyShared($matchingInstances[0], $targetInstance);
+        foreach ($sourceInstances as $sourceInstance) {
+            $targetFilter = new Filter([$sourceInstance->getServerName()], [$sourceInstance->getEnvironmentName()], [$targetStage]);
+            $targetInstance = $this->instanceService->getInstancesByFilter($targetFilter);
+
+            if (0 === count($targetInstance)) {
+                $output->writeln('For instance '.$sourceInstance->describe().' no matching target instance was found.');
+                continue;
             }
+
+            $copyShareds[] = new CopyShared($sourceInstance, $targetInstance[0]);
         }
 
         return $copyShareds;
@@ -73,13 +79,6 @@ class CopySharedAction extends AbstractAction
     {
         if (!$copyShared instanceof CopyShared) {
             $output->writeln('Not a '.CopyShared::class);
-
-            return false;
-        }
-
-        // technical limitation: only copy from same connection
-        if (!$copyShared->getSource()->getConnection()->equals($copyShared->getTarget()->getConnection())) {
-            $output->writeln('Cannot execute '.$copyShared->describe().': copy shared only possible within same connection.');
 
             return false;
         }
@@ -101,8 +100,8 @@ class CopySharedAction extends AbstractAction
      */
     protected function doExecute($copyShared, OutputInterface $output)
     {
-        $sourceSharedPath = $this->instanceService->getSharedPath($copyShared->getSource());
-        $targetSharedPath = $this->instanceService->getSharedPath($copyShared->getTarget());
+        $sourceSharedPath = $copyShared->getSource()->getSharedFolder();
+        $targetSharedPath = $copyShared->getTarget()->getSharedFolder();
         $connection = $copyShared->getSource()->getConnection();
 
         $sharedFolders = $this->configurationService->getSharedFolders();

@@ -2,26 +2,24 @@
 
 namespace Agnes\Models;
 
-use Agnes\Actions\Release;
 use DateTime;
-use Exception;
 
 class Installation
 {
     /**
      * @var string
      */
-    private $path;
+    private $folder;
 
     /**
-     * @var int|null
+     * @var int
      */
     private $number;
 
     /**
-     * @var Release?
+     * @var Setup
      */
-    private $release;
+    private $setup;
 
     /**
      * @var OnlinePeriod[]
@@ -30,55 +28,28 @@ class Installation
 
     /**
      * Installation constructor.
-     *
-     * @param int $number
      */
-    public function __construct(string $path, ?int $number = null, ?Release $release = null, array $onlinePeriods = [])
+    public function __construct(string $folder, int $number, Setup $setup, array $onlinePeriods = [])
     {
-        $this->path = $path;
+        $this->folder = $folder;
         $this->number = $number;
-        $this->release = $release;
+        $this->setup = $setup;
         $this->onlinePeriods = $onlinePeriods;
     }
 
-    public function getPath(): string
+    public function getFolder(): string
     {
-        return $this->path;
+        return $this->folder;
     }
 
-    public function getNumber(): ?int
+    public function getNumber(): int
     {
         return $this->number;
     }
 
-    /**
-     * @return Release|null ?Release
-     */
-    public function getRelease(): ?Release
+    public function getSetup(): Setup
     {
-        return $this->release;
-    }
-
-    /**
-     * if this installation was online at some time.
-     *
-     * @return bool
-     */
-    public function hasOnlinePeriods()
-    {
-        return count($this->onlinePeriods) > 0;
-    }
-
-    /**
-     * if this installation is online right now.
-     *
-     * @return bool
-     */
-    public function isOnline()
-    {
-        $lastPeriod = $this->getLastOnlinePeriod();
-
-        return null !== $lastPeriod && null === $lastPeriod->getEnd();
+        return $this->setup;
     }
 
     /**
@@ -92,7 +63,7 @@ class Installation
     /**
      * persists that the installation is now taken online.
      */
-    public function takeOnline()
+    public function startOnlinePeriod()
     {
         $onlinePeriod = new OnlinePeriod(new DateTime(), null);
         $this->onlinePeriods[] = $onlinePeriod;
@@ -100,54 +71,36 @@ class Installation
 
     /**
      * persists that the installation is now taken offline.
-     *
-     * @throws Exception
      */
-    public function takeOffline()
-    {
-        $lastPeriod = $this->getLastOnlinePeriod();
-        if (null !== $lastPeriod) {
-            $lastPeriod->setEnd(new DateTime());
-        }
-    }
-
-    public function setRelease(int $number, Release $release)
-    {
-        $this->number = $number;
-        $this->release = $release;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getLastOnline()
-    {
-        $lastPeriod = $this->getLastOnlinePeriod();
-
-        if (null === $lastPeriod) {
-            return null;
-        }
-
-        return null !== $lastPeriod->getEnd() ? $lastPeriod->getEnd() : $lastPeriod->getStart();
-    }
-
-    /**
-     * @return OnlinePeriod|null
-     */
-    private function getLastOnlinePeriod()
+    public function stopOnlinePeriod()
     {
         if (0 === count($this->onlinePeriods)) {
-            return null;
+            return;
         }
 
-        return $this->onlinePeriods[count($this->onlinePeriods) - 1];
+        $lastPeriod = $this->onlinePeriods[count($this->onlinePeriods) - 1];
+        $lastPeriod->setEnd(new DateTime());
     }
 
-    /**
-     * @return bool
-     */
-    public function isSameReleaseName(string $releaseName)
+    public function toArray(): array
     {
-        return null != $this->getRelease() && $this->getRelease()->getName() === $releaseName;
+        $array = ['number' => $this->number, 'setup' => $this->setup->toArray(), 'online_periods' => []];
+
+        foreach ($this->onlinePeriods as $onlinePeriod) {
+            $array['online_periods'][] = $onlinePeriod->toArray();
+        }
+
+        return $array;
+    }
+
+    public static function fromArray(string $folder, array $array): Installation
+    {
+        $setup = Setup::fromArray($array['setup']);
+        $onlinePeriods = [];
+        foreach ($array['online_periods'] as $onlinePeriod) {
+            $onlinePeriods[] = OnlinePeriod::fromArray($onlinePeriod);
+        }
+
+        return new Installation($folder, $array['number'], $setup, $onlinePeriods);
     }
 }

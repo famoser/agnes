@@ -39,4 +39,23 @@ class OnlinePeriod
     {
         $this->end = $end;
     }
+
+    public function toArray(): array
+    {
+        $array = ['start' => $this->start->format('c')];
+
+        if (null !== $this->end) {
+            $array['end'] = $this->end->format('c');
+        }
+
+        return $array;
+    }
+
+    public static function fromArray(array $array): self
+    {
+        $start = new DateTime($array['start']);
+        $end = isset($array['end']) ? new DateTime($array['end']) : null;
+
+        return new self($start, $end);
+    }
 }

@@ -94,8 +94,8 @@ class Client
     /**
      * @return ResponseInterface
      *
-     * @throws Exception
      * @throws \Exception
+     * @throws \Psr\Http\Client\ClientExceptionInterface
      */
     private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], string $body = null)
     {

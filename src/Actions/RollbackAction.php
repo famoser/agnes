@@ -2,6 +2,8 @@
 
 namespace Agnes\Actions;
 
+use Agnes\Models\Filter;
+use Agnes\Models\Installation;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
@@ -36,9 +38,16 @@ class RollbackAction extends AbstractAction
      *
      * @throws Exception
      */
-    public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom, OutputInterface $output)
+    public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom, OutputInterface $output): array
     {
-        $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
+        if (null !== $rollbackFrom && $rollbackTo === $rollbackFrom) {
+            $output->writeln('Can not rollback within same version. Rollback from '.$rollbackFrom.' to '.$rollbackTo.'.');
+
+            return [];
+        }
+
+        $filter = Filter::createFromInstanceSpecification($target);
+        $instances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($instances)) {
             $output->writeln('For target specification '.$target.' no matching instances were found.');
 
@@ -48,10 +57,42 @@ class RollbackAction extends AbstractAction
         /** @var Rollback[] $rollbacks */
         $rollbacks = [];
         foreach ($instances as $instance) {
-            $rollbackTarget = $instance->getRollbackTarget($rollbackTo, $rollbackFrom);
-            if (null !== $rollbackTarget) {
-                $rollbacks[] = new Rollback($instance, $rollbackTarget);
+            $currentInstallation = $instance->getCurrentInstallation();
+
+            // if no installation, can not rollback
+            if (null === $currentInstallation) {
+                continue;
             }
+
+            // skip if rollback from does not match
+            if (null !== $rollbackFrom && $currentInstallation->getSetup() !== $rollbackFrom) {
+                continue;
+            }
+
+            // if not target specified, simply take next lower
+            $rollbackToMatcher = null;
+            if (null !== $rollbackTo) {
+                $rollbackToMatcher = function (Installation $installation) use ($rollbackTo) {
+                    return $installation->getSetup()->getIdentification() === $rollbackTo;
+                };
+            }
+
+            /** @var Installation|null $upperBoundInstallation */
+            $upperBoundInstallation = null;
+            foreach ($instance->getInstallations() as $installation) {
+                if ($installation->getNumber() < $currentInstallation->getNumber() &&
+                    (null === $upperBoundInstallation || $upperBoundInstallation->getNumber() < $installation->getNumber()) &&
+                    (null === $rollbackToMatcher || $rollbackToMatcher($installation))) {
+                    $upperBoundInstallation = $installation;
+                }
+            }
+
+            if (null === $upperBoundInstallation) {
+                $output->writeln('For instance '.$instance->describe().' no matching rollback installation was found.');
+                continue;
+            }
+
+            $rollbacks[] = new Rollback($instance, $upperBoundInstallation);
         }
 
         return $rollbacks;
@@ -80,15 +121,15 @@ class RollbackAction extends AbstractAction
      */
     protected function doExecute($rollback, OutputInterface $output)
     {
-        $previousReleasePath = $rollback->getTarget()->getPath();
-        $releaseFolder = $rollback->getInstance()->getCurrentInstallation()->getPath();
+        $previousReleasePath = $rollback->getTarget()->getFolder();
+        $releaseFolder = $rollback->getInstance()->getCurrentInstallation()->getFolder();
 
         $output->writeln('executing rollback script');
         $deployScripts = $this->configurationService->getScripts('rollback');
         $rollback->getInstance()->getConnection()->executeScript($releaseFolder, $deployScripts, ['PREVIOUS_RELEASE_PATH' => $previousReleasePath]);
 
         $output->writeln('switching to previous release');
-        $this->instanceService->switchRelease($rollback->getInstance(), $rollback->getTarget()->getRelease());
+        $this->instanceService->switchInstallation($rollback->getInstance(), $rollback->getTarget());
         $output->writeln('previous release online');
     }
 }

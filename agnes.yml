@@ -10,5 +10,5 @@ github:
 
 application:
   scripts:
-    release:
+    build:
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts

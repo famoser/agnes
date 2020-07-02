@@ -52,26 +52,28 @@ application:
 
   scripts:
     # executed on a freshly cloned repository
-    # prepare the application for deployment; gathering dependencies & such
-    release:  
+    # install dependencies, ...
+    # produces a build which is attached to a release or deployed 
+    build:  
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
       - '{{php}} -v' # place
 
-    # executed after the release packet from above is put in its final location, before putting it online
-    # initialize caches, migrate databases & other
+    # executed on the final location of the build, before putting it online
+    # initialize caches, migrate databases, ...
     # if a previous release exists it is indicated in $HAS_PREVIOUS_RELEASE (value either true or false)
     # if a previous release exists then the path is given with $PREVIOUS_RELEASE_PATH
     # for example `if [[ "$HAS_PREVIOUS_RELEASE" == true ]]; then cp -r $PREVIOUS_RELEASE_PATH/var/transient var/transient; fi`
     deploy:
-      - echo "deployed"
+      - php bin/console doctrine:migrations:migrate -q
 
     # executed on the current instance before rolling back to the previous instance
-    # execute migrations
+    # revert migrations, invalidate cache, ...
     # the path of the previous release is given in $PREVIOUS_RELEASE_PATH
     rollback:
       - echo "rollbacked"
 
-# the servers define where your application will be deployed
+# define instances where your application will be deployed
+# an instance consist of server, environment and stage
 # you can match here defined instances with the expression *:*:*
 # the first part matches to the server name (with * matching all), here the only available server is "example"
 # the second part matches to the environment name (with * matching all), here the only available environment is "example.com"
@@ -90,11 +92,11 @@ servers:
     environments:
       example.com: [dev, staging, education, production]
 
-# policies prevent actions to be executed that would be unsafe to do so from the application perspective
+# policies prevent actions to be executed that would be unsafe to do so from the perspective of the application
 # for example, you can define here that it is not possible to deploy to production before the same release was not on a dev environment
 policies:
-  strategy: unanimous # all matching policies must be valid. no other options at the moment
-  allow_if_all_abstain: true # if no matching policy is found, the execution is allowed. no other options at the moment
+  strategy: unanimous # all matching policies must be valid (no other options at the moment)
+  allow_if_all_abstain: true # if no matching policy is found, the execution is allowed (no other options at the moment)
 
   deploy:
     # requires that to deploy to a higher stage, the same release must be deployed to the next lower stage

@@ -34,8 +34,8 @@ class CopySharedCommand extends AgnesCommand
         $this->setName('copy:shared')
             ->setDescription('Copies the shared data from the source to the target')
             ->setHelp('This copies the shared data from the source to the target to replicate environment(s).')
-            ->addArgument('source', InputArgument::REQUIRED, 'the instance(s) to copy data from. '.DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to replace the data from the source.'.DeployCommand::INSTANCE_SPECIFICATION_EXPLANATION);
+            ->addArgument('source', InputArgument::REQUIRED, 'the instances(s) to copy data from. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION)
+            ->addArgument('target', InputArgument::REQUIRED, 'the stage to copy data to.');
 
         parent::configure();
     }
