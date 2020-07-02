@@ -257,7 +257,7 @@ class DeployAction extends AbstractAction
         ksort($oldInstallations);
 
         // remove excess releases
-        $releasesToDelete = count($oldInstallations) - $deploy->getTarget()->getKeepReleases();
+        $releasesToDelete = count($oldInstallations) - $deploy->getTarget()->getServer()->getKeepReleases();
         foreach ($oldInstallations as $installation) {
             if ($releasesToDelete-- <= 0) {
                 break;

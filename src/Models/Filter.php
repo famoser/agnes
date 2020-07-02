@@ -38,19 +38,15 @@ class Filter
      */
     public function instanceMatches(Instance $installation)
     {
-        return $this->isMatch($installation->getServerName(), $installation->getEnvironmentName(), $installation->getStage());
-    }
+        $serverName = $installation->getServerName();
+        $environmentName = $installation->getEnvironmentName();
+        $stage = $installation->getStage();
 
-    /**
-     * @return bool
-     */
-    public function isMatch(string $server, string $environment, string $stage)
-    {
-        if (null !== $this->servers && !in_array($server, $this->servers)) {
+        if (null !== $this->servers && !in_array($serverName, $this->servers)) {
             return false;
         }
 
-        if (null !== $this->environments && !in_array($environment, $this->environments)) {
+        if (null !== $this->environments && !in_array($environmentName, $this->environments)) {
             return false;
         }
 

@@ -100,63 +100,6 @@ class Instance
         $this->currentInstallation = $target;
     }
 
-    public function currentInstallationMatches(string $setupIdentification): bool
-    {
-        if (null === $this->getCurrentInstallation()) {
-            return false;
-        }
-
-        return $this->getCurrentInstallation()->getSetup() === $setupIdentification;
-    }
-
-    /**
-     * @return Installation[]
-     */
-    public function getInstallationsMatching(string $setupIdentification): array
-    {
-        $installations = [];
-        foreach ($this->installations as $installation) {
-            if ($installation->getSetup() === $setupIdentification) {
-                $installations[] = $installation;
-            }
-        }
-
-        return $installations;
-    }
-
-    /**
-     * @return int
-     */
-    public function getKeepReleases()
-    {
-        return $this->server->getKeepReleases();
-    }
-
-    /**
-     * get previous installation.
-     */
-    public function getPreviousInstallation(): ?Installation
-    {
-        if (null === $this->getCurrentInstallation()) {
-            return null;
-        }
-
-        $currentReleaseNumber = $this->getCurrentInstallation()->getNumber();
-
-        /** @var Installation|null $upperBoundRelease */
-        $upperBoundRelease = null;
-
-        foreach ($this->getInstallations() as $installation) {
-            if (null !== $installation->getNumber() &&
-                $installation->getNumber() < $currentReleaseNumber &&
-                (null === $upperBoundRelease || $upperBoundRelease->getNumber() < $installation->getNumber())) {
-                $upperBoundRelease = $installation;
-            }
-        }
-
-        return $upperBoundRelease;
-    }
-
     /**
      * @param Instance[] $instances
      *
@@ -173,42 +116,6 @@ class Instance
         }
 
         return $matching;
-    }
-
-    public function getRollbackTarget(?string $rollbackTo, ?string $rollbackFrom): ?Installation
-    {
-        // ensure instance active
-        if (null === $this->getCurrentInstallation()) {
-            return null;
-        }
-
-        // ensure rollbackFrom is what is currently active
-        if (null !== $rollbackFrom && !$this->currentInstallationMatches($rollbackFrom)) {
-            return null;
-        }
-
-        // if no rollback target specified, return the previous installation
-        if (null === $rollbackTo) {
-            return $this->getPreviousInstallation();
-        }
-
-        // ensure target is not same than current release
-        if ($this->currentInstallationMatches($rollbackTo)) {
-            return null;
-        }
-
-        // find matching installation & ensure it is indeed a previous release
-        $targetInstallations = $this->getInstallationsMatching($rollbackTo);
-        /** @var Installation $maxTargetInstallation */
-        $maxTargetInstallation = null;
-        foreach ($targetInstallations as $targetInstallation) {
-            if ($targetInstallation->getNumber() < $this->getCurrentInstallation()->getNumber() &&
-                (null === $maxTargetInstallation || $targetInstallation->getNumber() > $maxTargetInstallation->getNumber())) {
-                $maxTargetInstallation = $targetInstallation;
-            }
-        }
-
-        return $maxTargetInstallation;
     }
 
     /**

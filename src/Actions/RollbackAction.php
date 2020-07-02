@@ -2,6 +2,7 @@
 
 namespace Agnes\Actions;
 
+use Agnes\Models\Installation;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
@@ -36,8 +37,14 @@ class RollbackAction extends AbstractAction
      *
      * @throws Exception
      */
-    public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom, OutputInterface $output)
+    public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom, OutputInterface $output): array
     {
+        if (null !== $rollbackFrom && $rollbackTo === $rollbackFrom) {
+            $output->writeln('Can not rollback within same version. Rollback from '.$rollbackFrom.' to '.$rollbackTo.'.');
+
+            return [];
+        }
+
         $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
         if (0 === count($instances)) {
             $output->writeln('For target specification '.$target.' no matching instances were found.');
@@ -48,10 +55,42 @@ class RollbackAction extends AbstractAction
         /** @var Rollback[] $rollbacks */
         $rollbacks = [];
         foreach ($instances as $instance) {
-            $rollbackTarget = $instance->getRollbackTarget($rollbackTo, $rollbackFrom);
-            if (null !== $rollbackTarget) {
-                $rollbacks[] = new Rollback($instance, $rollbackTarget);
+            $currentInstallation = $instance->getCurrentInstallation();
+
+            // if no installation, can not rollback
+            if (null === $currentInstallation) {
+                continue;
             }
+
+            // skip if rollback from does not match
+            if (null !== $rollbackFrom && $currentInstallation->getSetup() !== $rollbackFrom) {
+                continue;
+            }
+
+            // if not target specified, simply take next lower
+            $rollbackToMatcher = null;
+            if (null !== $rollbackTo) {
+                $rollbackToMatcher = function (Installation $installation) use ($rollbackTo) {
+                    return $installation->getSetup()->getIdentification() === $rollbackTo;
+                };
+            }
+
+            /** @var Installation|null $upperBoundInstallation */
+            $upperBoundInstallation = null;
+            foreach ($instance->getInstallations() as $installation) {
+                if ($installation->getNumber() < $currentInstallation->getNumber() &&
+                    (null === $upperBoundInstallation || $upperBoundInstallation->getNumber() < $installation->getNumber()) &&
+                    (null === $rollbackToMatcher || $rollbackToMatcher($installation))) {
+                    $upperBoundInstallation = $installation;
+                }
+            }
+
+            if (null === $upperBoundInstallation) {
+                $output->writeln('For instance '.$instance->describe().' no matching rollback installation was found.');
+                continue;
+            }
+
+            $rollbacks[] = new Rollback($instance, $upperBoundInstallation);
         }
 
         return $rollbacks;
