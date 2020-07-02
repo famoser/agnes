@@ -65,6 +65,6 @@ class Deploy extends AbstractPayload
 
     public function describe(): string
     {
-        return 'deploy '.$this->getSetup()->getName().' to '.$this->getTarget()->describe();
+        return 'deploy '.$this->getSetup()->getIdentification().' to '.$this->getTarget()->describe();
     }
 }

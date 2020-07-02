@@ -29,11 +29,6 @@ class Release extends AbstractPayload
         $this->name = $name;
     }
 
-    public function setHash(string $hash)
-    {
-        $this->hash = $hash;
-    }
-
     public function getCommitish(): string
     {
         return $this->commitish;
@@ -42,11 +37,6 @@ class Release extends AbstractPayload
     public function getName(): string
     {
         return null !== $this->name ? $this->name : $this->commitish;
-    }
-
-    public function getArchiveName(string $ending): string
-    {
-        return 'release-'.$this->getName().$ending;
     }
 
     /**

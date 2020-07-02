@@ -49,6 +49,6 @@ class Rollback extends AbstractPayload
 
     public function describe(): string
     {
-        return 'rollback '.$this->getInstance()->describe().' to '.$this->getTarget()->getRelease()->getName().' with number '.$this->getTarget()->getNumber();
+        return 'rollback '.$this->getInstance()->describe().' at '.$this->getInstance()->getCurrentInstallation()->getSetup()->getIdentification().'to '.$this->getTarget()->getSetup()->getIdentification();
     }
 }

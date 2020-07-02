@@ -6,13 +6,14 @@ use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Models\Setup;
+use Exception;
 
 class InstallationService
 {
     public function createInstallation(Instance $target, Setup $setup): Installation
     {
         $identification = $setup->getIdentification();
-        $installationFolder = $this->getInstallationsFolder($target->getServer(), $target->getEnvironment(), $target->getStage()).DIRECTORY_SEPARATOR.$identification;
+        $installationFolder = $target->getInstallationsFolder().DIRECTORY_SEPARATOR.$identification;
         if ($target->getConnection()->checkFolderExists($installationFolder)) {
             $duplicationCounter = 1;
             while ($target->getConnection()->checkFolderExists($installationFolder).'-'.$duplicationCounter) {
@@ -52,7 +53,7 @@ class InstallationService
     /**
      * @return Installation[]
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function loadInstallations(Instance $instance): array
     {
@@ -73,7 +74,7 @@ class InstallationService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function getInstallationFromPath(Connection $connection, string $installationPath): ?Installation
     {

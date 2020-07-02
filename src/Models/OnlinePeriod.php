@@ -53,8 +53,8 @@ class OnlinePeriod
 
     public static function fromArray(array $array): self
     {
-        $start = new \DateTime($array['start']);
-        $end = isset($array['end']) ? new \DateTime($array['end']) : null;
+        $start = new DateTime($array['start']);
+        $end = isset($array['end']) ? new DateTime($array['end']) : null;
 
         return new self($start, $end);
     }

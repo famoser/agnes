@@ -9,6 +9,7 @@ use Agnes\AgnesFactory;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
+use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -63,7 +64,8 @@ class DeployCommand extends AgnesCommand
     /**
      * @return AbstractPayload[]
      *
-     * @throws \Exception
+     * @throws Exception
+     * @throws \Http\Client\Exception
      */
     protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
     {

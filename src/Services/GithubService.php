@@ -75,6 +75,7 @@ class GithubService
 
     /**
      * @throws Exception
+     * @throws \Exception
      */
     public function publish(string $name, Build $build)
     {

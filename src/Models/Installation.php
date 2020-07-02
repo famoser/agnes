@@ -3,7 +3,6 @@
 namespace Agnes\Models;
 
 use DateTime;
-use Exception;
 
 class Installation
 {
@@ -72,8 +71,6 @@ class Installation
 
     /**
      * persists that the installation is now taken offline.
-     *
-     * @throws Exception
      */
     public function stopOnlinePeriod()
     {
@@ -105,10 +102,5 @@ class Installation
         }
 
         return new Installation($folder, $array['number'], $setup, $onlinePeriods);
-    }
-
-    public function getAgnesMetaFilePath(): string
-    {
-        return $this->get.DIRECTORY_SEPARATOR.'.agnes';
     }
 }

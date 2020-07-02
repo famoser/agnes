@@ -122,6 +122,7 @@ class DeployAction extends AbstractAction
 
     /**
      * @throws Exception
+     * @throws \Exception
      */
     private function getSetup(string $releaseOrCommitish, OutputInterface $output): Setup
     {
@@ -205,7 +206,6 @@ class DeployAction extends AbstractAction
     /**
      * @param Deploy $deploy
      *
-     * @throws Exception
      * @throws \Exception
      */
     protected function doExecute($deploy, OutputInterface $output)

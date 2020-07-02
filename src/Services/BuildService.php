@@ -3,6 +3,7 @@
 namespace Agnes\Services;
 
 use Agnes\Models\Build;
+use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class BuildService
@@ -23,7 +24,7 @@ class BuildService
     /**
      * @return Build
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function build(string $committish, OutputInterface $output)
     {
