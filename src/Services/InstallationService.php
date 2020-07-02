@@ -18,7 +18,7 @@ class InstallationService
         $installationFolder = $target->getInstallationsFolder().DIRECTORY_SEPARATOR.$identification;
         if ($target->getConnection()->checkFolderExists($installationFolder)) {
             $duplicationCounter = 1;
-            while ($target->getConnection()->checkFolderExists($installationFolder).'-'.$duplicationCounter) {
+            while ($target->getConnection()->checkFolderExists($installationFolder.'-'.$duplicationCounter)) {
                 ++$duplicationCounter;
             }
             $installationFolder .= '-'.$duplicationCounter;
@@ -69,7 +69,7 @@ class InstallationService
         $installations = [];
 
         foreach ($folders as $folder) {
-            $installation = $this->getInstallationFromPath($instance->getConnection(), $folder);
+            $installation = $this->getInstallationFromFolder($instance, $folder);
             if (null !== $installation) {
                 $installations[] = $installation;
             }
@@ -81,15 +81,16 @@ class InstallationService
     /**
      * @throws Exception
      */
-    private function getInstallationFromPath(Connection $connection, string $installationPath): ?Installation
+    private function getInstallationFromFolder(Instance $instance, string $folder): ?Installation
     {
+        $installationPath = $instance->getInstallationsFolder().DIRECTORY_SEPARATOR.$folder;
         $agnesFilePath = $installationPath.DIRECTORY_SEPARATOR.self::AGNES_FILE_NAME;
 
-        if (!$connection->checkFileExists($agnesFilePath)) {
+        if (!$instance->getConnection()->checkFileExists($agnesFilePath)) {
             return null;
         }
 
-        $metaJson = $connection->readFile($agnesFilePath);
+        $metaJson = $instance->getConnection()->readFile($agnesFilePath);
         $array = json_decode($metaJson, true);
 
         return Installation::fromArray($installationPath, $array);
