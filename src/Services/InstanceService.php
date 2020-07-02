@@ -126,7 +126,7 @@ class InstanceService
         }
 
         foreach ($installations as $installation) {
-            if (null !== $installation->getRelease() && $installation->getNumber() === $currentInstallation->getNumber()) {
+            if ($installation->getNumber() === $currentInstallation->getNumber()) {
                 return $installation;
             }
         }
@@ -185,22 +185,23 @@ class InstanceService
 
     public function createInstallation(Instance $target, Setup $setup)
     {
-        $maxReleaseNumber = 0;
-        foreach ($target->getInstallations() as $installation) {
-            $maxReleaseNumber = max((int) $installation->getNumber(), $maxReleaseNumber);
+        $identification = $setup->getIdentification();
+        $installationFolder = $this->getInstallationsFolder($target->getServer(), $target->getEnvironment(), $target->getStage()).DIRECTORY_SEPARATOR.$identification;
+        if ($target->getConnection()->checkFolderExists($installationFolder)) {
+            $duplicationCounter = 1;
+            while ($target->getConnection()->checkFolderExists($installationFolder).'-'.$duplicationCounter) {
+                ++$duplicationCounter;
+            }
+            $installationFolder .= '-'.$duplicationCounter;
         }
-        ++$maxReleaseNumber;
 
-        $installation = new Installation();
-    }
+        $maxNumber = 0;
+        foreach ($target->getInstallations() as $installation) {
+            $maxNumber = max((int) $installation->getNumber(), $maxNumber);
+        }
+        ++$maxNumber;
 
-    /**
-     * @throws Exception
-     */
-    public function onReleaseInstalled(Instance $instance, Installation $installation)
-    {
-        $connection = $instance->getConnection();
-        $this->saveInstallation($connection, $installation);
+        return new Installation($installationFolder, $maxNumber, $setup);
     }
 
     /**
@@ -253,14 +254,6 @@ class InstanceService
     /**
      * @return string
      */
-    public function getReleasePath(Instance $target, Release $release)
-    {
-        return $this->getReleaseFolder($target->getServer(), $target->getEnvironment(), $target->getStage(), $release);
-    }
-
-    /**
-     * @return string
-     */
     public function getCurrentReleaseSymlinkPath(Instance $target)
     {
         return $this->getCurrentSymlink($target->getServer(), $target->getEnvironment(), $target->getStage());
@@ -281,7 +274,7 @@ class InstanceService
 
     private function getInstallationsFolder(Configuration\Server $server, Configuration\Environment $environment, string $stage): string
     {
-        return $this->getStageFolder($server, $environment, $stage).DIRECTORY_SEPARATOR.'releases';
+        return $this->getStageFolder($server, $environment, $stage).DIRECTORY_SEPARATOR.'installations';
     }
 
     private function getCurrentSymlink(Configuration\Server $server, Configuration\Environment $environment, string $stage): string
@@ -292,11 +285,6 @@ class InstanceService
     private function getSharedFolder(Configuration\Server $server, Configuration\Environment $environment, string $stage): string
     {
         return $this->getStageFolder($server, $environment, $stage).DIRECTORY_SEPARATOR.'shared';
-    }
-
-    private function getReleaseFolder(Configuration\Server $server, Configuration\Environment $environment, string $stage, Release $release): string
-    {
-        return $this->getInstallationsFolder($server, $environment, $stage).DIRECTORY_SEPARATOR.$release->getName();
     }
 
     private function getAgnesMetaFilePath(string $installationPath): string

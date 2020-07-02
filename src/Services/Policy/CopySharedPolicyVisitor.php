@@ -28,11 +28,25 @@ class CopySharedPolicyVisitor extends PolicyVisitor
 
     public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
     {
-        $sourceRelease = $this->copyShared->getSource()->getCurrentReleaseName();
-        $targetRelease = $this->copyShared->getTarget()->getCurrentReleaseName();
+        $sourceInstallation = $this->copyShared->getSource()->getCurrentInstallation();
+        $targetInstallation = $this->copyShared->getTarget()->getCurrentInstallation();
 
-        if (null === $sourceRelease || $sourceRelease !== $targetRelease) {
-            $this->preventExecution($this->copyShared, "source release does not match target release. source: $sourceRelease target: $targetRelease.");
+        if (null === $sourceInstallation) {
+            $this->preventExecution($this->copyShared, 'source has no active installation.');
+
+            return false;
+        }
+
+        if (null === $targetInstallation) {
+            $this->preventExecution($this->copyShared, 'target has no active installation.');
+
+            return false;
+        }
+
+        $sourceIdentification = $sourceInstallation->getSetup()->getIdentification();
+        $targetIdentification = $targetInstallation->getSetup()->getIdentification();
+        if ($sourceIdentification !== $targetIdentification) {
+            $this->preventExecution($this->copyShared, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
 
             return false;
         }

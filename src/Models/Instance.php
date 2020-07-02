@@ -29,7 +29,7 @@ class Instance
     private $installations = [];
 
     /**
-     * @var Installation
+     * @var Installation|null
      */
     private $currentInstallation;
 
@@ -90,9 +90,6 @@ class Instance
         return $this->installations;
     }
 
-    /**
-     * @return Installation
-     */
     public function getCurrentInstallation(): ?Installation
     {
         return $this->currentInstallation;
@@ -158,18 +155,6 @@ class Instance
         }
 
         return $upperBoundRelease;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCurrentReleaseName()
-    {
-        if (null != $this->getCurrentInstallation() && null !== $this->getCurrentInstallation()->getRelease()) {
-            return $this->getCurrentInstallation()->getRelease()->getName();
-        }
-
-        return null;
     }
 
     /**

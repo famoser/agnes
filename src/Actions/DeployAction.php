@@ -2,7 +2,6 @@
 
 namespace Agnes\Actions;
 
-use Agnes\Models\Build;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
@@ -206,14 +205,11 @@ class DeployAction extends AbstractAction
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
+        $output->writeln('determine target folder');
         $installation = $this->instanceService->createInstallation($target, $setup);
-        $releaseFolder = $this->instanceService->getReleasePath($target, $setup);
 
-        $output->writeln('uploading build');
-        $this->uploadBuild($releaseFolder, $connection, $setup);
-
-        $output->writeln('registering new build');
-        $this->instanceService->onReleaseInstalled($target, $releaseFolder, $setup);
+        $output->writeln('uploading build to '.$installation->getFolder());
+        $this->uploadBuild($installation->getFolder(), $connection, $setup);
 
         $output->writeln('creating and linking shared folders');
         $this->createAndLinkSharedFolders($connection, $target, $releaseFolder);
@@ -237,7 +233,7 @@ class DeployAction extends AbstractAction
         $connection->executeScript($releaseFolder, $deployScripts, $environment);
 
         $output->writeln('switching to new release');
-        $this->instanceService->switchInstallation($target, $setup);
+        $this->instanceService->switchInstallation($target, $installation);
         $output->writeln('release online');
 
         $output->writeln('cleaning old releases if required');
@@ -306,14 +302,14 @@ class DeployAction extends AbstractAction
     /**
      * @throws \Exception
      */
-    private function uploadBuild(string $releaseFolder, Connection $connection, Build $build): void
+    private function uploadBuild(string $releaseFolder, Connection $connection, Setup $setup): void
     {
         // make empty dir for new release
         $connection->createOrClearFolder($releaseFolder);
 
         // transfer release packet
-        $assetPath = $releaseFolder.DIRECTORY_SEPARATOR.$build->getArchiveName('.tar.gz');
-        $connection->writeFile($assetPath, $build->getContent());
+        $assetPath = $releaseFolder.DIRECTORY_SEPARATOR.$setup->getIdentification().'.tar.gz';
+        $connection->writeFile($assetPath, $setup->getContent());
 
         // unpack release packet
         $connection->uncompressTarGz($assetPath, $releaseFolder);
