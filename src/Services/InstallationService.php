@@ -10,6 +10,8 @@ use Exception;
 
 class InstallationService
 {
+    const AGNES_FILE_NAME = '.agnes';
+
     public function createInstallation(Instance $target, Setup $setup): Installation
     {
         $identification = $setup->getIdentification();
@@ -28,25 +30,28 @@ class InstallationService
         }
         ++$maxNumber;
 
-        return new Installation($installationFolder, $maxNumber, $setup);
+        $installation = new Installation($installationFolder, $maxNumber, $setup);
+        $target->addInstallation($installation);
+
+        return $installation;
     }
 
-    public function isTakenOffline(Instance $instance, Installation $installation)
+    public function isTakenOffline(Instance $instance, Installation $installation): void
     {
         $installation->stopOnlinePeriod();
         $this->saveInstallation($instance->getConnection(), $installation);
     }
 
-    public function wasTakenOnline(Instance $instance, Installation $installation)
+    public function wasTakenOnline(Instance $instance, Installation $installation): void
     {
         $installation->startOnlinePeriod();
         $this->saveInstallation($instance->getConnection(), $installation);
     }
 
-    private function saveInstallation(Connection $connection, Installation $installation)
+    private function saveInstallation(Connection $connection, Installation $installation): void
     {
         $metaJson = json_encode($installation->toArray(), JSON_PRETTY_PRINT);
-        $agnesFilePath = $installation->getFolder().DIRECTORY_SEPARATOR.'.agnes';
+        $agnesFilePath = $installation->getFolder().DIRECTORY_SEPARATOR.self::AGNES_FILE_NAME;
         $connection->writeFile($agnesFilePath, $metaJson);
     }
 
@@ -78,7 +83,7 @@ class InstallationService
      */
     private function getInstallationFromPath(Connection $connection, string $installationPath): ?Installation
     {
-        $agnesFilePath = $installationPath.DIRECTORY_SEPARATOR.'.agnes';
+        $agnesFilePath = $installationPath.DIRECTORY_SEPARATOR.self::AGNES_FILE_NAME;
 
         if (!$connection->checkFileExists($agnesFilePath)) {
             return null;

@@ -39,7 +39,7 @@ class BuildService
         $gitHash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $committish);
 
         $output->writeln('executing release script');
-        $scripts = $this->configurationService->getScripts('release');
+        $scripts = $this->configurationService->getScripts('build');
         $connection->executeScript($buildPath, $scripts);
 
         $output->writeln('compressing build folder');
