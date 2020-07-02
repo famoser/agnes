@@ -2,16 +2,13 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\Release;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Models\OnlinePeriod;
 use Agnes\Models\Setup;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\Server;
-use DateTime;
 use Exception;
 
 class InstanceService
@@ -32,27 +29,6 @@ class InstanceService
     public function __construct(ConfigurationService $configurationService)
     {
         $this->configurationService = $configurationService;
-    }
-
-    /**
-     * @return Instance[]
-     *
-     * @throws Exception
-     */
-    public function getInstancesFromInstanceSpecification(string $target)
-    {
-        $entries = explode(':', $target);
-
-        $parseToArray = function ($entry) {
-            return '*' !== $entry ? explode(',', $entry) : null;
-        };
-
-        $servers = $parseToArray($entries[0]);
-        $environments = $parseToArray($entries[1]);
-        $stages = $parseToArray($entries[2]);
-        $filter = new Filter($servers, $environments, $stages);
-
-        return $this->getInstancesByFilter($filter);
     }
 
     /**
@@ -216,37 +192,14 @@ class InstanceService
         }
 
         $metaJson = $connection->readFile($agnesFilePath);
-        $meta = json_decode($metaJson);
-        $number = $meta->number;
-        $release = new Release($meta->release->commitish, $meta->release->name);
+        $array = json_decode($metaJson, true);
 
-        $onlinePeriods = [];
-        foreach ($meta->online_periods as $onlinePeriod) {
-            $start = new DateTime($onlinePeriod->start);
-            $end = null !== $onlinePeriod->end ? new DateTime($onlinePeriod->end) : null;
-            $onlinePeriods[] = new OnlinePeriod($start, $end);
-        }
-
-        return new Installation($installationPath, $number, $release, $onlinePeriods);
+        return Installation::fromArray($installationPath, $array);
     }
 
     private function saveInstallation(Connection $connection, Installation $installation)
     {
-        $meta = [];
-        $meta['number'] = $installation->getNumber();
-        $meta['setup'] = ['commitish' => $installation->getSetup()->getCommitish()];
-
-        $onlinePeriods = [];
-        foreach ($installation->getOnlinePeriods() as $onlinePeriod) {
-            $onlinePeriods[] = [
-                'start' => $onlinePeriod->getStart()->format('c'),
-                'end' => $onlinePeriod->getEnd() ? $onlinePeriod->getEnd()->format('c') : null,
-            ];
-        }
-
-        $meta['online_periods'] = $onlinePeriods;
-
-        $metaJson = json_encode($meta, JSON_PRETTY_PRINT);
+        $metaJson = json_encode($installation->toArray(), JSON_PRETTY_PRINT);
         $agnesFilePath = $this->getAgnesMetaFilePath($installation->getFolder());
         $connection->writeFile($agnesFilePath, $metaJson);
     }

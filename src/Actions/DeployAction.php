@@ -3,6 +3,7 @@
 namespace Agnes\Actions;
 
 use Agnes\Models\Connections\Connection;
+use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Models\Setup;
@@ -62,7 +63,8 @@ class DeployAction extends AbstractAction
      */
     public function createMany(string $releaseOrCommitish, string $target, ?string $configFolder, bool $skipValidation, OutputInterface $output)
     {
-        $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
+        $filter = Filter::createFromInstanceSpecification($target);
+        $instances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($instances)) {
             $output->writeln('For target specification '.$target.' no matching instances were found.');
 

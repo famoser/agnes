@@ -33,10 +33,23 @@ class Filter
         $this->stages = $stages;
     }
 
-    /**
-     * @return bool
-     */
-    public function instanceMatches(Instance $installation)
+    public static function createFromInstanceSpecification(string $instanceSpecification): Filter
+    {
+        $entries = explode(':', $instanceSpecification);
+
+        $parseToArray = function ($entry) {
+            return '*' !== $entry ? explode(',', $entry) : null;
+        };
+
+        $entryCount = count($entries);
+        $servers = $entryCount > 0 ? $parseToArray($entries[0]) : null;
+        $environments = $entryCount > 1 ? $parseToArray($entries[1]) : null;
+        $stages = $entryCount > 2 ? $parseToArray($entries[2]) : null;
+
+        return new self($servers, $environments, $stages);
+    }
+
+    public function instanceMatches(Instance $installation): bool
     {
         $serverName = $installation->getServerName();
         $environmentName = $installation->getEnvironmentName();
@@ -55,5 +68,10 @@ class Filter
         }
 
         return true;
+    }
+
+    public function filtersBySingleStage(): bool
+    {
+        return null !== $this->stages && 1 === count($this->stages);
     }
 }

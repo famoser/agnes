@@ -101,24 +101,6 @@ class Instance
     }
 
     /**
-     * @param Instance[] $instances
-     *
-     * @return Instance[]
-     */
-    public function getSameEnvironmentInstances(array $instances)
-    {
-        /** @var Instance[] $matching */
-        $matching = [];
-        foreach ($instances as $instance) {
-            if ($this->getEnvironmentName() === $instance->getEnvironmentName()) {
-                $matching[] = $instance;
-            }
-        }
-
-        return $matching;
-    }
-
-    /**
      * @return bool
      */
     public function equals(Instance $other)

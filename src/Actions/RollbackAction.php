@@ -2,6 +2,7 @@
 
 namespace Agnes\Actions;
 
+use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
@@ -45,7 +46,8 @@ class RollbackAction extends AbstractAction
             return [];
         }
 
-        $instances = $this->instanceService->getInstancesFromInstanceSpecification($target);
+        $filter = Filter::createFromInstanceSpecification($target);
+        $instances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($instances)) {
             $output->writeln('For target specification '.$target.' no matching instances were found.');
 

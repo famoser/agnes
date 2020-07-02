@@ -84,4 +84,26 @@ class Installation
         $lastPeriod = $this->onlinePeriods[count($this->onlinePeriods) - 1];
         $lastPeriod->setEnd(new DateTime());
     }
+
+    public function toArray(): array
+    {
+        $array = ['number' => $this->number, 'setup' => $this->setup->toArray(), 'online_periods' => []];
+
+        foreach ($this->onlinePeriods as $onlinePeriod) {
+            $array['online_periods'][] = $onlinePeriod->toArray();
+        }
+
+        return $array;
+    }
+
+    public static function fromArray(string $folder, array $array): Installation
+    {
+        $setup = Setup::fromArray($array['setup']);
+        $onlinePeriods = [];
+        foreach ($array['online_periods'] as $onlinePeriod) {
+            $onlinePeriods[] = OnlinePeriod::fromArray($onlinePeriod);
+        }
+
+        return new Installation($folder, $array['number'], $setup, $onlinePeriods);
+    }
 }
