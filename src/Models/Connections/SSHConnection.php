@@ -113,7 +113,9 @@ class SSHConnection extends Connection
             return [];
         }
 
-        return explode("\n", $response);
+        $fullPaths = explode("\n", $response);
+
+        return $this->keepFolderOnly($fullPaths);
     }
 
     public function checkFileExists(string $filePath): bool

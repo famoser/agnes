@@ -43,7 +43,9 @@ class LocalConnection extends Connection
      */
     public function getFolders(string $dir): array
     {
-        return glob("$dir/*", GLOB_ONLYDIR);
+        $fullPaths = glob("$dir/*", GLOB_ONLYDIR);
+
+        return $this->keepFolderOnly($fullPaths);
     }
 
     public function checkFileExists(string $filePath): bool

@@ -299,4 +299,24 @@ abstract class Connection
 
         return $commands;
     }
+
+    /**
+     * @param string[] $fullPaths
+     *
+     * @return string[]
+     */
+    protected function keepFolderOnly(array $fullPaths): array
+    {
+        $folder = [];
+        foreach ($fullPaths as $fullPath) {
+            $lastSlash = strrpos($fullPath, '/');
+            if (false === $lastSlash) {
+                $folder[] = $fullPath;
+            } else {
+                $folder[] = substr($fullPath, $lastSlash + 1);
+            }
+        }
+
+        return $folder;
+    }
 }
