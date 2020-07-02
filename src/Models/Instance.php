@@ -38,18 +38,16 @@ class Instance
      *
      * @param Installation[] $installations
      */
-    public function __construct(Server $server, Environment $environment, string $stage, array $installations, ?Installation $currentInstallation)
+    public function __construct(Server $server, Environment $environment, string $stage)
     {
         $this->server = $server;
         $this->environment = $environment;
         $this->stage = $stage;
+    }
 
-        foreach ($installations as $installation) {
-            $this->installations[$installation->getNumber()] = $installation;
-        }
-        ksort($this->installations);
-
-        $this->currentInstallation = $currentInstallation;
+    public function addInstallation(Installation $installation)
+    {
+        $this->installations[$installation->getNumber()] = $installation;
     }
 
     public function getServer(): Server
@@ -116,6 +114,26 @@ class Instance
         }
 
         return false;
+    }
+
+    public function getInstallationsFolder(): string
+    {
+        return $this->getInstanceFolder().DIRECTORY_SEPARATOR.'installations';
+    }
+
+    public function getCurrentSymlink(): string
+    {
+        return $this->getInstanceFolder().DIRECTORY_SEPARATOR.'current';
+    }
+
+    public function getSharedFolder(): string
+    {
+        return $this->getInstanceFolder().DIRECTORY_SEPARATOR.'shared';
+    }
+
+    private function getInstanceFolder(): string
+    {
+        return $this->server->getPath().DIRECTORY_SEPARATOR.$this->environment->getName().DIRECTORY_SEPARATOR.$this->stage;
     }
 
     /**

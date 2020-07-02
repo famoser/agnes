@@ -13,6 +13,7 @@ use Agnes\Commands\RollbackCommand;
 use Agnes\Services\BuildService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
+use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Exception;
@@ -44,6 +45,11 @@ class AgnesFactory
     private $instanceService;
 
     /**
+     * @var InstallationService
+     */
+    private $installationService;
+
+    /**
      * @var PolicyService
      */
     private $policyService;
@@ -60,7 +66,8 @@ class AgnesFactory
         $configurationService = new ConfigurationService();
         $buildService = new BuildService($configurationService);
         $githubService = new GithubService($pluginClient, $configurationService);
-        $instanceService = new InstanceService($configurationService);
+        $installationService = new InstallationService();
+        $instanceService = new InstanceService($configurationService, $installationService);
         $policyService = new PolicyService($configurationService, $instanceService);
 
         // set properties
@@ -68,6 +75,7 @@ class AgnesFactory
         $this->configurationService = $configurationService;
         $this->githubService = $githubService;
         $this->instanceService = $instanceService;
+        $this->installationService = $installationService;
         $this->policyService = $policyService;
     }
 
@@ -92,7 +100,7 @@ class AgnesFactory
      */
     public function createDeployAction()
     {
-        return new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->githubService, $this->createReleaseAction());
+        return new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->installationService, $this->githubService, $this->createReleaseAction());
     }
 
     /**

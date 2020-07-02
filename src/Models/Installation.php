@@ -106,4 +106,9 @@ class Installation
 
         return new Installation($folder, $array['number'], $setup, $onlinePeriods);
     }
+
+    public function getAgnesMetaFilePath(): string
+    {
+        return $this->get.DIRECTORY_SEPARATOR.'.agnes';
+    }
 }

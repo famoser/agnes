@@ -10,6 +10,7 @@ use Agnes\Models\Setup;
 use Agnes\Services\BuildService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
+use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Http\Client\Exception;
@@ -33,6 +34,11 @@ class DeployAction extends AbstractAction
     private $instanceService;
 
     /**
+     * @var InstallationService
+     */
+    private $installationService;
+
+    /**
      * @var GithubService
      */
     private $githubService;
@@ -45,13 +51,14 @@ class DeployAction extends AbstractAction
     /**
      * DeployService constructor.
      */
-    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, GithubService $githubService, ReleaseAction $releaseAction)
+    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, InstallationService $installationService, GithubService $githubService, ReleaseAction $releaseAction)
     {
         parent::__construct($policyService);
 
         $this->buildService = $buildService;
         $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
+        $this->installationService = $installationService;
         $this->githubService = $githubService;
         $this->releaseAction = $releaseAction;
     }
@@ -208,17 +215,17 @@ class DeployAction extends AbstractAction
         $connection = $target->getConnection();
 
         $output->writeln('determine target folder');
-        $installation = $this->instanceService->createInstallation($target, $setup);
+        $installation = $this->installationService->createInstallation($target, $setup);
 
         $output->writeln('uploading build to '.$installation->getFolder());
         $this->uploadBuild($installation->getFolder(), $connection, $setup);
 
         $output->writeln('creating and linking shared folders');
-        $this->createAndLinkSharedFolders($connection, $target, $releaseFolder);
+        $this->createAndLinkSharedFolders($connection, $target, $installation->getFolder());
 
         $output->writeln('uploading files');
         foreach ($deploy->getFilePaths() as $targetPath => $sourcePath) {
-            $fullPath = $releaseFolder.DIRECTORY_SEPARATOR.$targetPath;
+            $fullPath = $installation->getFolder().DIRECTORY_SEPARATOR.$targetPath;
             $content = file_get_contents($sourcePath);
             $connection->writeFile($fullPath, $content);
         }
@@ -232,7 +239,7 @@ class DeployAction extends AbstractAction
             $environment['PREVIOUS_RELEASE_PATH'] = $currentInstallation->getFolder();
         }
         $deployScripts = $this->configurationService->getScripts('deploy');
-        $connection->executeScript($releaseFolder, $deployScripts, $environment);
+        $connection->executeScript($installation->getFolder(), $deployScripts, $environment);
 
         $output->writeln('switching to new release');
         $this->instanceService->switchInstallation($target, $installation);
@@ -274,10 +281,10 @@ class DeployAction extends AbstractAction
      */
     private function createAndLinkSharedFolders(Connection $connection, Instance $target, string $releaseFolder): void
     {
-        $sharedPath = $this->instanceService->getSharedPath($target);
-        $sharedFolders = $this->configurationService->getSharedFolders();
-        foreach ($sharedFolders as $sharedFolder) {
-            $sharedFolderTarget = $sharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
+        $instanceSharedFolder = $target->getSharedFolder();
+        $installationSharedFolders = $this->configurationService->getSharedFolders();
+        foreach ($installationSharedFolders as $sharedFolder) {
+            $sharedFolderTarget = $instanceSharedFolder.DIRECTORY_SEPARATOR.$sharedFolder;
             $releaseFolderSource = $releaseFolder.DIRECTORY_SEPARATOR.$sharedFolder;
 
             // if created for the first time...

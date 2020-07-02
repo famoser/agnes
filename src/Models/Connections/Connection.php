@@ -201,6 +201,16 @@ abstract class Connection
     }
 
     /**
+     * @throws Exception
+     */
+    public function readSymlink(string $symlink): string
+    {
+        $command = $this->executor->readSymbolicLink($symlink);
+
+        return $this->executeCommand($command);
+    }
+
+    /**
      * @return string
      */
     private function getRelativeSymlinkPath(string $source, string $target)

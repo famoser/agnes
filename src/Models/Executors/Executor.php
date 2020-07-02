@@ -19,6 +19,11 @@ abstract class Executor
         return "ln -s $destination $filePath";
     }
 
+    public function readSymbolicLink(string $filePath): string
+    {
+        return "readlink -f $filePath";
+    }
+
     public function uncompressTarGz(string $archivePath, string $targetFolder): string
     {
         return "tar -xzf $archivePath -C $targetFolder";

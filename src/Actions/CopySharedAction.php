@@ -100,8 +100,8 @@ class CopySharedAction extends AbstractAction
      */
     protected function doExecute($copyShared, OutputInterface $output)
     {
-        $sourceSharedPath = $this->instanceService->getSharedPath($copyShared->getSource());
-        $targetSharedPath = $this->instanceService->getSharedPath($copyShared->getTarget());
+        $sourceSharedPath = $copyShared->getSource()->getSharedFolder();
+        $targetSharedPath = $copyShared->getTarget()->getSharedFolder();
         $connection = $copyShared->getSource()->getConnection();
 
         $sharedFolders = $this->configurationService->getSharedFolders();
