@@ -62,6 +62,8 @@ abstract class Connection
 
     abstract public function checkFileExists(string $filePath): bool;
 
+    abstract public function checkSymlinkExists(string $symlinkPath): bool;
+
     abstract public function checkFolderExists(string $folderPath): bool;
 
     abstract public function equals(Connection $connection): bool;

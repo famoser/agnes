@@ -51,6 +51,11 @@ class LocalConnection extends Connection
         return is_file($filePath);
     }
 
+    public function checkSymlinkExists(string $symlinkPath): bool
+    {
+        return is_link($symlinkPath);
+    }
+
     public function checkFolderExists(string $folderPath): bool
     {
         return is_dir($folderPath);

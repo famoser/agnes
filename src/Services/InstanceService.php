@@ -116,7 +116,8 @@ class InstanceService
         $installations = $this->installationService->loadInstallations($instance);
         if (count($installations) > 0) {
             $symlink = $instance->getCurrentSymlink();
-            $currentFolder = $instance->getConnection()->checkFileExists($symlink) ? $instance->getConnection()->readSymlink($symlink) : null;
+            $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
+            $currentFolder = $symlinkExists ? $instance->getConnection()->readSymlink($symlink) : null;
 
             foreach ($installations as $installation) {
                 $instance->addInstallation($installation);

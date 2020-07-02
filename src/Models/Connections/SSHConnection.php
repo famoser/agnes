@@ -116,9 +116,6 @@ class SSHConnection extends Connection
         return explode("\n", $response);
     }
 
-    /**
-     * @throws Exception
-     */
     public function checkFileExists(string $filePath): bool
     {
         $command = $this->executor->testFileExists($filePath, 'yes');
@@ -126,9 +123,13 @@ class SSHConnection extends Connection
         return $this->testForOutput($command, 'yes');
     }
 
-    /**
-     * @throws Exception
-     */
+    public function checkSymlinkExists(string $symlinkPath): bool
+    {
+        $command = $this->executor->testSymlinkExists($symlinkPath, 'yes');
+
+        return $this->testForOutput($command, 'yes');
+    }
+
     public function checkFolderExists(string $folderPath): bool
     {
         $command = $this->executor->testFolderExists($folderPath, 'yes');
