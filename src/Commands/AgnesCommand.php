@@ -18,11 +18,6 @@ abstract class AgnesCommand extends Command
             Replace entries with stars to not enforce a constraint (like *:*:production would deploy to all production stages).
             Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).';
 
-    const ENVIRONMENT_SPECIFICATION_EXPLANATION = '
-            Environments are specified in the form server:environment (like aws:example.com includes all stages (dev, staging, production, ...) on example.com on the aws server). 
-            Replace entries with stars to not enforce a constraint (like *:* would include all environments on all servers).
-            Separate entries with comma (,) to enforce an OR constraint (like *:example.com,example.ch would include all servers with example.com & example.ch environments).';
-
     /**
      * @var AgnesFactory
      */
@@ -144,6 +139,10 @@ abstract class AgnesCommand extends Command
             }
 
             $this->factory->addConfig($path);
+        }
+
+        if (null === $configFolder) {
+            $configFolder = $this->factory->getConfigurationService()->getAgnesConfigFolder();
         }
 
         // read config folder

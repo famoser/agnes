@@ -47,7 +47,7 @@ class ConfigurationService
      */
     public function getRepositoryCloneUrl()
     {
-        $repository = $this->getNestedConfig(['github', 'repository']);
+        $repository = $this->getNestedConfig('github', 'repository');
 
         return 'git@github.com:'.$repository;
     }
@@ -59,8 +59,8 @@ class ConfigurationService
      */
     public function getGithubConfig()
     {
-        $apiToken = $this->getNestedConfig(['github', 'api_token']);
-        $repository = $this->getNestedConfig(['github', 'repository']);
+        $apiToken = $this->getNestedConfig('github', 'api_token');
+        $repository = $this->getNestedConfig('github', 'repository');
 
         return new GithubConfig($apiToken, $repository);
     }
@@ -72,7 +72,7 @@ class ConfigurationService
      */
     public function getBuildConnection()
     {
-        $connection = $this->getNestedConfig(['agnes', 'build_target', 'connection']);
+        $connection = $this->getNestedConfig('agnes', 'build_target', 'connection');
 
         return $this->getConnection($connection);
     }
@@ -84,7 +84,7 @@ class ConfigurationService
      */
     public function getBuildPath()
     {
-        return $this->getNestedConfig(['agnes', 'build_target', 'path']);
+        return $this->getNestedConfig('agnes', 'build_target', 'path');
     }
 
     /**
@@ -94,7 +94,17 @@ class ConfigurationService
      */
     public function getAgnesVersion()
     {
-        return $this->getNestedConfig(['agnes', 'version']);
+        return $this->getNestedConfig('agnes', 'version');
+    }
+
+    /**
+     * @return string|null
+     *
+     * @throws Exception
+     */
+    public function getAgnesConfigFolder()
+    {
+        return $this->getNestedConfigWithDefault(null, 'agnes', 'config_folder');
     }
 
     /**
@@ -114,7 +124,7 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    private function getNestedConfig(array $keys)
+    private function getNestedConfig(...$keys)
     {
         $current = $this->config;
 

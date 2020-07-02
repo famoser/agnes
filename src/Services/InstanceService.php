@@ -72,20 +72,7 @@ class InstanceService
         foreach ($servers as $server) {
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
-                    $instance = new Instance($server, $environment, $stage);
-
-                    $symlink = $instance->getCurrentSymlink();
-                    $currentFolder = $instance->getConnection()->readSymlink($symlink);
-
-                    $installations = $this->installationService->loadInstallations($instance);
-                    foreach ($installations as $installation) {
-                        $instance->addInstallation($installation);
-                        if ($installation->getFolder() === $currentFolder) {
-                            $instance->setCurrentInstallation($installation);
-                        }
-                    }
-
-                    $instances[] = $instance;
+                    $instances[] = $this->createInstance($server, $environment, $stage);
                 }
             }
         }
@@ -117,5 +104,28 @@ class InstanceService
 
         // take new online
         $this->installationService->wasTakenOnline($instance, $target);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createInstance(Configuration\Server $server, Configuration\Environment $environment, string $stage): Instance
+    {
+        $instance = new Instance($server, $environment, $stage);
+
+        $installations = $this->installationService->loadInstallations($instance);
+        if (count($installations) > 0) {
+            $symlink = $instance->getCurrentSymlink();
+            $currentFolder = $instance->getConnection()->checkFileExists($symlink) ? $instance->getConnection()->readSymlink($symlink) : null;
+
+            foreach ($installations as $installation) {
+                $instance->addInstallation($installation);
+                if ($installation->getFolder() === $currentFolder) {
+                    $instance->setCurrentInstallation($installation);
+                }
+            }
+        }
+
+        return $instance;
     }
 }
