@@ -47,7 +47,7 @@ If neither target nor source is supplied, it will rollback to the last release w
 
     protected function getAction(AgnesFactory $factory): AbstractAction
     {
-        return $factory->createRollbackAction();
+        return $factory->getRollbackAction();
     }
 
     /**

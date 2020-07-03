@@ -12,7 +12,6 @@ use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class DeployCommand extends AgnesCommand
@@ -50,15 +49,14 @@ class DeployCommand extends AgnesCommand
             ->setDescription('Deploy a release to a specific environment')
             ->setHelp('This command installs a release to a specific environment and if the installation succeeds, it publishes it.')
             ->addArgument('release or commitish', InputArgument::REQUIRED, 'name of the (github) release or commitish')
-            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to deploy to. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addOption('skip-file-validation', null, InputOption::VALUE_NONE, 'if file validation should be skipped. the application no longer throws if a required file is not supplied.');
+            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to deploy to. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION);
 
         parent::configure();
     }
 
     protected function getAction(AgnesFactory $factory): AbstractAction
     {
-        return $factory->createDeployAction();
+        return $factory->getDeployAction();
     }
 
     /**
@@ -71,10 +69,8 @@ class DeployCommand extends AgnesCommand
     {
         $releaseOrCommitish = $input->getArgument('release or commitish');
         $target = $input->getArgument('target');
-        $configFolder = $this->getConfigFolder();
-        $skipValidation = (bool) $input->getOption('skip-file-validation');
 
         /* @var DeployAction $action */
-        return $action->createMany($releaseOrCommitish, $target, $configFolder, $skipValidation, $output);
+        return $action->createMany($releaseOrCommitish, $target, $output);
     }
 }

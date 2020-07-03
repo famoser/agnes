@@ -2,7 +2,9 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\CopySharedAction;
+use Agnes\Actions\AbstractAction;
+use Agnes\Actions\AbstractPayload;
+use Agnes\AgnesFactory;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
@@ -17,17 +19,17 @@ class ScriptService
     private $configurationService;
 
     /**
-     * @var CopySharedAction
+     * @var AgnesFactory
      */
-    private $copySharedAction;
+    private $agnesFactor;
 
     /**
      * ScriptService constructor.
      */
-    public function __construct(ConfigurationService $configurationService, CopySharedAction $copySharedAction)
+    public function __construct(ConfigurationService $configurationService, AgnesFactory $agnesFactor)
     {
         $this->configurationService = $configurationService;
-        $this->copySharedAction = $copySharedAction;
+        $this->agnesFactor = $agnesFactor;
     }
 
     /**
@@ -56,6 +58,9 @@ class ScriptService
         return $commands;
     }
 
+    /**
+     * @throws Exception
+     */
     public function executeDeployHook(OutputInterface $output, Instance $instance, Installation $newInstallation)
     {
         $previousInstallation = $instance->getCurrentInstallation();
@@ -70,11 +75,17 @@ class ScriptService
         $this->executeDeployRollbackHooks($output, 'deploy', $instance, $newInstallation, $arguments);
     }
 
+    /**
+     * @throws Exception
+     */
     public function executeAfterDeployHook(OutputInterface $output, Instance $instance)
     {
         $this->executeDeployRollbackHooks($output, 'after_deploy', $instance, $instance->getCurrentInstallation());
     }
 
+    /**
+     * @throws Exception
+     */
     public function executeRollbackHook(OutputInterface $output, Instance $instance, Installation $previousInstallation)
     {
         $arguments = ['PREVIOUS_INSTALLATION_PATH' => $previousInstallation->getFolder()];
@@ -82,6 +93,9 @@ class ScriptService
         $this->executeDeployRollbackHooks($output, 'rollback', $instance, $instance->getCurrentInstallation(), $arguments);
     }
 
+    /**
+     * @throws Exception
+     */
     public function executeAfterRollbackHook(OutputInterface $output, Instance $instance)
     {
         $this->executeDeployRollbackHooks($output, 'after_rollback', $instance, $instance->getCurrentInstallation());
@@ -113,7 +127,7 @@ class ScriptService
                 $output->writeln('executing action for '.$name.'...');
                 $this->executeAction($output, $script['action'], $arguments, $instance);
             } else {
-                $output->writeln($name.'script has no command or action defined. skipping...');
+                $output->writeln($name.' script has no action or commands defined. skipping...');
             }
         }
     }
@@ -123,28 +137,42 @@ class ScriptService
      */
     private function executeAction(OutputInterface $output, string $action, array $arguments, Instance $instance)
     {
-        if ('copy:shared' !== $action) {
-            $output->writeln('only copy:shared action supported');
-
-            return;
+        switch ($action) {
+            case 'copy:shared':
+                $this->executeCopySharedAction($output, $arguments, $instance);
+                break;
+            default:
+                $output->writeln('action '.$action.' is not supported');
         }
+    }
 
+    private function executeCopySharedAction(OutputInterface $output, array $arguments, Instance $instance)
+    {
         if (!isset($arguments['source'])) {
-            $output->writeln('must specify source argument for copy:shared action like arguments: { source: production }');
+            $output->writeln('must specify source argument for a copy:shared action (like arguments: { source: production })');
 
             return;
         }
 
         $source = $arguments['source'];
-        $copyShared = $this->copySharedAction->createSingle($instance, $source, $output);
+        $action = $this->agnesFactor->getCopySharedAction();
+        $copyShared = $action->createSingle($instance, $source, $output);
         if (null === $copyShared) {
             return;
         }
 
-        if (!$this->copySharedAction->canExecute($copyShared, $output)) {
-            $output->writeln('execution of "'.$copyShared->describe().'" blocked by policy; skipping');
+        $this->executePayload($action, $copyShared, $output);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function executePayload(AbstractAction $action, AbstractPayload $payload, OutputInterface $output)
+    {
+        if (!$action->canExecute($payload, $output)) {
+            $output->writeln('execution of "'.$payload->describe().'" blocked by policy; skipping');
         } else {
-            $this->copySharedAction->execute($copyShared, $output);
+            $action->execute($payload, $output);
         }
     }
 }

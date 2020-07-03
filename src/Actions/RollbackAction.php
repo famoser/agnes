@@ -4,7 +4,6 @@ namespace Agnes\Actions;
 
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
-use Agnes\Models\Instance;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
@@ -129,14 +128,17 @@ class RollbackAction extends AbstractAction
      */
     protected function doExecute($rollback, OutputInterface $output)
     {
+        $instance = $rollback->getInstance();
+        $target = $rollback->getTarget();
+
         $output->writeln('executing rollback hook');
-        $this->scriptService->executeRollbackHook($output, $rollback->getInstance(), $rollback->getTarget());
+        $this->scriptService->executeRollbackHook($output, $instance, $target);
 
         $output->writeln('switching to previous release');
-        $this->instanceService->switchInstallation($rollback->getInstance(), $rollback->getTarget());
+        $this->instanceService->switchInstallation($instance, $target);
         $output->writeln('previous release online');
 
         $output->writeln('executing after rollback hook');
-        $this->scriptService->executeAfterRollbackHook($output, $rollback->getInstance());
+        $this->scriptService->executeAfterRollbackHook($output, $instance);
     }
 }

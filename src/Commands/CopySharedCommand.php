@@ -42,7 +42,7 @@ class CopySharedCommand extends AgnesCommand
 
     protected function getAction(AgnesFactory $factory): AbstractAction
     {
-        return $factory->createCopySharedAction();
+        return $factory->getCopySharedAction();
     }
 
     /**

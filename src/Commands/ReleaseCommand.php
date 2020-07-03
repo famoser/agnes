@@ -33,7 +33,7 @@ class ReleaseCommand extends AgnesCommand
 
     protected function getAction(AgnesFactory $factory): AbstractAction
     {
-        return $factory->createReleaseAction();
+        return $factory->getReleaseAction();
     }
 
     /**

@@ -71,11 +71,30 @@ class DeployAction extends AbstractAction
     }
 
     /**
+     * @throws Exception
+     */
+    public function createSingle(string $releaseOrCommitish, Instance $target, OutputInterface $output): ?Deploy
+    {
+        $this->getConfiguredFiles($files, $requiredFiles);
+
+        $this->getFilePaths($target, $files, $requiredFiles, $filePaths, $missingFiles);
+        if (!empty($missingFiles)) {
+            $output->writeln('For instance '.$target->describe().' the following files are missing: '.implode(', ', $missingFiles));
+
+            return null;
+        }
+
+        $setup = $this->getSetup($releaseOrCommitish, $output);
+
+        return new Deploy($setup, $target, $filePaths);
+    }
+
+    /**
      * @return Deploy[]
      *
      * @throws \Exception|Exception
      */
-    public function createMany(string $releaseOrCommitish, string $target, ?string $configFolder, bool $skipValidation, OutputInterface $output)
+    public function createMany(string $releaseOrCommitish, string $target, OutputInterface $output)
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $instances = $this->instanceService->getInstancesByFilter($filter);
@@ -85,28 +104,12 @@ class DeployAction extends AbstractAction
             return [];
         }
 
-        $configuredFiles = $this->configurationService->getFiles();
-        $requiredFiles = [];
-        $whitelistFiles = [];
-        foreach ($configuredFiles as $configuredFile) {
-            $configuredFilePath = $configuredFile->getPath();
-
-            $whitelistFiles[] = $configuredFilePath;
-            if ($configuredFile->getIsRequired()) {
-                $requiredFiles[] = $configuredFilePath;
-            }
-        }
+        $this->getConfiguredFiles($files, $requiredFiles);
 
         $validatedInstances = [];
         foreach ($instances as $instance) {
-            $filePaths = [];
-            if (null != $configFolder) {
-                $filePaths = $this->getFilesPathsForInstance($instance, $configFolder, $whitelistFiles);
-            }
-
-            $containedFiles = array_keys($filePaths);
-            $missingFiles = array_diff($requiredFiles, $containedFiles);
-            if (!empty($missingFiles) && !$skipValidation) {
+            $this->getFilePaths($instance, $files, $requiredFiles, $filePaths, $missingFiles);
+            if (!empty($missingFiles)) {
                 $output->writeln('For instance '.$instance->describe().' the following files are missing: '.implode(', ', $missingFiles));
                 continue;
             }
@@ -125,6 +128,37 @@ class DeployAction extends AbstractAction
         }
 
         return $deploys;
+    }
+
+    private function getFilePaths(Instance $instance, array $files, array $requiredFiles, array &$filePaths, array &$missingFiles)
+    {
+        $filePaths = [];
+
+        $configFolder = $this->configurationService->getConfigFolder();
+        if (null != $configFolder) {
+            $filePaths = $this->getFilesPathsForInstance($instance, $configFolder, $files);
+        }
+
+        $containedFiles = array_keys($filePaths);
+        $missingFiles = array_diff($requiredFiles, $containedFiles);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function getConfiguredFiles(array &$files, array &$requiredFiles)
+    {
+        $configuredFiles = $this->configurationService->getFiles();
+        $requiredFiles = [];
+        $files = [];
+        foreach ($configuredFiles as $configuredFile) {
+            $configuredFilePath = $configuredFile->getPath();
+
+            $files[] = $configuredFilePath;
+            if ($configuredFile->getIsRequired()) {
+                $requiredFiles[] = $configuredFilePath;
+            }
+        }
     }
 
     /**
@@ -249,11 +283,11 @@ class DeployAction extends AbstractAction
         $this->instanceService->switchInstallation($target, $newInstallation);
         $output->writeln('release online');
 
-        $output->writeln('executing after deploy hook');
-        $this->scriptService->executeAfterDeployHook($output, $target);
-
         $output->writeln('cleaning old installations if required');
         $this->removeOldInstallations($deploy, $connection);
+
+        $output->writeln('executing after deploy hook');
+        $this->scriptService->executeAfterDeployHook($output, $target);
     }
 
     /**

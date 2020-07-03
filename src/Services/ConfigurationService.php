@@ -28,6 +28,11 @@ class ConfigurationService
     private $config = [];
 
     /**
+     * @var string|null
+     */
+    private $configFolder = null;
+
+    /**
      * @throws Exception
      */
     public function addConfig(string $path)
@@ -364,5 +369,15 @@ class ConfigurationService
         }
 
         return $files;
+    }
+
+    public function getConfigFolder(): ?string
+    {
+        return $this->configFolder;
+    }
+
+    public function setConfigFolder(string $configFolder)
+    {
+        $this->configFolder = $configFolder;
     }
 }

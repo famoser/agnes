@@ -16,6 +16,7 @@ use Agnes\Services\GithubService;
 use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
+use Agnes\Services\ScriptService;
 use Exception;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
@@ -89,6 +90,7 @@ class AgnesFactory
         $installationService = new InstallationService();
         $instanceService = new InstanceService($configurationService, $installationService);
         $policyService = new PolicyService($configurationService, $instanceService);
+        $scriptService = new ScriptService($configurationService, $this);
 
         // set properties
         $this->buildService = $buildService;
@@ -97,12 +99,13 @@ class AgnesFactory
         $this->instanceService = $instanceService;
         $this->installationService = $installationService;
         $this->policyService = $policyService;
+        $this->scriptService = $scriptService;
 
         // set actions
-        $this->releaseAction = new ReleaseAction($this->buildService, $this->configurationService, $this->policyService, $this->githubService, );
+        $this->releaseAction = new ReleaseAction($this->buildService, $this->configurationService, $this->policyService, $this->githubService, $this->scriptService);
         $this->copySharedAction = new CopySharedAction($this->policyService, $this->configurationService, $this->instanceService);
-        $this->deployAction = new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->installationService, $this->githubService, $this->releaseAction, );
-        $this->rollbackAction = new RollbackAction($this->configurationService, $this->policyService, $this->instanceService, );
+        $this->deployAction = new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->installationService, $this->githubService, $this->releaseAction, $this->scriptService);
+        $this->rollbackAction = new RollbackAction($this->configurationService, $this->policyService, $this->instanceService, $this->scriptService);
     }
 
     /**
@@ -116,7 +119,7 @@ class AgnesFactory
     /**
      * @return ReleaseAction
      */
-    public function createReleaseAction()
+    public function getReleaseAction()
     {
         return $this->releaseAction;
     }
@@ -124,7 +127,7 @@ class AgnesFactory
     /**
      * @return DeployAction
      */
-    public function createDeployAction()
+    public function getDeployAction()
     {
         return $this->deployAction;
     }
@@ -132,7 +135,7 @@ class AgnesFactory
     /**
      * @return RollbackAction
      */
-    public function createRollbackAction()
+    public function getRollbackAction()
     {
         return $this->rollbackAction;
     }
@@ -140,7 +143,7 @@ class AgnesFactory
     /**
      * @return CopySharedAction
      */
-    public function createCopySharedAction()
+    public function getCopySharedAction()
     {
         return $this->copySharedAction;
     }

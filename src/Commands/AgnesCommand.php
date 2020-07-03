@@ -44,16 +44,6 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @var string|null
-     */
-    private $agnesConfigFolder;
-
-    protected function getConfigFolder(): ?string
-    {
-        return $this->agnesConfigFolder;
-    }
-
-    /**
      * @return int|void|null
      *
      * @throws Exception
@@ -154,7 +144,7 @@ abstract class AgnesCommand extends Command
                 return false;
             }
 
-            $this->agnesConfigFolder = $path;
+            $this->factory->getConfigurationService()->setConfigFolder($configFolder);
 
             $configFilePaths = glob($path.DIRECTORY_SEPARATOR.'*.yml');
             foreach ($configFilePaths as $configFilePath) {
