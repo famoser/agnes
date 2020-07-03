@@ -252,14 +252,14 @@ class DeployAction extends AbstractAction
         $output->writeln('executing after deploy hook');
         $this->scriptService->executeAfterDeployHook($output, $target);
 
-        $output->writeln('cleaning old releases if required');
-        $this->clearOldReleases($deploy, $connection);
+        $output->writeln('cleaning old installations if required');
+        $this->removeOldInstallations($deploy, $connection);
     }
 
     /**
      * @throws \Exception
      */
-    private function clearOldReleases(Deploy $deploy, Connection $connection)
+    private function removeOldInstallations(Deploy $deploy, Connection $connection)
     {
         $onlineNumber = $deploy->getTarget()->getCurrentInstallation()->getNumber();
         /** @var Installation[] $oldInstallations */
@@ -273,9 +273,9 @@ class DeployAction extends AbstractAction
         ksort($oldInstallations);
 
         // remove excess releases
-        $releasesToDelete = count($oldInstallations) - $deploy->getTarget()->getServer()->getKeepReleases();
+        $installationsToDelete = count($oldInstallations) - $deploy->getTarget()->getServer()->getKeepInstallations();
         foreach ($oldInstallations as $installation) {
-            if ($releasesToDelete-- <= 0) {
+            if ($installationsToDelete-- <= 0) {
                 break;
             }
 

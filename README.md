@@ -59,7 +59,7 @@ scripts:
     # build hook
     # executed on a freshly cloned repository
     # install dependencies, ...
-    # produces a build which is attached to a release or deployed 
+    # produces a build which is used for a release or deployed to an installation 
     build:
         hook: build
         commands:
@@ -69,9 +69,9 @@ scripts:
     # deploy hook
     # executed on the final location of the build, before putting it online
     # initialize caches, migrate databases, ...
-    # if a previous release exists it is indicated in $HAS_PREVIOUS_RELEASE (value either true or false)
-    # if a previous release exists then the path is given with $PREVIOUS_RELEASE_PATH
-    # for example `if [[ "$HAS_PREVIOUS_RELEASE" == true ]]; then cp -r $PREVIOUS_RELEASE_PATH/var/transient var/transient; fi`
+    # if a previous installation exists it is indicated in $HAS_PREVIOUS_INSTALLATION (value either true or false)
+    # if a previous installation exists then the path is given with $PREVIOUS_INSTALLATION_PATH
+    # for example `if [[ "$HAS_PREVIOUS_INSTALLATION" == true ]]; then cp -r $PREVIOUS_INSTALLATION_PATH/var/transient var/transient; fi`
     deploy:
         hook: deploy
         commands:
@@ -80,7 +80,7 @@ scripts:
     # rollback hook
     # executed on the current instance before rolling back to the previous instance
     # revert migrations, invalidate cache, ...
-    # the path of the previous release is given in $PREVIOUS_RELEASE_PATH
+    # the path of the previous installation is given in $PREVIOUS_INSTALLATION_PATH
     rollback:
         hook: rollback
         commands:
@@ -121,7 +121,7 @@ servers:
       destination: 'admin@example.com'
       system: FreeBSD # or Linux (default)
     path: ~/www
-    keep_releases: 2 # how many releases to keep besides the current one. the others are removed after deployment
+    keep_installations: 2 # how many installations to keep besides the current one. the others are removed after deployment
     script_overrides:
       php: /usr/local/php73/bin/php # you can use a placeholder in your scripts like {{php}} which is replaced to the value here
     environments:

@@ -232,7 +232,7 @@ class ConfigurationService
             $connectionConfig = $this->getValue($serverConfig, 'connection');
             $connection = $this->getConnection($connectionConfig);
             $path = $this->getValue($serverConfig, 'path');
-            $keepReleases = $this->getValue($serverConfig, 'keep_releases', 2);
+            $keepInstallations = $this->getValue($serverConfig, 'keep_installations', 2);
             $scriptOverrides = $this->getValue($serverConfig, 'script_overrides', []);
 
             $environments = [];
@@ -240,7 +240,7 @@ class ConfigurationService
                 $environments[] = new Environment($environmentName, $stages);
             }
 
-            $servers[] = new Server($serverName, $connection, $path, $keepReleases, $scriptOverrides, $environments);
+            $servers[] = new Server($serverName, $connection, $path, $keepInstallations, $scriptOverrides, $environments);
         }
 
         return $servers;
