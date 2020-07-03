@@ -13,6 +13,7 @@ use Agnes\Services\GithubService;
 use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
+use Agnes\Services\ScriptService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -49,14 +50,14 @@ class DeployAction extends AbstractAction
     private $releaseAction;
 
     /**
-     * @var CopySharedAction
+     * @var ScriptService
      */
-    private $copySharedAction;
+    private $scriptService;
 
     /**
      * DeployService constructor.
      */
-    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, InstallationService $installationService, GithubService $githubService, ReleaseAction $releaseAction, CopySharedAction $copySharedAction)
+    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, InstallationService $installationService, GithubService $githubService, ReleaseAction $releaseAction, \Agnes\Services\ScriptService $scriptService)
     {
         parent::__construct($policyService);
 
@@ -66,7 +67,7 @@ class DeployAction extends AbstractAction
         $this->installationService = $installationService;
         $this->githubService = $githubService;
         $this->releaseAction = $releaseAction;
-        $this->copySharedAction = $copySharedAction;
+        $this->scriptService = $scriptService;
     }
 
     /**
@@ -137,7 +138,7 @@ class DeployAction extends AbstractAction
             $output->writeln('Using release found on github.');
         } else {
             $output->writeln('No release by that name found on github. Building from commitish...');
-            $scripts = $this->getBuildHookCommands($output);
+            $scripts = $this->scriptService->getBuildHookCommands($output);
             $build = $this->buildService->build($releaseOrCommitish, $scripts, $output);
             $setup = Setup::fromBuild($build, $releaseOrCommitish);
         }
@@ -226,35 +227,30 @@ class DeployAction extends AbstractAction
         $connection = $target->getConnection();
 
         $output->writeln('determine target folder');
-        $installation = $this->installationService->createInstallation($target, $setup);
+        $newInstallation = $this->installationService->createInstallation($target, $setup);
 
-        $output->writeln('uploading build to '.$installation->getFolder());
-        $this->uploadBuild($installation->getFolder(), $connection, $setup);
+        $output->writeln('uploading build to '.$newInstallation->getFolder());
+        $this->uploadBuild($newInstallation->getFolder(), $connection, $setup);
 
         $output->writeln('creating and linking shared folders');
-        $this->createAndLinkSharedFolders($connection, $target, $installation->getFolder());
+        $this->createAndLinkSharedFolders($connection, $target, $newInstallation->getFolder());
 
         $output->writeln('uploading files');
         foreach ($deploy->getFilePaths() as $targetPath => $sourcePath) {
-            $fullPath = $installation->getFolder().DIRECTORY_SEPARATOR.$targetPath;
+            $fullPath = $newInstallation->getFolder().DIRECTORY_SEPARATOR.$targetPath;
             $content = file_get_contents($sourcePath);
             $connection->writeFile($fullPath, $content);
         }
 
-        $output->writeln('executing deploy script');
-        $currentInstallation = $deploy->getTarget()->getCurrentInstallation();
-        $environment = [];
-        $hasPreviousRelease = null !== $currentInstallation;
-        $environment['HAS_PREVIOUS_RELEASE'] = $hasPreviousRelease ? 'true' : 'false';
-        if ($hasPreviousRelease) {
-            $environment['PREVIOUS_RELEASE_PATH'] = $currentInstallation->getFolder();
-        }
-        $this->executeDeployAndRollbackHooks($output, 'deploy', $deploy->getTarget(), $environment);
+        $output->writeln('executing deploy hook');
+        $this->scriptService->executeDeployHook($output, $target, $newInstallation);
 
         $output->writeln('switching to new release');
-        $this->instanceService->switchInstallation($target, $installation);
+        $this->instanceService->switchInstallation($target, $newInstallation);
         $output->writeln('release online');
-        $this->executeDeployAndRollbackHooks($output, 'after_deploy', $deploy->getTarget());
+
+        $output->writeln('executing after deploy hook');
+        $this->scriptService->executeAfterDeployHook($output, $target);
 
         $output->writeln('cleaning old releases if required');
         $this->clearOldReleases($deploy, $connection);

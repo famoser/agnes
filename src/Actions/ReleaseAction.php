@@ -6,6 +6,7 @@ use Agnes\Services\BuildService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\PolicyService;
+use Agnes\Services\ScriptService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -27,15 +28,21 @@ class ReleaseAction extends AbstractAction
     private $githubService;
 
     /**
+     * @var ScriptService
+     */
+    private $scriptService;
+
+    /**
      * PublishService constructor.
      */
-    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService)
+    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService, ScriptService $scriptService)
     {
         parent::__construct($policyService);
 
         $this->buildService = $buildService;
         $this->configurationService = $configurationService;
         $this->githubService = $githubService;
+        $this->scriptService = $scriptService;
     }
 
     /**
@@ -72,7 +79,7 @@ class ReleaseAction extends AbstractAction
      */
     protected function doExecute($release, OutputInterface $output)
     {
-        $scripts = $this->getBuildHookCommands($output);
+        $scripts = $this->scriptService->getBuildHookCommands($output);
         $build = $this->buildService->build($release->getCommitish(), $scripts, $output);
 
         $output->writeln('publishing release to github');

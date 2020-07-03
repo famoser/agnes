@@ -99,10 +99,10 @@ class AgnesFactory
         $this->policyService = $policyService;
 
         // set actions
-        $this->releaseAction = new ReleaseAction($this->buildService, $this->configurationService, $this->policyService, $this->githubService);
+        $this->releaseAction = new ReleaseAction($this->buildService, $this->configurationService, $this->policyService, $this->githubService, );
         $this->copySharedAction = new CopySharedAction($this->policyService, $this->configurationService, $this->instanceService);
-        $this->deployAction = new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->installationService, $this->githubService, $this->releaseAction, $this->copySharedAction);
-        $this->rollbackAction = new RollbackAction($this->configurationService, $this->policyService, $this->instanceService, $this->copySharedAction);
+        $this->deployAction = new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->installationService, $this->githubService, $this->releaseAction, );
+        $this->rollbackAction = new RollbackAction($this->configurationService, $this->policyService, $this->instanceService, );
     }
 
     /**

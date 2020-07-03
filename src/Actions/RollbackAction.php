@@ -8,6 +8,7 @@ use Agnes\Models\Instance;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
+use Agnes\Services\ScriptService;
 use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -24,20 +25,20 @@ class RollbackAction extends AbstractAction
     private $instanceService;
 
     /**
-     * @var CopySharedAction
+     * @var ScriptService
      */
-    private $copySharedAction;
+    private $scriptService;
 
     /**
      * RollbackService constructor.
      */
-    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, CopySharedAction $copySharedAction)
+    public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, ScriptService $scriptService)
     {
         parent::__construct($policyService);
 
         $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
-        $this->copySharedAction = $copySharedAction;
+        $this->scriptService = $scriptService;
     }
 
     /**
@@ -128,16 +129,14 @@ class RollbackAction extends AbstractAction
      */
     protected function doExecute($rollback, OutputInterface $output)
     {
-        $previousReleasePath = $rollback->getTarget()->getFolder();
-
         $output->writeln('executing rollback hook');
-        $this->executeDeployAndRollbackHooks($output, 'rollback', $rollback->getInstance(), ['PREVIOUS_RELEASE_PATH' => $previousReleasePath]);
+        $this->scriptService->executeRollbackHook($output, $rollback->getInstance(), $rollback->getTarget());
 
         $output->writeln('switching to previous release');
         $this->instanceService->switchInstallation($rollback->getInstance(), $rollback->getTarget());
         $output->writeln('previous release online');
 
-        $output->writeln('executing after_rollback hook');
-        $this->executeDeployAndRollbackHooks($output, 'after_rollback', $rollback->getInstance());
+        $output->writeln('executing after rollback hook');
+        $this->scriptService->executeAfterRollbackHook($output, $rollback->getInstance());
     }
 }
