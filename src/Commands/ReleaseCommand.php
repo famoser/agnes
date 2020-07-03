@@ -12,14 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ReleaseCommand extends AgnesCommand
 {
-    /**
-     * ReleaseCommand constructor.
-     */
-    public function __construct(AgnesFactory $factory)
-    {
-        parent::__construct($factory);
-    }
-
     public function configure()
     {
         $this->setName('release')

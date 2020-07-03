@@ -6,9 +6,6 @@ use Agnes\Actions\AbstractAction;
 use Agnes\Actions\AbstractPayload;
 use Agnes\Actions\DeployAction;
 use Agnes\AgnesFactory;
-use Agnes\Services\ConfigurationService;
-use Agnes\Services\GithubService;
-use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,33 +13,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DeployCommand extends AgnesCommand
 {
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-
-    /**
-     * @var InstanceService
-     */
-    private $instanceService;
-
-    /**
-     * @var GithubService
-     */
-    private $githubService;
-
-    /**
-     * DeployCommand constructor.
-     */
-    public function __construct(AgnesFactory $factory, ConfigurationService $configurationService, InstanceService $instanceService, GithubService $githubService)
-    {
-        parent::__construct($factory);
-
-        $this->configurationService = $configurationService;
-        $this->instanceService = $instanceService;
-        $this->githubService = $githubService;
-    }
-
     public function configure()
     {
         $this->setName('deploy')

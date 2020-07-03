@@ -22,6 +22,7 @@ use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class AgnesFactory
 {
@@ -78,7 +79,7 @@ class AgnesFactory
     /**
      * AgnesFactory constructor.
      */
-    public function __construct()
+    public function __construct(StyleInterface $io)
     {
         $redirectPlugin = new RedirectPlugin(['preserve_header' => false]);
         $pluginClient = new PluginClient(HttpClientDiscovery::find(), [$redirectPlugin]);
@@ -154,9 +155,9 @@ class AgnesFactory
     public function getCommands()
     {
         return [
-            new ReleaseCommand($this),
-            new DeployCommand($this, $this->configurationService, $this->instanceService, $this->githubService),
-            new RollbackCommand($this, $this->instanceService),
+            new ReleaseCommand(),
+            new DeployCommand(),
+            new RollbackCommand(),
             new CopySharedCommand($this, $this->instanceService),
         ];
     }

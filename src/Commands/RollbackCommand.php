@@ -6,7 +6,6 @@ use Agnes\Actions\AbstractAction;
 use Agnes\Actions\AbstractPayload;
 use Agnes\Actions\RollbackAction;
 use Agnes\AgnesFactory;
-use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,21 +14,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RollbackCommand extends AgnesCommand
 {
-    /**
-     * @var InstanceService
-     */
-    private $instanceService;
-
-    /**
-     * DeployCommand constructor.
-     */
-    public function __construct(AgnesFactory $factory, InstanceService $instanceService)
-    {
-        parent::__construct($factory);
-
-        $this->instanceService = $instanceService;
-    }
-
     public function configure()
     {
         $this->setName('rollback')

@@ -9,7 +9,7 @@ function writeErrorAndExit(string $error)
 
 function findFileByTraversingUp(string $dir, string $filePath)
 {
-    $absoluteFilePath = $dir . DIRECTORY_SEPARATOR . $filePath;
+    $absoluteFilePath = $dir.DIRECTORY_SEPARATOR.$filePath;
     if (file_exists($absoluteFilePath)) {
         return $dir;
     } else {
@@ -23,33 +23,40 @@ function findFileByTraversingUp(string $dir, string $filePath)
 }
 
 $absolutePath = realpath(__DIR__);
-$autoloadRelativePath = "vendor" . DIRECTORY_SEPARATOR . "autoload.php";
+$autoloadRelativePath = 'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
 
 $projectRootDir = findFileByTraversingUp(dirname(dirname($absolutePath)), $autoloadRelativePath);
-if ($projectRootDir === false) {
-    $autoloadRelativePath = "vendor" . DIRECTORY_SEPARATOR . "autoload.php";
+if (false === $projectRootDir) {
+    $autoloadRelativePath = 'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
     $projectRootDir = findFileByTraversingUp($absolutePath, $autoloadRelativePath);
 }
-if ($projectRootDir === false) {
-    writeErrorAndExit("There was no autoload.php file found, hence the dependencies could not be loaded.");
+if (false === $projectRootDir) {
+    writeErrorAndExit('There was no autoload.php file found, hence the dependencies could not be loaded.');
 } else {
     chdir($projectRootDir);
     require $autoloadRelativePath;
 }
 
-
-use Agnes\AgnesFactory;
+use Agnes\Commands\CopySharedCommand;
+use Agnes\Commands\DeployCommand;
+use Agnes\Commands\ReleaseCommand;
+use Agnes\Commands\RollbackCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
 
-if (file_exists(".env")) {
+if (file_exists('.env')) {
     $dotenv = new Dotenv(false);
-    $dotenv->loadEnv(".env");
+    $dotenv->loadEnv('.env');
 }
 
 $app = new Application();
 
-$commandFactory = new AgnesFactory();
-$app->addCommands($commandFactory->getCommands());
+
+$app->addCommands([
+    new CopySharedCommand(),
+    new DeployCommand(),
+    new ReleaseCommand(),
+    new RollbackCommand(),
+]);
 
 $app->run();
