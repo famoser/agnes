@@ -5,7 +5,7 @@ namespace Agnes\Services\Policy;
 use Agnes\Actions\Release;
 use Agnes\Models\Filter;
 use Agnes\Models\Policies\ReleaseWhitelistPolicy;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class ReleasePolicyVisitor extends PolicyVisitor
 {
@@ -17,9 +17,9 @@ class ReleasePolicyVisitor extends PolicyVisitor
     /**
      * ReleasePolicyVisitor constructor.
      */
-    public function __construct(OutputInterface $output, Release $release)
+    public function __construct(StyleInterface $io, Release $release)
     {
-        parent::__construct($output);
+        parent::__construct($io);
 
         $this->release = $release;
     }

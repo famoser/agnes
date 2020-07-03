@@ -7,7 +7,7 @@ use Agnes\Models\Filter;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Exception;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class CopySharedPolicyVisitor extends PolicyVisitor
 {
@@ -19,9 +19,9 @@ class CopySharedPolicyVisitor extends PolicyVisitor
     /**
      * CopySharedPolicyVisitor constructor.
      */
-    public function __construct(OutputInterface $output, CopyShared $copyShared)
+    public function __construct(StyleInterface $io, CopyShared $copyShared)
     {
-        parent::__construct($output);
+        parent::__construct($io);
 
         $this->copyShared = $copyShared;
     }
@@ -32,23 +32,17 @@ class CopySharedPolicyVisitor extends PolicyVisitor
         $targetInstallation = $this->copyShared->getTarget()->getCurrentInstallation();
 
         if (null === $sourceInstallation) {
-            $this->preventExecution($this->copyShared, 'source has no active installation.');
-
-            return false;
+            return $this->preventExecution($this->copyShared, 'source has no active installation.');
         }
 
         if (null === $targetInstallation) {
-            $this->preventExecution($this->copyShared, 'target has no active installation.');
-
-            return false;
+            return $this->preventExecution($this->copyShared, 'target has no active installation.');
         }
 
         $sourceIdentification = $sourceInstallation->getSetup()->getIdentification();
         $targetIdentification = $targetInstallation->getSetup()->getIdentification();
         if ($sourceIdentification !== $targetIdentification) {
-            $this->preventExecution($this->copyShared, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
-
-            return false;
+            return $this->preventExecution($this->copyShared, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
         }
 
         return true;
@@ -64,9 +58,7 @@ class CopySharedPolicyVisitor extends PolicyVisitor
 
         $stageIndex = $stageWriteDownPolicy->getLayerIndex($sourceStage);
         if (false === $stageIndex) {
-            $this->preventExecution($this->copyShared, "stage $targetStage not found in specified layers; policy undecidable.");
-
-            return false;
+            return $this->preventExecution($this->copyShared, "stage $targetStage not found in specified layers; policy undecidable.");
         }
 
         // if the stageIndex is the highest layer, we are allowed to write
@@ -78,9 +70,7 @@ class CopySharedPolicyVisitor extends PolicyVisitor
         $stagesToCheck = array_merge($stageWriteDownPolicy->getNextLowerLayer($stageIndex), $stageWriteDownPolicy->getLayer($stageIndex));
 
         if (!in_array($targetStage, $stagesToCheck)) {
-            $this->preventExecution($this->copyShared, "target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
-
-            return false;
+            return $this->preventExecution($this->copyShared, "target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
         }
 
         return true;

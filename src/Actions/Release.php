@@ -4,7 +4,6 @@ namespace Agnes\Actions;
 
 use Agnes\Services\PolicyService;
 use Exception;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class Release extends AbstractPayload
 {
@@ -42,9 +41,9 @@ class Release extends AbstractPayload
     /**
      * @throws Exception
      */
-    public function canExecute(PolicyService $policyService, OutputInterface $output): bool
+    public function canExecute(PolicyService $policyService): bool
     {
-        return $policyService->canRelease($this, $output);
+        return $policyService->canRelease($this);
     }
 
     public function describe(): string

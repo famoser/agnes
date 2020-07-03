@@ -4,7 +4,7 @@ namespace Agnes\Services\Policy;
 
 use Agnes\Actions\Rollback;
 use Agnes\Models\Filter;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class RollbackPolicyVisitor extends PolicyVisitor
 {
@@ -16,9 +16,9 @@ class RollbackPolicyVisitor extends PolicyVisitor
     /**
      * RollbackVisitor constructor.
      */
-    public function __construct(OutputInterface $output, Rollback $rollback)
+    public function __construct(StyleInterface $io, Rollback $rollback)
     {
-        parent::__construct($output);
+        parent::__construct($io);
 
         $this->rollback = $rollback;
     }

@@ -10,21 +10,21 @@ use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
 use Exception;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 abstract class PolicyVisitor
 {
     /**
-     * @var OutputInterface
+     * @var StyleInterface
      */
-    private $output;
+    private $io;
 
     /**
      * PolicyVisitor constructor.
      */
-    public function __construct(OutputInterface $output)
+    public function __construct(StyleInterface $io)
     {
-        $this->output = $output;
+        $this->io = $io;
     }
 
     /**
@@ -78,13 +78,15 @@ abstract class PolicyVisitor
      */
     private function visitDefault(Policy $stageWriteDownPolicy): bool
     {
-        $this->output->writeln('The policy '.get_class($stageWriteDownPolicy).' has not been implemented for the executing task.');
+        $this->io->error('The policy '.get_class($stageWriteDownPolicy).' has not been implemented for the executing task.');
 
         return false;
     }
 
     protected function preventExecution(AbstractPayload $payload, string $reason)
     {
-        $this->output->writeln('Cannot execute '.$payload->describe().': '.$reason);
+        $this->io->error('Cannot execute '.$payload->describe().': '.$reason);
+
+        return false;
     }
 }

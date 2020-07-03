@@ -36,7 +36,7 @@ abstract class AbstractAction
             return false;
         }
 
-        if (!$payload->canExecute($this->policyService, $output)) {
+        if (!$payload->canExecute($this->policyService)) {
             return false;
         }
 
