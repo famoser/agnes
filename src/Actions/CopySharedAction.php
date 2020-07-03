@@ -37,34 +37,28 @@ class CopySharedAction extends AbstractAction
      *
      * @throws Exception
      */
-    public function createMany(string $source, string $targetStage, OutputInterface $output): array
+    public function createMany(string $target, string $sourceStage, OutputInterface $output): array
     {
-        $filter = Filter::createFromInstanceSpecification($source);
-        if (!$filter->filtersBySingleStage()) {
-            $output->writeln('To avoid ambiguities, please specify a single source stage to copy from (hence your source should be of the form *:*:prod).');
-
-            return [];
-        }
-
-        $sourceInstances = $this->instanceService->getInstancesByFilter($filter);
-        if (0 === count($sourceInstances)) {
-            $output->writeln('For source specification '.$source.' no matching instances were found.');
+        $filter = Filter::createFromInstanceSpecification($target);
+        $targetInstances = $this->instanceService->getInstancesByFilter($filter);
+        if (0 === count($targetInstances)) {
+            $output->writeln('For target specification '.$target.' no matching instances were found.');
 
             return [];
         }
 
         /** @var CopyShared[] $copyShareds */
         $copyShareds = [];
-        foreach ($sourceInstances as $sourceInstance) {
-            $targetFilter = new Filter([$sourceInstance->getServerName()], [$sourceInstance->getEnvironmentName()], [$targetStage]);
-            $targetInstance = $this->instanceService->getInstancesByFilter($targetFilter);
+        foreach ($targetInstances as $targetInstance) {
+            $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);
+            $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
 
-            if (0 === count($targetInstance)) {
-                $output->writeln('For instance '.$sourceInstance->describe().' no matching target instance was found.');
+            if (0 === count($sourceInstances)) {
+                $output->writeln('For instance '.$targetInstance->describe().' no matching source was found.');
                 continue;
             }
 
-            $copyShareds[] = new CopyShared($sourceInstance, $targetInstance[0]);
+            $copyShareds[] = new CopyShared($sourceInstances[0], $targetInstance);
         }
 
         return $copyShareds;
