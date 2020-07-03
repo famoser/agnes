@@ -9,7 +9,7 @@ there is also a UI available at [famoser/agnes-ui](https://github.com/famoser/ag
 `php bin/agnes release v1.0 master` creates the release `v1.0` from the latest master  
 `php bin/agnes deploy v1.0 *:*:dev` installs the release `v1.0` on all instances matching `*:*:dev`  
 `php bin/agnes rollback *:*:dev` rolls back instances matching `*:*:dev` to the previous release  
-`php bin/agnes copy:shared example:example.com:production example:example.com:dev` copies the shared data from the instance matching `example:example.com:production` to `example:example.com:dev`
+`php bin/agnes copy:shared example:example.com:dev production` copies the shared data to the instance matching `example:example.com:dev` from the `production` stage
 
 for details on the commands use the `--help` argument.
 
@@ -37,7 +37,7 @@ github:
   api_token: '%env(GITHUB_API_TOKEN)%'
   repository: famoser/agnes
 
-application:
+data:
   shared_folders: # these folders will be shared between releases
     - var/persistent
 
@@ -50,27 +50,62 @@ application:
     - path: .env.local
       required: true
 
-  scripts:
+scripts:
+    # define scripts 
+    # these can be run automatically at predefined hook points
+    # hook points are build, deploy, after_deploy, rollback, after_rollback
+    # you can additionally constrain the scripts to run only in specific environments
+
+    # build hook
     # executed on a freshly cloned repository
     # install dependencies, ...
     # produces a build which is attached to a release or deployed 
-    build:  
-      - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
-      - '{{php}} -v' # place
-
+    build:
+        hook: build
+        commands:
+          - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
+          - '{{php}} -v' # place
+    
+    # deploy hook
     # executed on the final location of the build, before putting it online
     # initialize caches, migrate databases, ...
     # if a previous release exists it is indicated in $HAS_PREVIOUS_RELEASE (value either true or false)
     # if a previous release exists then the path is given with $PREVIOUS_RELEASE_PATH
     # for example `if [[ "$HAS_PREVIOUS_RELEASE" == true ]]; then cp -r $PREVIOUS_RELEASE_PATH/var/transient var/transient; fi`
     deploy:
-      - php bin/console doctrine:migrations:migrate -q
-
+        hook: deploy
+        commands:
+          - php bin/console doctrine:migrations:migrate -q
+    
+    # rollback hook
     # executed on the current instance before rolling back to the previous instance
     # revert migrations, invalidate cache, ...
     # the path of the previous release is given in $PREVIOUS_RELEASE_PATH
     rollback:
-      - echo "rollbacked"
+        hook: rollback
+        commands:
+          - echo "rollbacked"
+
+    # executed right after the symlink changes
+    restart_php:
+        hooks: [after_deploy, after_rollback]
+        commands:
+          - killall -9 php-cgi
+
+    # execute commands on deploy hook, constrained to specific instances
+    fixtures:
+        hook: after_deploy
+        instance: *:*:dev
+        commands:
+          - php bin/console doctrine:fixtures:load -q
+
+    # execute action on after_deploy hook, constrained to specific instances
+    # only copy:shared actions are supported; within deploy / rollback actions 
+    prod_data_on_staging:
+        hook: after_deploy
+        instance: *:*:staging
+        action: copy:shared
+        arguments: { source: production }
 
 # define instances where your application will be deployed
 # an instance consist of server, environment and stage

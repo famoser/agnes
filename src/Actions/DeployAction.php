@@ -49,9 +49,14 @@ class DeployAction extends AbstractAction
     private $releaseAction;
 
     /**
+     * @var CopySharedAction
+     */
+    private $copySharedAction;
+
+    /**
      * DeployService constructor.
      */
-    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, InstallationService $installationService, GithubService $githubService, ReleaseAction $releaseAction)
+    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, InstallationService $installationService, GithubService $githubService, ReleaseAction $releaseAction, CopySharedAction $copySharedAction)
     {
         parent::__construct($policyService);
 
@@ -61,6 +66,7 @@ class DeployAction extends AbstractAction
         $this->installationService = $installationService;
         $this->githubService = $githubService;
         $this->releaseAction = $releaseAction;
+        $this->copySharedAction = $copySharedAction;
     }
 
     /**
@@ -131,7 +137,8 @@ class DeployAction extends AbstractAction
             $output->writeln('Using release found on github.');
         } else {
             $output->writeln('No release by that name found on github. Building from commitish...');
-            $build = $this->buildService->build($releaseOrCommitish, $output);
+            $scripts = $this->getBuildHookCommands($output);
+            $build = $this->buildService->build($releaseOrCommitish, $scripts, $output);
             $setup = Setup::fromBuild($build, $releaseOrCommitish);
         }
         $output->writeln('');
@@ -242,12 +249,12 @@ class DeployAction extends AbstractAction
         if ($hasPreviousRelease) {
             $environment['PREVIOUS_RELEASE_PATH'] = $currentInstallation->getFolder();
         }
-        $deployScripts = $this->configurationService->getScripts('deploy');
-        $connection->executeScript($installation->getFolder(), $deployScripts, $environment);
+        $this->executeDeployAndRollbackHooks($output, 'deploy', $deploy->getTarget(), $environment);
 
         $output->writeln('switching to new release');
         $this->instanceService->switchInstallation($target, $installation);
         $output->writeln('release online');
+        $this->executeDeployAndRollbackHooks($output, 'after_deploy', $deploy->getTarget());
 
         $output->writeln('cleaning old releases if required');
         $this->clearOldReleases($deploy, $connection);

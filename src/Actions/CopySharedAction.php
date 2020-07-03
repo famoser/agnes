@@ -3,6 +3,7 @@
 namespace Agnes\Actions;
 
 use Agnes\Models\Filter;
+use Agnes\Models\Instance;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
@@ -33,6 +34,14 @@ class CopySharedAction extends AbstractAction
     }
 
     /**
+     * @throws Exception
+     */
+    public function createSingle(Instance $target, string $sourceStage, OutputInterface $output): ?CopyShared
+    {
+        return $this->constructCopyShared($output, $target, $sourceStage);
+    }
+
+    /**
      * @return CopyShared[]
      *
      * @throws Exception
@@ -50,18 +59,31 @@ class CopySharedAction extends AbstractAction
         /** @var CopyShared[] $copyShareds */
         $copyShareds = [];
         foreach ($targetInstances as $targetInstance) {
-            $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);
-            $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
+            $copyShared = $this->constructCopyShared($output, $targetInstance, $sourceStage);
 
-            if (0 === count($sourceInstances)) {
-                $output->writeln('For instance '.$targetInstance->describe().' no matching source was found.');
-                continue;
+            if (null !== $copyShared) {
+                $copyShareds[] = $copyShared;
             }
-
-            $copyShareds[] = new CopyShared($sourceInstances[0], $targetInstance);
         }
 
         return $copyShareds;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function constructCopyShared(OutputInterface $output, Instance $targetInstance, string $sourceStage): ?CopyShared
+    {
+        $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);
+        $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
+
+        if (0 === count($sourceInstances)) {
+            $output->writeln('For instance '.$targetInstance->describe().' no matching source was found.');
+
+            return null;
+        }
+
+        return new CopyShared($sourceInstances[0], $targetInstance);
     }
 
     /**

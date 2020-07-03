@@ -70,8 +70,12 @@ class Filter
         return true;
     }
 
-    public function filtersBySingleStage(): bool
+    public function describe()
     {
-        return null !== $this->stages && 1 === count($this->stages);
+        $serverFilter = null !== $this->servers ? implode(',', $this->servers) : '*';
+        $environementFilter = null !== $this->environments ? implode(',', $this->environments) : '*';
+        $stageFilter = null !== $this->stages ? implode(',', $this->stages) : '*';
+
+        return "$serverFilter:$environementFilter:$stageFilter";
     }
 }

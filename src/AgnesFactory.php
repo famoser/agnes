@@ -55,6 +55,26 @@ class AgnesFactory
     private $policyService;
 
     /**
+     * @var CopySharedAction
+     */
+    private $copySharedAction;
+
+    /**
+     * @var DeployAction
+     */
+    private $deployAction;
+
+    /**
+     * @var ReleaseAction
+     */
+    private $releaseAction;
+
+    /**
+     * @var RollbackAction
+     */
+    private $rollbackAction;
+
+    /**
      * AgnesFactory constructor.
      */
     public function __construct()
@@ -77,6 +97,12 @@ class AgnesFactory
         $this->instanceService = $instanceService;
         $this->installationService = $installationService;
         $this->policyService = $policyService;
+
+        // set actions
+        $this->releaseAction = new ReleaseAction($this->buildService, $this->configurationService, $this->policyService, $this->githubService);
+        $this->copySharedAction = new CopySharedAction($this->policyService, $this->configurationService, $this->instanceService);
+        $this->deployAction = new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->installationService, $this->githubService, $this->releaseAction, $this->copySharedAction);
+        $this->rollbackAction = new RollbackAction($this->configurationService, $this->policyService, $this->instanceService, $this->copySharedAction);
     }
 
     /**
@@ -92,7 +118,7 @@ class AgnesFactory
      */
     public function createReleaseAction()
     {
-        return new ReleaseAction($this->buildService, $this->policyService, $this->githubService);
+        return $this->releaseAction;
     }
 
     /**
@@ -100,7 +126,7 @@ class AgnesFactory
      */
     public function createDeployAction()
     {
-        return new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->installationService, $this->githubService, $this->createReleaseAction());
+        return $this->deployAction;
     }
 
     /**
@@ -108,7 +134,7 @@ class AgnesFactory
      */
     public function createRollbackAction()
     {
-        return new RollbackAction($this->configurationService, $this->policyService, $this->instanceService);
+        return $this->rollbackAction;
     }
 
     /**
@@ -116,7 +142,7 @@ class AgnesFactory
      */
     public function createCopySharedAction()
     {
-        return new CopySharedAction($this->policyService, $this->configurationService, $this->instanceService);
+        return $this->copySharedAction;
     }
 
     /**

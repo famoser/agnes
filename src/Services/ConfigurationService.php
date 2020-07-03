@@ -108,13 +108,23 @@ class ConfigurationService
     }
 
     /**
-     * @return string[]
+     * @return string[][]
      *
      * @throws Exception
      */
-    public function getScripts(string $task)
+    public function getScriptsForHook(string $hook): array
     {
-        return $this->getNestedConfigWithDefault([], 'application', 'scripts', $task);
+        $scripts = $this->getNestedConfigWithDefault([], 'scripts');
+
+        $matchingScripts = [];
+        foreach ($scripts as $script) {
+            if (isset($script['hook']) && $script['hook'] === $hook ||
+                isset($script['hooks']) && in_array($hook, $script['hooks'])) {
+                $matchingScripts[] = $script;
+            }
+        }
+
+        return $matchingScripts;
     }
 
     /**
@@ -335,7 +345,7 @@ class ConfigurationService
      */
     public function getSharedFolders()
     {
-        return $this->getNestedConfigWithDefault([], 'application', 'shared_folders');
+        return $this->getNestedConfigWithDefault([], 'data', 'shared_folders');
     }
 
     /**
@@ -345,7 +355,7 @@ class ConfigurationService
      */
     public function getFiles()
     {
-        $entries = $this->getNestedConfigWithDefault([], 'application', 'files');
+        $entries = $this->getNestedConfigWithDefault([], 'data', 'files');
 
         /** @var File[] $files */
         $files = [];

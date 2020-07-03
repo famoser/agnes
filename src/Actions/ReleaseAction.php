@@ -3,6 +3,7 @@
 namespace Agnes\Actions;
 
 use Agnes\Services\BuildService;
+use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\PolicyService;
 use Http\Client\Exception;
@@ -16,6 +17,11 @@ class ReleaseAction extends AbstractAction
     private $buildService;
 
     /**
+     * @var ConfigurationService
+     */
+    private $configurationService;
+
+    /**
      * @var GithubService
      */
     private $githubService;
@@ -23,11 +29,12 @@ class ReleaseAction extends AbstractAction
     /**
      * PublishService constructor.
      */
-    public function __construct(BuildService $buildService, PolicyService $policyService, GithubService $githubService)
+    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, GithubService $githubService)
     {
         parent::__construct($policyService);
 
         $this->buildService = $buildService;
+        $this->configurationService = $configurationService;
         $this->githubService = $githubService;
     }
 
@@ -65,7 +72,8 @@ class ReleaseAction extends AbstractAction
      */
     protected function doExecute($release, OutputInterface $output)
     {
-        $build = $this->buildService->build($release->getCommitish(), $output);
+        $scripts = $this->getBuildHookCommands($output);
+        $build = $this->buildService->build($release->getCommitish(), $scripts, $output);
 
         $output->writeln('publishing release to github');
         $this->githubService->publish($release->getName(), $build);

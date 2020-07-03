@@ -26,7 +26,7 @@ class BuildService
      *
      * @throws Exception
      */
-    public function build(string $committish, OutputInterface $output)
+    public function build(string $committish, array $buildScript, OutputInterface $output)
     {
         $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
@@ -39,8 +39,7 @@ class BuildService
         $gitHash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $committish);
 
         $output->writeln('executing release script');
-        $scripts = $this->configurationService->getScripts('build');
-        $connection->executeScript($buildPath, $scripts);
+        $connection->executeScript($buildPath, $buildScript);
 
         $output->writeln('compressing build folder');
         $filePath = $connection->compressTarGz($buildPath, 'build..tar.gz');
