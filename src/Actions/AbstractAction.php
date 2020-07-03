@@ -70,6 +70,9 @@ abstract class AbstractAction
         return $commands;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function executeDeployAndRollbackHooks(OutputInterface $output, string $hook, Instance $instance, array $arguments = [])
     {
         $scripts = $this->configurationService->getScripts($hook);
