@@ -70,7 +70,7 @@ class DeployAction extends AbstractAction
             return null;
         }
 
-        $setup = $this->setupService->getSetup($releaseOrCommitish, $output);
+        $setup = $this->setupService->getSetup($releaseOrCommitish);
 
         return new Deploy($setup, $target);
     }
@@ -99,7 +99,7 @@ class DeployAction extends AbstractAction
             }
 
             if (null === $setup) {
-                $setup = $this->setupService->getSetup($releaseOrCommitish, $output);
+                $setup = $this->setupService->getSetup($releaseOrCommitish);
             }
 
             $deploys[] = new Deploy($setup, $instance);

@@ -4,7 +4,7 @@ namespace Agnes\Services;
 
 use Agnes\Models\Setup;
 use Http\Client\Exception;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class SetupService
 {
@@ -24,6 +24,11 @@ class SetupService
     private $scriptService;
 
     /**
+     * @var StyleInterface
+     */
+    private $io;
+
+    /**
      * SetupService constructor.
      */
     public function __construct(BuildService $buildService, GithubService $githubService, ScriptService $scriptService)
@@ -37,18 +42,17 @@ class SetupService
      * @throws Exception
      * @throws \Exception
      */
-    public function getSetup(string $releaseOrCommitish, OutputInterface $output): Setup
+    public function getSetup(string $releaseOrCommitish): Setup
     {
         $setup = $this->githubService->createSetupByReleaseName($releaseOrCommitish);
         if (null !== $setup) {
-            $output->writeln('Using release found on github.');
+            $this->io->text('Using release found on github.');
         } else {
-            $output->writeln('No release by that name found on github. Building from commitish...');
+            $this->io->text('No release by that name found on github. Building from commitish...');
             $scripts = $this->scriptService->getBuildHookCommands();
-            $build = $this->buildService->build($releaseOrCommitish, $scripts, $output);
+            $build = $this->buildService->build($releaseOrCommitish, $scripts);
             $setup = Setup::fromBuild($build, $releaseOrCommitish);
         }
-        $output->writeln('');
 
         return $setup;
     }

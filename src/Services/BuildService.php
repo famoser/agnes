@@ -4,7 +4,7 @@ namespace Agnes\Services;
 
 use Agnes\Models\Build;
 use Exception;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class BuildService
 {
@@ -12,6 +12,11 @@ class BuildService
      * @var ConfigurationService
      */
     private $configurationService;
+
+    /**
+     * @var StyleInterface
+     */
+    private $io;
 
     /**
      * PublishService constructor.
@@ -26,26 +31,26 @@ class BuildService
      *
      * @throws Exception
      */
-    public function build(string $committish, array $buildScript, OutputInterface $output)
+    public function build(string $committish, array $buildScript)
     {
         $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
 
-        $output->writeln('cleaning build folder');
+        $this->io->text('cleaning build folder');
         $connection->createOrClearFolder($buildPath);
 
-        $output->writeln('checking out repository');
+        $this->io->text('checking out repository');
         $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
         $gitHash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $committish);
 
-        $output->writeln('executing release script');
+        $this->io->text('executing release script');
         $connection->executeScript($buildPath, $buildScript);
 
-        $output->writeln('compressing build folder');
+        $this->io->text('compressing build folder');
         $filePath = $connection->compressTarGz($buildPath, 'build..tar.gz');
         $content = $connection->readFile($filePath);
 
-        $output->writeln('removing build folder');
+        $this->io->text('removing build folder');
         $connection->removeFolder($buildPath);
 
         return new Build($committish, $gitHash, $content);

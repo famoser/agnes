@@ -2,7 +2,6 @@
 
 namespace Agnes\Actions;
 
-use Agnes\Models\Instance;
 use Agnes\Services\PolicyService;
 use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
