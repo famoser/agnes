@@ -20,20 +20,14 @@ class Deploy extends AbstractPayload
     private $setup;
 
     /**
-     * @var string[]
-     */
-    private $filePaths;
-
-    /**
      * Deployment constructor.
      *
      * @param string[] $files
      */
-    public function __construct(Setup $setup, Instance $target, array $files)
+    public function __construct(Setup $setup, Instance $target)
     {
         $this->setup = $setup;
         $this->target = $target;
-        $this->filePaths = $files;
     }
 
     public function getTarget(): Instance
@@ -44,14 +38,6 @@ class Deploy extends AbstractPayload
     public function getSetup(): Setup
     {
         return $this->setup;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getFilePaths(): array
-    {
-        return $this->filePaths;
     }
 
     /**

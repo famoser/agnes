@@ -10,6 +10,7 @@ use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class ScriptService
 {
@@ -24,10 +25,16 @@ class ScriptService
     private $agnesFactor;
 
     /**
+     * @var StyleInterface
+     */
+    private $io;
+
+    /**
      * ScriptService constructor.
      */
-    public function __construct(ConfigurationService $configurationService, AgnesFactory $agnesFactor)
+    public function __construct(StyleInterface $io, ConfigurationService $configurationService, AgnesFactory $agnesFactor)
     {
+        $this->io = $io;
         $this->configurationService = $configurationService;
         $this->agnesFactor = $agnesFactor;
     }
@@ -35,23 +42,23 @@ class ScriptService
     /**
      * @return string[]
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function getBuildHookCommands(OutputInterface $output): array
+    public function getBuildHookCommands(): array
     {
         $scripts = $this->configurationService->getScriptsForHook('build');
 
         $commands = [];
         foreach ($scripts as $name => $script) {
             if (isset($script['instances']) || isset($script['action'])) {
-                $output->writeln("$name script uses unsupported instance or action property for build hook. skipping...");
+                $this->io->warning("$name script uses unsupported instance or action property for build hook. skipping...");
                 continue;
             }
 
             if (isset($script['commands'])) {
                 $commands = array_merge($commands, $script['commands']);
             } else {
-                $output->writeln("$name script has no commands specified. skipping...");
+                $this->io->warning("$name script has no commands specified. skipping...");
             }
         }
 
@@ -113,21 +120,21 @@ class ScriptService
             if (isset($script['instance'])) {
                 $filter = Filter::createFromInstanceSpecification($script['instance']);
                 if (!$filter->instanceMatches($instance)) {
-                    $output->writeln($name.' script\'s filter '.$script['instance'].' does not match instance '.$instance->describe().'. skipping...');
+                    $this->io->text($name.' script\'s filter '.$script['instance'].' does not match instance '.$instance->describe().'. skipping...');
                     continue;
                 }
             }
 
             if (isset($script['commands'])) {
                 $commands = $script['commands'];
-                $output->writeln('executing commands for '.$name.'...');
+                $this->io->text('executing commands for '.$name.'...');
                 $instance->getConnection()->executeScript($installation->getFolder(), $commands, $arguments);
             } elseif (isset($script['action'])) {
                 $arguments = isset($script['arguments']) ? $script['arguments'] : [];
-                $output->writeln('executing action for '.$name.'...');
+                $this->io->text('executing action for '.$name.'...');
                 $this->executeAction($output, $script['action'], $arguments, $instance);
             } else {
-                $output->writeln($name.' script has no action or commands defined. skipping...');
+                $this->io->warning($name.' script has no action or commands defined. skipping...');
             }
         }
     }
@@ -142,7 +149,7 @@ class ScriptService
                 $this->executeCopySharedAction($output, $arguments, $instance);
                 break;
             default:
-                $output->writeln('action '.$action.' is not supported');
+                $this->io->warning('action '.$action.' is not supported');
         }
     }
 
@@ -170,7 +177,7 @@ class ScriptService
     private function executePayload(AbstractAction $action, AbstractPayload $payload, OutputInterface $output)
     {
         if (!$action->canExecute($payload, $output)) {
-            $output->writeln('execution of "'.$payload->describe().'" blocked by policy; skipping');
+            $this->io->warning('execution of "'.$payload->describe().'" blocked by policy; skipping');
         } else {
             $action->execute($payload, $output);
         }

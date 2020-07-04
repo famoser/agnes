@@ -9,9 +9,15 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class CopySharedAction extends AbstractAction
 {
+    /**
+     * @var StyleInterface
+     */
+    private $io;
+
     /**
      * @var ConfigurationService
      */
@@ -25,10 +31,11 @@ class CopySharedAction extends AbstractAction
     /**
      * CopySharedService constructor.
      */
-    public function __construct(PolicyService $policyService, ConfigurationService $configurationService, InstanceService $instanceService)
+    public function __construct(StyleInterface $io, PolicyService $policyService, ConfigurationService $configurationService, InstanceService $instanceService)
     {
         parent::__construct($policyService);
 
+        $this->io = $io;
         $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
     }
@@ -51,7 +58,7 @@ class CopySharedAction extends AbstractAction
         $filter = Filter::createFromInstanceSpecification($target);
         $targetInstances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($targetInstances)) {
-            $output->writeln('For target specification '.$target.' no matching instances were found.');
+            $this->io->warning('For target specification '.$target.' no matching instances were found.');
 
             return [];
         }
@@ -78,7 +85,7 @@ class CopySharedAction extends AbstractAction
         $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
 
         if (0 === count($sourceInstances)) {
-            $output->writeln('For instance '.$targetInstance->describe().' no matching source was found.');
+            $this->io->warning('For instance '.$targetInstance->describe().' no matching source was found.');
 
             return null;
         }
@@ -94,14 +101,14 @@ class CopySharedAction extends AbstractAction
     protected function canProcessPayload($copyShared, OutputInterface $output): bool
     {
         if (!$copyShared instanceof CopyShared) {
-            $output->writeln('Not a '.CopyShared::class);
+            $this->io->writeln('Not a '.CopyShared::class);
 
             return false;
         }
 
         // does not make sense to copy from itself
         if ($copyShared->getSource()->equals($copyShared->getTarget())) {
-            $output->writeln('Cannot execute '.$copyShared->describe().': copy shared to itself does not make sense.');
+            $this->io->warning('Cannot execute '.$copyShared->describe().': copy shared to itself does not make sense.');
 
             return false;
         }
@@ -125,7 +132,7 @@ class CopySharedAction extends AbstractAction
             $sourceFolderPath = $sourceSharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
             $targetFolderPath = $targetSharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
 
-            $output->writeln('copying folder '.$sharedFolder);
+            $this->io->text('copying folder '.$sharedFolder);
             $connection->copyFolderContent($sourceFolderPath, $targetFolderPath);
         }
     }

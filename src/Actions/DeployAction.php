@@ -2,32 +2,24 @@
 
 namespace Agnes\Actions;
 
-use Agnes\Models\Connections\Connection;
 use Agnes\Models\Filter;
-use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Models\Setup;
-use Agnes\Services\BuildService;
-use Agnes\Services\ConfigurationService;
-use Agnes\Services\GithubService;
+use Agnes\Services\FileService;
 use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\PolicyService;
 use Agnes\Services\ScriptService;
+use Agnes\Services\SetupService;
 use Http\Client\Exception;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class DeployAction extends AbstractAction
 {
     /**
-     * @var ConfigurationService
+     * @var StyleInterface
      */
-    private $configurationService;
-
-    /**
-     * @var BuildService
-     */
-    private $buildService;
+    private $io;
 
     /**
      * @var InstanceService
@@ -40,34 +32,33 @@ class DeployAction extends AbstractAction
     private $installationService;
 
     /**
-     * @var GithubService
-     */
-    private $githubService;
-
-    /**
-     * @var ReleaseAction
-     */
-    private $releaseAction;
-
-    /**
      * @var ScriptService
      */
     private $scriptService;
 
     /**
-     * DeployService constructor.
+     * @var FileService
      */
-    public function __construct(BuildService $buildService, ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, InstallationService $installationService, GithubService $githubService, ReleaseAction $releaseAction, \Agnes\Services\ScriptService $scriptService)
+    private $fileService;
+
+    /**
+     * @var SetupService
+     */
+    private $setupService;
+
+    /**
+     * DeployAction constructor.
+     */
+    public function __construct(PolicyService $policyService, StyleInterface $io, InstanceService $instanceService, InstallationService $installationService, ScriptService $scriptService, FileService $fileService, SetupService $setupService)
     {
         parent::__construct($policyService);
 
-        $this->buildService = $buildService;
-        $this->configurationService = $configurationService;
+        $this->io = $io;
         $this->instanceService = $instanceService;
         $this->installationService = $installationService;
-        $this->githubService = $githubService;
-        $this->releaseAction = $releaseAction;
         $this->scriptService = $scriptService;
+        $this->fileService = $fileService;
+        $this->setupService = $setupService;
     }
 
     /**
@@ -75,18 +66,13 @@ class DeployAction extends AbstractAction
      */
     public function createSingle(string $releaseOrCommitish, Instance $target, OutputInterface $output): ?Deploy
     {
-        $this->getConfiguredFiles($files, $requiredFiles);
-
-        $this->getFilePaths($target, $files, $requiredFiles, $filePaths, $missingFiles);
-        if (!empty($missingFiles)) {
-            $output->writeln('For instance '.$target->describe().' the following files are missing: '.implode(', ', $missingFiles));
-
+        if (!$this->fileService->allRequiredFilesExist($target)) {
             return null;
         }
 
-        $setup = $this->getSetup($releaseOrCommitish, $output);
+        $setup = $this->setupService->getSetup($releaseOrCommitish, $output);
 
-        return new Deploy($setup, $target, $filePaths);
+        return new Deploy($setup, $target);
     }
 
     /**
@@ -104,133 +90,22 @@ class DeployAction extends AbstractAction
             return [];
         }
 
-        $this->getConfiguredFiles($files, $requiredFiles);
-
-        $validatedInstances = [];
+        /** @var Deploy[] $deploys */
+        $deploys = [];
+        $setup = null;
         foreach ($instances as $instance) {
-            $this->getFilePaths($instance, $files, $requiredFiles, $filePaths, $missingFiles);
-            if (!empty($missingFiles)) {
-                $output->writeln('For instance '.$instance->describe().' the following files are missing: '.implode(', ', $missingFiles));
+            if (!$this->fileService->allRequiredFilesExist($instance)) {
                 continue;
             }
 
-            $validatedInstances[] = [$instance, $filePaths]; // used as argument for Deploy __construct
-        }
-
-        /** @var Deploy[] $deploys */
-        $deploys = [];
-        if (count($validatedInstances) > 0) {
-            $setup = $this->getSetup($releaseOrCommitish, $output);
-
-            foreach ($validatedInstances as $validatedInstance) {
-                $deploys[] = new Deploy($setup, ...$validatedInstance);
+            if (null === $setup) {
+                $setup = $this->setupService->getSetup($releaseOrCommitish, $output);
             }
+
+            $deploys[] = new Deploy($setup, $instance);
         }
 
         return $deploys;
-    }
-
-    private function getFilePaths(Instance $instance, array $files, array $requiredFiles, array &$filePaths, array &$missingFiles)
-    {
-        $filePaths = [];
-
-        $configFolder = $this->configurationService->getConfigFolder();
-        if (null != $configFolder) {
-            $filePaths = $this->getFilesPathsForInstance($instance, $configFolder, $files);
-        }
-
-        $containedFiles = array_keys($filePaths);
-        $missingFiles = array_diff($requiredFiles, $containedFiles);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function getConfiguredFiles(array &$files, array &$requiredFiles)
-    {
-        $configuredFiles = $this->configurationService->getFiles();
-        $requiredFiles = [];
-        $files = [];
-        foreach ($configuredFiles as $configuredFile) {
-            $configuredFilePath = $configuredFile->getPath();
-
-            $files[] = $configuredFilePath;
-            if ($configuredFile->getIsRequired()) {
-                $requiredFiles[] = $configuredFilePath;
-            }
-        }
-    }
-
-    /**
-     * @throws Exception
-     * @throws \Exception
-     */
-    private function getSetup(string $releaseOrCommitish, OutputInterface $output): Setup
-    {
-        $setup = $this->githubService->createSetupByReleaseName($releaseOrCommitish);
-        if (null !== $setup) {
-            $output->writeln('Using release found on github.');
-        } else {
-            $output->writeln('No release by that name found on github. Building from commitish...');
-            $scripts = $this->scriptService->getBuildHookCommands($output);
-            $build = $this->buildService->build($releaseOrCommitish, $scripts, $output);
-            $setup = Setup::fromBuild($build, $releaseOrCommitish);
-        }
-        $output->writeln('');
-
-        return $setup;
-    }
-
-    /**
-     * @param string[] $whitelistFiles
-     *
-     * @return string[]
-     */
-    private function getFilesPathsForInstance(Instance $instance, string $configFolderPath, array $whitelistFiles): array
-    {
-        $instanceFolder = $configFolderPath.DIRECTORY_SEPARATOR.
-            'servers'.DIRECTORY_SEPARATOR.
-            $instance->getServerName().DIRECTORY_SEPARATOR.
-            $instance->getEnvironmentName().DIRECTORY_SEPARATOR.
-            $instance->getStage();
-
-        if (!is_dir($instanceFolder)) {
-            return [];
-        }
-
-        $filePaths = $this->getFilesRecursively($instanceFolder);
-
-        $result = [];
-        $instanceFolderPrefixLength = strlen($instanceFolder) + 1;
-        foreach ($filePaths as $filePath) {
-            $key = substr($filePath, $instanceFolderPrefixLength);
-
-            if (in_array($key, $whitelistFiles)) {
-                $result[$key] = $filePath;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getFilesRecursively(string $folder)
-    {
-        $directoryElements = scandir($folder);
-
-        $result = [];
-        foreach ($directoryElements as $key => $value) {
-            $path = realpath($folder.DIRECTORY_SEPARATOR.$value);
-            if (!is_dir($path)) {
-                $result[] = $path;
-            } elseif ('.' != $value && '..' != $value) {
-                $result = array_merge($result, $this->getFilesRecursively($path));
-            }
-        }
-
-        return $result;
     }
 
     /**
@@ -261,20 +136,10 @@ class DeployAction extends AbstractAction
         $connection = $target->getConnection();
 
         $output->writeln('determine target folder');
-        $newInstallation = $this->installationService->createInstallation($target, $setup);
-
-        $output->writeln('uploading build to '.$newInstallation->getFolder());
-        $this->uploadBuild($newInstallation->getFolder(), $connection, $setup);
-
-        $output->writeln('creating and linking shared folders');
-        $this->createAndLinkSharedFolders($connection, $target, $newInstallation->getFolder());
+        $newInstallation = $this->installationService->install($target, $setup);
 
         $output->writeln('uploading files');
-        foreach ($deploy->getFilePaths() as $targetPath => $sourcePath) {
-            $fullPath = $newInstallation->getFolder().DIRECTORY_SEPARATOR.$targetPath;
-            $content = file_get_contents($sourcePath);
-            $connection->writeFile($fullPath, $content);
-        }
+        $this->fileService->uploadFiles($target, $newInstallation);
 
         $output->writeln('executing deploy hook');
         $this->scriptService->executeDeployHook($output, $target, $newInstallation);
@@ -284,87 +149,9 @@ class DeployAction extends AbstractAction
         $output->writeln('release online');
 
         $output->writeln('cleaning old installations if required');
-        $this->removeOldInstallations($deploy, $connection);
+        $this->instanceService->removeOldInstallations($deploy, $connection);
 
         $output->writeln('executing after deploy hook');
         $this->scriptService->executeAfterDeployHook($output, $target);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function removeOldInstallations(Deploy $deploy, Connection $connection)
-    {
-        $onlineNumber = $deploy->getTarget()->getCurrentInstallation()->getNumber();
-        /** @var Installation[] $oldInstallations */
-        $oldInstallations = [];
-        foreach ($deploy->getTarget()->getInstallations() as $installation) {
-            if ($installation->getNumber() < $onlineNumber) {
-                $oldInstallations[$installation->getNumber()] = $installation;
-            }
-        }
-
-        ksort($oldInstallations);
-
-        // remove excess releases
-        $installationsToDelete = count($oldInstallations) - $deploy->getTarget()->getServer()->getKeepInstallations();
-        foreach ($oldInstallations as $installation) {
-            if ($installationsToDelete-- <= 0) {
-                break;
-            }
-
-            $connection->removeFolder($installation->getFolder());
-        }
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function createAndLinkSharedFolders(Connection $connection, Instance $target, string $releaseFolder): void
-    {
-        $instanceSharedFolder = $target->getSharedFolder();
-        $installationSharedFolders = $this->configurationService->getSharedFolders();
-        foreach ($installationSharedFolders as $sharedFolder) {
-            $sharedFolderTarget = $instanceSharedFolder.DIRECTORY_SEPARATOR.$sharedFolder;
-            $releaseFolderSource = $releaseFolder.DIRECTORY_SEPARATOR.$sharedFolder;
-
-            // if created for the first time...
-            if (!$connection->checkFolderExists($sharedFolderTarget)) {
-                $connection->createFolder($sharedFolderTarget);
-
-                // use content of current shared folder
-                if ($connection->checkFolderExists($releaseFolderSource)) {
-                    $connection->moveFolder($releaseFolderSource, $sharedFolderTarget);
-                }
-            }
-
-            // ensure directory structure exists
-            $connection->createFolder($releaseFolderSource);
-
-            // remove folder to make space for symlink
-            $connection->removeFolder($releaseFolderSource);
-
-            // create symlink from release path to shared path
-            $connection->createSymlink($releaseFolderSource, $sharedFolderTarget);
-        }
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function uploadBuild(string $releaseFolder, Connection $connection, Setup $setup): void
-    {
-        // make empty dir for new release
-        $connection->createOrClearFolder($releaseFolder);
-
-        // transfer release packet
-        $assetPath = $releaseFolder.DIRECTORY_SEPARATOR.$setup->getIdentification().'.tar.gz';
-        $connection->writeFile($assetPath, $setup->getContent());
-
-        // unpack release packet
-        $connection->uncompressTarGz($assetPath, $releaseFolder);
-
-        // remove release packet
-        $connection->removeFile($assetPath);
     }
 }

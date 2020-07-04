@@ -88,7 +88,7 @@ class AgnesFactory
         $configurationService = new ConfigurationService();
         $buildService = new BuildService($configurationService);
         $githubService = new GithubService($pluginClient, $configurationService);
-        $installationService = new InstallationService();
+        $installationService = new InstallationService(,);
         $instanceService = new InstanceService($configurationService, $installationService);
         $policyService = new PolicyService($configurationService, $instanceService);
         $scriptService = new ScriptService($configurationService, $this);

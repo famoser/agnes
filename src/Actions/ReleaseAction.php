@@ -79,7 +79,7 @@ class ReleaseAction extends AbstractAction
      */
     protected function doExecute($release, OutputInterface $output)
     {
-        $scripts = $this->scriptService->getBuildHookCommands($output);
+        $scripts = $this->scriptService->getBuildHookCommands();
         $build = $this->buildService->build($release->getCommitish(), $scripts, $output);
 
         $output->writeln('publishing release to github');

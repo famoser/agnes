@@ -2,6 +2,8 @@
 
 namespace Agnes\Services;
 
+use Agnes\Actions\Deploy;
+use Agnes\Models\Connections\Connection;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
@@ -83,6 +85,30 @@ class InstanceService
     /**
      * @throws Exception
      */
+    private function createInstance(Configuration\Server $server, Configuration\Environment $environment, string $stage): Instance
+    {
+        $instance = new Instance($server, $environment, $stage);
+
+        $installations = $this->installationService->loadInstallations($instance);
+        if (count($installations) > 0) {
+            $symlink = $instance->getCurrentSymlink();
+            $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
+            $currentFolder = $symlinkExists ? $instance->getConnection()->readSymlink($symlink) : null;
+
+            foreach ($installations as $installation) {
+                $instance->addInstallation($installation);
+                if ($installation->getFolder() === $currentFolder) {
+                    $instance->setCurrentInstallation($installation);
+                }
+            }
+        }
+
+        return $instance;
+    }
+
+    /**
+     * @throws Exception
+     */
     public function switchInstallation(Instance $instance, Installation $target): void
     {
         $currentSymlink = $instance->getCurrentSymlink();
@@ -107,26 +133,29 @@ class InstanceService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
-    private function createInstance(Configuration\Server $server, Configuration\Environment $environment, string $stage): Instance
+    public function removeOldInstallations(Deploy $deploy, Connection $connection)
     {
-        $instance = new Instance($server, $environment, $stage);
-
-        $installations = $this->installationService->loadInstallations($instance);
-        if (count($installations) > 0) {
-            $symlink = $instance->getCurrentSymlink();
-            $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
-            $currentFolder = $symlinkExists ? $instance->getConnection()->readSymlink($symlink) : null;
-
-            foreach ($installations as $installation) {
-                $instance->addInstallation($installation);
-                if ($installation->getFolder() === $currentFolder) {
-                    $instance->setCurrentInstallation($installation);
-                }
+        $onlineNumber = $deploy->getTarget()->getCurrentInstallation()->getNumber();
+        /** @var Installation[] $oldInstallations */
+        $oldInstallations = [];
+        foreach ($deploy->getTarget()->getInstallations() as $installation) {
+            if ($installation->getNumber() < $onlineNumber) {
+                $oldInstallations[$installation->getNumber()] = $installation;
             }
         }
 
-        return $instance;
+        ksort($oldInstallations);
+
+        // remove excess releases
+        $installationsToDelete = count($oldInstallations) - $deploy->getTarget()->getServer()->getKeepInstallations();
+        foreach ($oldInstallations as $installation) {
+            if ($installationsToDelete-- <= 0) {
+                break;
+            }
+
+            $connection->removeFolder($installation->getFolder());
+        }
     }
 }
