@@ -43,9 +43,9 @@ class CopySharedAction extends AbstractAction
     /**
      * @throws Exception
      */
-    public function createSingle(Instance $target, string $sourceStage, OutputInterface $output): ?CopyShared
+    public function createSingle(Instance $target, string $sourceStage): ?CopyShared
     {
-        return $this->constructCopyShared($output, $target, $sourceStage);
+        return $this->constructCopyShared($target, $sourceStage);
     }
 
     /**
@@ -53,7 +53,7 @@ class CopySharedAction extends AbstractAction
      *
      * @throws Exception
      */
-    public function createMany(string $target, string $sourceStage, OutputInterface $output): array
+    public function createMany(string $target, string $sourceStage): array
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $targetInstances = $this->instanceService->getInstancesByFilter($filter);
@@ -66,7 +66,7 @@ class CopySharedAction extends AbstractAction
         /** @var CopyShared[] $copyShareds */
         $copyShareds = [];
         foreach ($targetInstances as $targetInstance) {
-            $copyShared = $this->constructCopyShared($output, $targetInstance, $sourceStage);
+            $copyShared = $this->constructCopyShared($targetInstance, $sourceStage);
 
             if (null !== $copyShared) {
                 $copyShareds[] = $copyShared;
@@ -79,7 +79,7 @@ class CopySharedAction extends AbstractAction
     /**
      * @throws Exception
      */
-    private function constructCopyShared(OutputInterface $output, Instance $targetInstance, string $sourceStage): ?CopyShared
+    private function constructCopyShared(Instance $targetInstance, string $sourceStage): ?CopyShared
     {
         $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);
         $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
@@ -100,20 +100,6 @@ class CopySharedAction extends AbstractAction
      */
     protected function canProcessPayload($copyShared, OutputInterface $output): bool
     {
-        if (!$copyShared instanceof CopyShared) {
-            $this->io->writeln('Not a '.CopyShared::class);
-
-            return false;
-        }
-
-        // does not make sense to copy from itself
-        if ($copyShared->getSource()->equals($copyShared->getTarget())) {
-            $this->io->warning('Cannot execute '.$copyShared->describe().': copy shared to itself does not make sense.');
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -123,17 +109,5 @@ class CopySharedAction extends AbstractAction
      */
     protected function doExecute($copyShared, OutputInterface $output)
     {
-        $sourceSharedPath = $copyShared->getSource()->getSharedFolder();
-        $targetSharedPath = $copyShared->getTarget()->getSharedFolder();
-        $connection = $copyShared->getSource()->getConnection();
-
-        $sharedFolders = $this->configurationService->getSharedFolders();
-        foreach ($sharedFolders as $sharedFolder) {
-            $sourceFolderPath = $sourceSharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
-            $targetFolderPath = $targetSharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
-
-            $this->io->text('copying folder '.$sharedFolder);
-            $connection->copyFolderContent($sourceFolderPath, $targetFolderPath);
-        }
     }
 }

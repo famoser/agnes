@@ -46,6 +46,6 @@ If neither target nor source is supplied, it will rollback to the last release w
         $rollbackFrom = $input->getOption('rollback-from');
 
         /* @var RollbackAction $action */
-        return $action->createMany($target, $rollbackTo, $rollbackFrom, $output);
+        return $action->createMany($target, $rollbackTo, $rollbackFrom);
     }
 }

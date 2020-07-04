@@ -10,6 +10,7 @@ use Agnes\Services\PolicyService;
 use Agnes\Services\ScriptService;
 use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class RollbackAction extends AbstractAction
 {
@@ -29,6 +30,11 @@ class RollbackAction extends AbstractAction
     private $scriptService;
 
     /**
+     * @var StyleInterface
+     */
+    private $io;
+
+    /**
      * RollbackService constructor.
      */
     public function __construct(ConfigurationService $configurationService, PolicyService $policyService, InstanceService $instanceService, ScriptService $scriptService)
@@ -45,10 +51,10 @@ class RollbackAction extends AbstractAction
      *
      * @throws Exception
      */
-    public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom, OutputInterface $output): array
+    public function createMany(string $target, ?string $rollbackTo, ?string $rollbackFrom): array
     {
         if (null !== $rollbackFrom && $rollbackTo === $rollbackFrom) {
-            $output->writeln('Can not rollback within same version. Rollback from '.$rollbackFrom.' to '.$rollbackTo.'.');
+            $this->io->error('Can not rollback within same version. Rollback from '.$rollbackFrom.' to '.$rollbackTo.'.');
 
             return [];
         }
@@ -56,7 +62,7 @@ class RollbackAction extends AbstractAction
         $filter = Filter::createFromInstanceSpecification($target);
         $instances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($instances)) {
-            $output->writeln('For target specification '.$target.' no matching instances were found.');
+            $this->io->error('For target specification '.$target.' no matching instances were found.');
 
             return [];
         }
@@ -95,7 +101,7 @@ class RollbackAction extends AbstractAction
             }
 
             if (null === $upperBoundInstallation) {
-                $output->writeln('For instance '.$instance->describe().' no matching rollback installation was found.');
+                $this->io->warning('For instance '.$instance->describe().' no matching rollback installation was found.');
                 continue;
             }
 
@@ -112,13 +118,6 @@ class RollbackAction extends AbstractAction
      */
     protected function canProcessPayload($payload, OutputInterface $output): bool
     {
-        if (!$payload instanceof Rollback) {
-            $output->writeln('Not a '.Rollback::class);
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -128,17 +127,5 @@ class RollbackAction extends AbstractAction
      */
     protected function doExecute($rollback, OutputInterface $output)
     {
-        $instance = $rollback->getInstance();
-        $target = $rollback->getTarget();
-
-        $output->writeln('executing rollback hook');
-        $this->scriptService->executeRollbackHook($output, $instance, $target);
-
-        $output->writeln('switching to previous release');
-        $this->instanceService->switchInstallation($instance, $target);
-        $output->writeln('previous release online');
-
-        $output->writeln('executing after rollback hook');
-        $this->scriptService->executeAfterRollbackHook($output, $instance);
     }
 }

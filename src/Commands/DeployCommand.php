@@ -41,6 +41,6 @@ class DeployCommand extends AgnesCommand
         $target = $input->getArgument('target');
 
         /* @var DeployAction $action */
-        return $action->createMany($releaseOrCommitish, $target, $output);
+        return $action->createMany($releaseOrCommitish, $target);
     }
 }

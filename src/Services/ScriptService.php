@@ -163,7 +163,7 @@ class ScriptService
 
         $source = $arguments['source'];
         $action = $this->agnesFactor->getCopySharedAction();
-        $copyShared = $action->createSingle($instance, $source, $output);
+        $copyShared = $action->createSingle($instance, $source);
         if (null === $copyShared) {
             return;
         }

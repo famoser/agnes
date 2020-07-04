@@ -64,7 +64,7 @@ class DeployAction extends AbstractAction
     /**
      * @throws Exception
      */
-    public function createSingle(string $releaseOrCommitish, Instance $target, OutputInterface $output): ?Deploy
+    public function createSingle(string $releaseOrCommitish, Instance $target): ?Deploy
     {
         if (!$this->fileService->allRequiredFilesExist($target)) {
             return null;
@@ -76,16 +76,15 @@ class DeployAction extends AbstractAction
     }
 
     /**
-     * @return Deploy[]
-     *
-     * @throws \Exception|Exception
+     * @throws \Exception
+     * @throws Exception
      */
-    public function createMany(string $releaseOrCommitish, string $target, OutputInterface $output)
+    public function createMany(string $releaseOrCommitish, string $target)
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $instances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($instances)) {
-            $output->writeln('For target specification '.$target.' no matching instances were found.');
+            $this->io->error('For target specification '.$target.' no matching instances were found.');
 
             return [];
         }
@@ -115,13 +114,6 @@ class DeployAction extends AbstractAction
      */
     protected function canProcessPayload($deploy, OutputInterface $output): bool
     {
-        if (!$deploy instanceof Deploy) {
-            $output->writeln('Not a '.Deploy::class);
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -131,27 +123,5 @@ class DeployAction extends AbstractAction
      */
     protected function doExecute($deploy, OutputInterface $output)
     {
-        $setup = $deploy->getSetup();
-        $target = $deploy->getTarget();
-        $connection = $target->getConnection();
-
-        $output->writeln('determine target folder');
-        $newInstallation = $this->installationService->install($target, $setup);
-
-        $output->writeln('uploading files');
-        $this->fileService->uploadFiles($target, $newInstallation);
-
-        $output->writeln('executing deploy hook');
-        $this->scriptService->executeDeployHook($output, $target, $newInstallation);
-
-        $output->writeln('switching to new release');
-        $this->instanceService->switchInstallation($target, $newInstallation);
-        $output->writeln('release online');
-
-        $output->writeln('cleaning old installations if required');
-        $this->instanceService->removeOldInstallations($deploy, $connection);
-
-        $output->writeln('executing after deploy hook');
-        $this->scriptService->executeAfterDeployHook($output, $target);
     }
 }

@@ -44,16 +44,5 @@ class SetupService
      */
     public function getSetup(string $releaseOrCommitish): Setup
     {
-        $setup = $this->githubService->createSetupByReleaseName($releaseOrCommitish);
-        if (null !== $setup) {
-            $this->io->text('Using release found on github.');
-        } else {
-            $this->io->text('No release by that name found on github. Building from commitish...');
-            $scripts = $this->scriptService->getBuildHookCommands();
-            $build = $this->buildService->build($releaseOrCommitish, $scripts);
-            $setup = Setup::fromBuild($build, $releaseOrCommitish);
-        }
-
-        return $setup;
     }
 }

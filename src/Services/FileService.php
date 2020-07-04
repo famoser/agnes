@@ -35,15 +35,20 @@ class FileService
         $instanceConfigFolder = $this->getLocalConfigFolderPath($instance);
 
         $configuredFiles = $this->configurationService->getFiles();
+        $missingFiles = [];
         foreach ($configuredFiles as $configuredFile) {
             $configuredFileKey = $configuredFile->getPath();
             $expectedFilePath = $instanceConfigFolder.DIRECTORY_SEPARATOR.$configuredFileKey;
 
             if ($configuredFile->getIsRequired() && !file_exists($expectedFilePath)) {
-                $this->io->error('For instance '.$instance->describe().' the required file '.$configuredFileKey.' is missing, expected at '.$expectedFilePath);
-
-                return false;
+                $missingFiles[$configuredFileKey] = $expectedFilePath;
             }
+        }
+
+        if (count($missingFiles) > 0) {
+            $this->io->error('For instance '.$instance->describe().' the required file(s) '.implode(', ', array_keys($missingFiles)).' are missing, expected at '.implode(', ', $missingFiles));
+
+            return false;
         }
 
         return true;

@@ -62,13 +62,6 @@ class ReleaseAction extends AbstractAction
      */
     protected function canProcessPayload($payload, OutputInterface $output): bool
     {
-        if (!$payload instanceof Release) {
-            $output->writeln('Not a '.Release::class);
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -79,10 +72,5 @@ class ReleaseAction extends AbstractAction
      */
     protected function doExecute($release, OutputInterface $output)
     {
-        $scripts = $this->scriptService->getBuildHookCommands();
-        $build = $this->buildService->build($release->getCommitish(), $scripts);
-
-        $output->writeln('publishing release to github');
-        $this->githubService->publish($release->getName(), $build);
     }
 }
