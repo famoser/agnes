@@ -2,7 +2,7 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\Executor;
+use Agnes\Actions\AbstractPayload;
 use Agnes\Actions\PayloadFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,15 +26,17 @@ If neither target nor source is supplied, it will rollback to the previously ins
         parent::configure();
     }
 
-    protected function enqueuePayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory, Executor $executor)
+    /**
+     * @throws \Exception
+     *
+     * @return AbstractPayload[]
+     */
+    protected function createPayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
     {
         $target = $input->getArgument('target');
         $rollbackTo = $input->getOption('rollback-to');
         $rollbackFrom = $input->getOption('rollback-from');
 
-        $rollbacks = $payloadFactory->createManyRollback($target, $rollbackTo, $rollbackFrom);
-        foreach ($rollbacks as $rollback) {
-            $executor->enqueue($rollback);
-        }
+        return $payloadFactory->createManyRollback($target, $rollbackTo, $rollbackFrom);
     }
 }

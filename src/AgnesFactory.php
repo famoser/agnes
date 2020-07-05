@@ -4,14 +4,15 @@ namespace Agnes;
 
 use Agnes\Actions\Executor;
 use Agnes\Actions\PayloadFactory;
+use Agnes\Services\ActionService;
 use Agnes\Services\BuildService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
+use Agnes\Services\PayloadService;
 use Agnes\Services\PolicyService;
 use Agnes\Services\ScriptService;
-use Exception;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
@@ -65,6 +66,16 @@ class AgnesFactory
     private $payloadFactory;
 
     /**
+     * @var ActionService
+     */
+    private $actionService;
+
+    /**
+     * @var PayloadService
+     */
+    private $payloadService;
+
+    /**
      * AgnesFactory constructor.
      */
     public function __construct(StyleInterface $io)
@@ -94,14 +105,6 @@ class AgnesFactory
         $this->payloadFactory = new PayloadFactory();
     }
 
-    /**
-     * @throws Exception
-     */
-    public function addConfig(string $path)
-    {
-        $this->configurationService->addConfig($path);
-    }
-
     public function getExecutor(): Executor
     {
         return $this->executor;
@@ -115,5 +118,15 @@ class AgnesFactory
     public function getConfigurationService(): ConfigurationService
     {
         return $this->configurationService;
+    }
+
+    public function getActionService(): ActionService
+    {
+        return $this->actionService;
+    }
+
+    public function getPayloadService()
+    {
+        return $this->payloadService;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Agnes\Services;
 
+use Agnes\Actions\AbstractPayload;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Connections\LocalConnection;
 use Agnes\Models\Connections\SSHConnection;
@@ -13,11 +14,14 @@ use Agnes\Models\Policies\ReleaseWhitelistPolicy;
 use Agnes\Models\Policies\SameReleasePolicy;
 use Agnes\Models\Policies\StageWriteDownPolicy;
 use Agnes\Models\Policies\StageWriteUpPolicy;
+use Agnes\Services\Configuration\Action;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\File;
 use Agnes\Services\Configuration\GithubConfig;
+use Agnes\Services\Configuration\Script;
 use Agnes\Services\Configuration\Server;
 use Exception;
+use Symfony\Component\Console\Style\StyleInterface;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
@@ -31,6 +35,39 @@ class ConfigurationService
      * @var string|null
      */
     private $configFolder = null;
+
+    const AGNES_VERSION = 3;
+
+    /**
+     * @var StyleInterface
+     */
+    private $io;
+
+    /**
+     * ConfigurationService constructor.
+     */
+    public function __construct(StyleInterface $io)
+    {
+        $this->io = $io;
+    }
+
+    public function validate(): bool
+    {
+        if (0 === count($this->config)) {
+            $this->io->error('no config supplied');
+
+            return false;
+        }
+
+        $version = $this->getNestedConfig('agnes', 'version');
+        if (self::AGNES_VERSION !== $version) {
+            $this->io->error('expected '.$version.' as the agnes.version value');
+
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * @throws Exception
@@ -99,7 +136,6 @@ class ConfigurationService
      */
     public function getAgnesVersion()
     {
-        return $this->getNestedConfig('agnes', 'version');
     }
 
     /**
@@ -113,23 +149,62 @@ class ConfigurationService
     }
 
     /**
-     * @return string[][]
+     * @return Script[]
      *
      * @throws Exception
      */
     public function getScriptsForHook(string $hook): array
     {
-        $scripts = $this->getNestedConfigWithDefault([], 'scripts');
+        $config = $this->getNestedConfigWithDefault([], 'scripts');
 
-        $matchingScripts = [];
-        foreach ($scripts as $script) {
-            if (isset($script['hook']) && $script['hook'] === $hook ||
-                isset($script['hooks']) && in_array($hook, $script['hooks'])) {
-                $matchingScripts[] = $script;
+        $result = [];
+        foreach ($config as $name => $script) {
+            if ((isset($script['hook']) && $script['hook'] !== $hook) ||
+                (isset($script['hooks']) && !in_array($hook, $script['hooks']))) {
+                continue;
             }
+
+            if (!isset($script['script'])) {
+                $this->io->warning('script '.$name.' is missing the required script property. skipping...');
+                continue;
+            }
+
+            $commands = is_array($script['script']) ? $script['script'] : [$script['script']];
+            $filter = isset($script['instance_filter']) ? Filter::createFromInstanceSpecification($script['instance_filter']) : null;
+
+            $result[] = new Script($name, $commands, $filter);
         }
 
-        return $matchingScripts;
+        return $result;
+    }
+
+    /**
+     * @return Action[]
+     *
+     * @throws Exception
+     */
+    public function getActions(AbstractPayload $payload): array
+    {
+        $config = $this->getNestedConfigWithDefault([], 'actions');
+
+        $result = [];
+        foreach ($config as $name => $action) {
+            if ((isset($action['after']) && $action['after'] !== $payload->describe())) {
+                continue;
+            }
+
+            if (!isset($action['action'])) {
+                $this->io->warning('action '.$name.' is missing the required action property. skipping...');
+                continue;
+            }
+
+            $arguments = is_array($action['arguments']) ? $action['arguments'] : [];
+            $filter = isset($action['instance_filter']) ? Filter::createFromInstanceSpecification($action['instance_filter']) : null;
+
+            $result[] = new Action($name, $action['action'], $arguments, $filter);
+        }
+
+        return $result;
     }
 
     /**

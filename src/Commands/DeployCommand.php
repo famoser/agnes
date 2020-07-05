@@ -2,7 +2,7 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\Executor;
+use Agnes\Actions\AbstractPayload;
 use Agnes\Actions\PayloadFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,14 +21,16 @@ class DeployCommand extends AgnesCommand
         parent::configure();
     }
 
-    protected function enqueuePayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory, Executor $executor)
+    /**
+     * @throws \Exception
+     *
+     * @return AbstractPayload[]
+     */
+    protected function createPayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
     {
         $releaseOrCommitish = $input->getArgument('release or commitish');
         $target = $input->getArgument('target');
 
-        $deploys = $payloadFactory->createManyDeploy($releaseOrCommitish, $target);
-        foreach ($deploys as $deploy) {
-            $executor->enqueue($deploy);
-        }
+        return $payloadFactory->createManyDeploy($releaseOrCommitish, $target);
     }
 }

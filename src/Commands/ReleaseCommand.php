@@ -2,7 +2,7 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\Executor;
+use Agnes\Actions\AbstractPayload;
 use Agnes\Actions\PayloadFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,12 +21,21 @@ class ReleaseCommand extends AgnesCommand
         parent::configure();
     }
 
-    protected function enqueuePayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory, Executor $executor)
+    /**
+     * @return AbstractPayload[]
+     *
+     * @throws \Exception
+     */
+    protected function createPayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
     {
         $release = $input->getArgument('release');
         $commitish = $input->getArgument('commitish');
 
         $payload = $payloadFactory->createRelease($commitish, $release);
-        $executor->enqueue($payload);
+        if (null === $payload) {
+            return [];
+        }
+
+        return [$payload];
     }
 }

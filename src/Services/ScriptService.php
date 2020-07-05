@@ -46,17 +46,13 @@ class ScriptService
         $scripts = $this->configurationService->getScriptsForHook('build');
 
         $commands = [];
-        foreach ($scripts as $name => $script) {
-            if (isset($script['instance_filter'])) {
-                $this->io->warning("$name script uses unsupported instance property for build hook. skipping...");
+        foreach ($scripts as $script) {
+            if (null !== $script->getFilter()) {
+                $this->io->warning($script->getName().' script defines a filter which is unsupported for build hook. skipping...');
                 continue;
             }
 
-            if (isset($script['commands'])) {
-                $commands = array_merge($commands, $script['commands']);
-            } else {
-                $this->io->warning("$name script has no commands specified. skipping...");
-            }
+            $commands = array_merge($commands, $script->getScript());
         }
 
         return $commands;
@@ -112,24 +108,18 @@ class ScriptService
     {
         $scripts = $this->configurationService->getScriptsForHook($hook);
 
-        foreach ($scripts as $name => $script) {
+        foreach ($scripts as $script) {
             // filter by instance
             if (isset($script['instance'])) {
                 $filter = Filter::createFromInstanceSpecification($script['instance']);
                 if (!$filter->instanceMatches($instance)) {
-                    $this->io->text($name.' script\'s filter '.$script['instance'].' does not match instance '.$instance->describe().'. skipping...');
+                    $this->io->text($script->getName().' script\'s filter '.$script['instance'].' does not match instance '.$instance->describe().'. skipping...');
                     continue;
                 }
             }
 
-            if (!isset($script['commands'])) {
-                $this->io->warning($name.' script has no commands defined. skipping...');
-                continue;
-            }
-
-            $commands = is_array($script['commands']) ? $script['commands'] : [$script['commands']];
-            $this->io->text('executing commands for '.$name.'...');
-            $instance->getConnection()->executeScript($installation->getFolder(), $commands, $arguments);
+            $this->io->text('executing script for '.$script->getName().'...');
+            $instance->getConnection()->executeScript($installation->getFolder(), $script->getScript(), $arguments);
         }
     }
 }

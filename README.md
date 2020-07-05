@@ -60,7 +60,7 @@ scripts:
     # produces a build which is used for a release or deployed to an installation 
     build:
         hook: build
-        commands:
+        script:
           - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
           - '{{php}} -v' # place
     
@@ -72,7 +72,7 @@ scripts:
     # for example `if [[ "$HAS_PREVIOUS_INSTALLATION" == true ]]; then cp -r $PREVIOUS_INSTALLATION_PATH/var/transient var/transient; fi`
     deploy:
         hook: deploy
-        commands:
+        script:
           - php bin/console doctrine:migrations:migrate -q
     
     # rollback hook
@@ -81,29 +81,31 @@ scripts:
     # the path of the previous installation is given in $PREVIOUS_INSTALLATION_PATH
     rollback:
         hook: rollback
-        commands:
+        script:
           - echo "rollbacked"
 
     # executed right after the symlink changes
     restart_php:
         hooks: [after_deploy, after_rollback]
-        commands:
+        script:
           - killall -9 php-cgi
 
     # execute commands on deploy hook, constrained to specific instances
     fixtures:
         hook: after_deploy
         instance_filter: *:*:dev
-        commands:
+        script:
           - php bin/console doctrine:fixtures:load -q
 
-# action can be executed after a deploy action, constrained to specific instances
+# commands create actions which are executed on a specific instance
+# after the execution finishes, you can define the next following action
+# you can constrain the proceeding action to specific instances
 # only copy:shared actions are supported; within deploy / rollback actions     
 actions:
     prod_data_on_staging:
         after: deploy
         instance_filter: *:*:staging
-        command: copy:shared
+        action: copy:shared
         arguments: { source: production }
 
 # instances are the target of your commands, each consisting of a server, an environment and a stage
