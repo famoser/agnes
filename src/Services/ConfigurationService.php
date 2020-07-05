@@ -130,15 +130,6 @@ class ConfigurationService
     }
 
     /**
-     * @return string
-     *
-     * @throws Exception
-     */
-    public function getAgnesVersion()
-    {
-    }
-
-    /**
      * @return string|null
      *
      * @throws Exception
