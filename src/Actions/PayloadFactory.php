@@ -12,7 +12,6 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\ScriptService;
 use Agnes\Services\SetupService;
 use Http\Client\Exception;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class PayloadFactory
@@ -52,10 +51,10 @@ class PayloadFactory
      */
     private $setupService;
 
-    private function createCopySharedActionFromDeployOrRollback(OutputInterface $output, array $arguments, Instance $instance)
+    private function createCopySharedActionFromDeployOrRollback(array $arguments, Instance $instance)
     {
         if (!isset($arguments['source'])) {
-            $output->writeln('must specify source argument for a copy:shared action (like arguments: { source: production })');
+            $this->io->text('must specify source argument for a copy:shared action (like arguments: { source: production })');
 
             return;
         }
@@ -67,7 +66,7 @@ class PayloadFactory
             return;
         }
 
-        $this->executePayload($action, $copyShared, $output);
+        $this->executePayload($action, $copyShared);
     }
 
     /**
