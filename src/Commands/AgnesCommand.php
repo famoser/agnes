@@ -2,8 +2,8 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\AbstractAction;
-use Agnes\Actions\AbstractPayload;
+use Agnes\Actions\Executor;
+use Agnes\Actions\PayloadFactory;
 use Agnes\AgnesFactory;
 use Exception;
 use Symfony\Component\Console\Command\Command;
@@ -30,6 +30,8 @@ abstract class AgnesCommand extends Command
         $this->addOption('config-folder', null, InputOption::VALUE_OPTIONAL, 'agnes config folder');
     }
 
+    abstract protected function enqueuePayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory, Executor $executor);
+
     /**
      * @return int|void|null
      *
@@ -52,7 +54,8 @@ abstract class AgnesCommand extends Command
         $action = $this->getAction($factory);
 
         $io->section('creating payloads');
-        $payloads = $this->createPayloads($action, $input, $output);
+        $this->enqueuePayloads($input, $io, $factory->getPayloadFactory(), $factory->getExecutor());
+
         if (0 === count($payloads)) {
             $io->caution('nothing to execute');
 
@@ -145,11 +148,4 @@ abstract class AgnesCommand extends Command
 
         return true;
     }
-
-    abstract protected function getAction(AgnesFactory $factory): AbstractAction;
-
-    /**
-     * @return AbstractPayload[]
-     */
-    abstract protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array;
 }

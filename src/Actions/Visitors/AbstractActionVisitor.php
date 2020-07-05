@@ -7,7 +7,6 @@ use Agnes\Actions\CopyShared;
 use Agnes\Actions\Deploy;
 use Agnes\Actions\Release;
 use Agnes\Actions\Rollback;
-use Agnes\Actions\Setup;
 
 abstract class AbstractActionVisitor
 {
@@ -46,15 +45,7 @@ abstract class AbstractActionVisitor
     /**
      * @throws \Exception
      */
-    public function visitSetup(Setup $setup): bool
-    {
-        return $this->visitDefault($setup);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function visitDefault(AbstractPayload $payload): bool
+    protected function visitDefault(AbstractPayload $payload): bool
     {
         throw new \Exception('Not implemented for '.$payload->describe());
     }

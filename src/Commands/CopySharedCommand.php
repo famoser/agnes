@@ -2,14 +2,11 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\AbstractAction;
-use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\CopySharedAction;
-use Agnes\AgnesFactory;
-use Exception;
+use Agnes\Actions\Executor;
+use Agnes\Actions\PayloadFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class CopySharedCommand extends AgnesCommand
 {
@@ -24,22 +21,14 @@ class CopySharedCommand extends AgnesCommand
         parent::configure();
     }
 
-    protected function getAction(AgnesFactory $factory): AbstractAction
-    {
-        return $factory->getCopySharedAction();
-    }
-
-    /**
-     * @return AbstractPayload[]
-     *
-     * @throws Exception
-     */
-    protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
+    protected function enqueuePayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory, Executor $executor)
     {
         $target = $input->getArgument('target');
         $source = $input->getArgument('source');
 
-        /* @var CopySharedAction $action */
-        return $action->createMany($target, $source);
+        $copyShareds = $payloadFactory->createCopySharedMany($target, $source);
+        foreach ($copyShareds as $copyShared) {
+            $executor->enqueue($copyShared);
+        }
     }
 }

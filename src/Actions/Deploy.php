@@ -2,6 +2,7 @@
 
 namespace Agnes\Actions;
 
+use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Agnes\Models\Instance;
 use Agnes\Models\Setup;
 use Agnes\Services\PolicyService;
@@ -51,5 +52,10 @@ class Deploy extends AbstractPayload
     public function describe(): string
     {
         return 'deploy '.$this->getSetup()->getIdentification().' to '.$this->getTarget()->describe();
+    }
+
+    public function accept(AbstractActionVisitor $abstractActionVisitor): bool
+    {
+        return $abstractActionVisitor->visitDeploy($this);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Agnes\Actions;
 
+use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\PolicyService;
@@ -49,5 +50,10 @@ class Rollback extends AbstractPayload
     public function describe(): string
     {
         return 'rollback '.$this->getInstance()->describe().' at '.$this->getInstance()->getCurrentInstallation()->getSetup()->getIdentification().'to '.$this->getTarget()->getSetup()->getIdentification();
+    }
+
+    public function accept(AbstractActionVisitor $abstractActionVisitor): bool
+    {
+        return $abstractActionVisitor->visitRollback($this);
     }
 }

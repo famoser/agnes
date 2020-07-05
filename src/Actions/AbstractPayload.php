@@ -2,7 +2,7 @@
 
 namespace Agnes\Actions;
 
-use Agnes\Services\PolicyService;
+use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Exception;
 
 abstract class AbstractPayload
@@ -10,7 +10,7 @@ abstract class AbstractPayload
     /**
      * @throws Exception
      */
-    abstract public function canExecute(PolicyService $policyService): bool;
+    abstract public function accept(AbstractActionVisitor $abstractActionVisitor): bool;
 
     abstract public function describe(): string;
 }

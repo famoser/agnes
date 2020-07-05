@@ -37,25 +37,23 @@ github:
   api_token: '%env(GITHUB_API_TOKEN)%'
   repository: famoser/agnes
 
-data:
+files:
   shared_folders: # these folders will be shared between releases
     - var/persistent
 
-  # declare files not part of the repository. 
-  # these files will be taken from the config folder from within ./files/server/environment/stage
-  files: 
+  # declare files you place in the configuration folder which are uploaded to the installation location 
+  # files will be expected at <config folder>/server/environment/stage
+  configuration_files: 
     # if deploying on example:example.com:staging, 
     # this file will be looked for at ./files/example/example.com/staging/.env.local
     # if its not found, the deployment will not be started (because its marked as required)
     - path: .env.local
       required: true
 
+# scripts can be run using the agnes command or automatically at predefined hook points
+# hook points are build, deploy, after_deploy, rollback, after_rollback
+# you can additionally constrain the scripts to run only in specific environments
 scripts:
-    # define scripts 
-    # these can be run automatically at predefined hook points
-    # hook points are build, deploy, after_deploy, rollback, after_rollback
-    # you can additionally constrain the scripts to run only in specific environments
-
     # build hook
     # executed on a freshly cloned repository
     # install dependencies, ...
@@ -95,26 +93,25 @@ scripts:
     # execute commands on deploy hook, constrained to specific instances
     fixtures:
         hook: after_deploy
-        instance: *:*:dev
+        instance_filter: *:*:dev
         commands:
           - php bin/console doctrine:fixtures:load -q
 
-    # execute action on after_deploy hook, constrained to specific instances
-    # only copy:shared actions are supported; within deploy / rollback actions 
+# action can be executed after a deploy action, constrained to specific instances
+# only copy:shared actions are supported; within deploy / rollback actions     
+actions:
     prod_data_on_staging:
-        hook: after_deploy
-        instance: *:*:staging
-        action: copy:shared
+        after: deploy
+        instance_filter: *:*:staging
+        command: copy:shared
         arguments: { source: production }
 
-# define instances where your application will be deployed
-# an instance consist of server, environment and stage
+# instances are the target of your commands, each consisting of a server, an environment and a stage
 # you can match here defined instances with the expression *:*:*
 # the first part matches to the server name (with * matching all), here the only available server is "example"
 # the second part matches to the environment name (with * matching all), here the only available environment is "example.com"
 # the third part matches to the stage (with * matching all), here the available stages are dev, staging, education & production
-servers:
-  # the server
+instances:
   example:
     connection:
       type: ssh

@@ -104,17 +104,17 @@ class ExecutionVisitor extends AbstractActionVisitor
         $this->fileService->uploadFiles($target, $newInstallation);
 
         $this->io->text('executing deploy hook');
-        $this->scriptService->executeDeployHook($output, $target, $newInstallation);
+        $this->scriptService->executeDeployHook($target, $newInstallation);
 
         $this->io->text('switching to new release');
         $this->instanceService->switchInstallation($target, $newInstallation);
         $this->io->text('release online');
 
-        $output->writeln('cleaning old installations if required');
+        $this->io->text('cleaning old installations if required');
         $this->instanceService->removeOldInstallations($deploy, $connection);
 
-        $output->writeln('executing after deploy hook');
-        $this->scriptService->executeAfterDeployHook($output, $target);
+        $this->io->text('executing after deploy hook');
+        $this->scriptService->executeAfterDeployHook($target);
 
         return true;
     }
@@ -124,8 +124,7 @@ class ExecutionVisitor extends AbstractActionVisitor
      */
     public function visitRelease(Release $release): bool
     {
-        $scripts = $this->scriptService->getBuildHookCommands();
-        $build = $this->createBuild($release->getCommitish(), $scripts);
+        $build = $this->createBuild($release->getCommitish());
 
         $this->io->text('publishing release to github');
         $this->githubService->publish($release->getName(), $build);
@@ -142,14 +141,14 @@ class ExecutionVisitor extends AbstractActionVisitor
         $target = $rollback->getTarget();
 
         $this->io->text('executing rollback hook');
-        $this->scriptService->executeRollbackHook($output, $instance, $target);
+        $this->scriptService->executeRollbackHook($instance, $target);
 
         $this->io->text('switching to previous release');
         $this->instanceService->switchInstallation($instance, $target);
         $this->io->text('previous release online');
 
         $this->io->text('executing after rollback hook');
-        $this->scriptService->executeAfterRollbackHook($output, $instance);
+        $this->scriptService->executeAfterRollbackHook($instance);
 
         return true;
     }
@@ -157,7 +156,7 @@ class ExecutionVisitor extends AbstractActionVisitor
     /**
      * @throws \Exception
      */
-    public function createBuild(string $committish, array $buildScript): Build
+    public function createBuild(string $committish): Build
     {
         $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
@@ -170,7 +169,8 @@ class ExecutionVisitor extends AbstractActionVisitor
         $gitHash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $committish);
 
         $this->io->text('executing release script');
-        $connection->executeScript($buildPath, $buildScript);
+        $scripts = $this->scriptService->getBuildHookCommands();
+        $connection->executeScript($buildPath, $scripts);
 
         $this->io->text('compressing build folder');
         $filePath = $connection->compressTarGz($buildPath, 'build..tar.gz');
@@ -192,9 +192,8 @@ class ExecutionVisitor extends AbstractActionVisitor
             $this->io->text('Using release found on github.');
         } else {
             $this->io->text('No release by that name found on github. Building from commitish...');
-            $scripts = $this->scriptService->getBuildHookCommands();
-            $build = $this->createBuild($releaseOrCommitish, $scripts);
-            $setup = \Agnes\Models\Setup::fromBuild($build, $releaseOrCommitish);
+            $build = $this->createBuild($releaseOrCommitish);
+            $setup = Setup::fromBuild($build, $releaseOrCommitish);
         }
 
         return $setup;

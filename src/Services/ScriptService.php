@@ -2,14 +2,11 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\AbstractAction;
-use Agnes\Actions\AbstractPayload;
 use Agnes\AgnesFactory;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Exception;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class ScriptService
@@ -50,8 +47,8 @@ class ScriptService
 
         $commands = [];
         foreach ($scripts as $name => $script) {
-            if (isset($script['instances']) || isset($script['action'])) {
-                $this->io->warning("$name script uses unsupported instance or action property for build hook. skipping...");
+            if (isset($script['instance_filter'])) {
+                $this->io->warning("$name script uses unsupported instance property for build hook. skipping...");
                 continue;
             }
 
@@ -68,7 +65,7 @@ class ScriptService
     /**
      * @throws Exception
      */
-    public function executeDeployHook(OutputInterface $output, Instance $instance, Installation $newInstallation)
+    public function executeDeployHook(Instance $instance, Installation $newInstallation)
     {
         $previousInstallation = $instance->getCurrentInstallation();
 
@@ -79,39 +76,39 @@ class ScriptService
             $arguments['PREVIOUS_INSTALLATION_PATH'] = $previousInstallation->getFolder();
         }
 
-        $this->executeDeployRollbackHooks($output, 'deploy', $instance, $newInstallation, $arguments);
+        $this->executeScriptsForHook('deploy', $instance, $newInstallation, $arguments);
     }
 
     /**
      * @throws Exception
      */
-    public function executeAfterDeployHook(OutputInterface $output, Instance $instance)
+    public function executeAfterDeployHook(Instance $instance)
     {
-        $this->executeDeployRollbackHooks($output, 'after_deploy', $instance, $instance->getCurrentInstallation());
+        $this->executeScriptsForHook('after_deploy', $instance, $instance->getCurrentInstallation());
     }
 
     /**
      * @throws Exception
      */
-    public function executeRollbackHook(OutputInterface $output, Instance $instance, Installation $previousInstallation)
+    public function executeRollbackHook(Instance $instance, Installation $previousInstallation)
     {
         $arguments = ['PREVIOUS_INSTALLATION_PATH' => $previousInstallation->getFolder()];
 
-        $this->executeDeployRollbackHooks($output, 'rollback', $instance, $instance->getCurrentInstallation(), $arguments);
+        $this->executeScriptsForHook('rollback', $instance, $instance->getCurrentInstallation(), $arguments);
     }
 
     /**
      * @throws Exception
      */
-    public function executeAfterRollbackHook(OutputInterface $output, Instance $instance)
+    public function executeAfterRollbackHook(Instance $instance)
     {
-        $this->executeDeployRollbackHooks($output, 'after_rollback', $instance, $instance->getCurrentInstallation());
+        $this->executeScriptsForHook('after_rollback', $instance, $instance->getCurrentInstallation());
     }
 
     /**
      * @throws Exception
      */
-    private function executeDeployRollbackHooks(OutputInterface $output, string $hook, Instance $instance, Installation $installation, array $arguments = [])
+    private function executeScriptsForHook(string $hook, Instance $instance, Installation $installation, array $arguments = [])
     {
         $scripts = $this->configurationService->getScriptsForHook($hook);
 
@@ -125,61 +122,14 @@ class ScriptService
                 }
             }
 
-            if (isset($script['commands'])) {
-                $commands = $script['commands'];
-                $this->io->text('executing commands for '.$name.'...');
-                $instance->getConnection()->executeScript($installation->getFolder(), $commands, $arguments);
-            } elseif (isset($script['action'])) {
-                $arguments = isset($script['arguments']) ? $script['arguments'] : [];
-                $this->io->text('executing action for '.$name.'...');
-                $this->executeAction($output, $script['action'], $arguments, $instance);
-            } else {
-                $this->io->warning($name.' script has no action or commands defined. skipping...');
+            if (!isset($script['commands'])) {
+                $this->io->warning($name.' script has no commands defined. skipping...');
+                continue;
             }
-        }
-    }
 
-    /**
-     * @throws Exception
-     */
-    private function executeAction(OutputInterface $output, string $action, array $arguments, Instance $instance)
-    {
-        switch ($action) {
-            case 'copy:shared':
-                $this->executeCopySharedAction($output, $arguments, $instance);
-                break;
-            default:
-                $this->io->warning('action '.$action.' is not supported');
-        }
-    }
-
-    private function executeCopySharedAction(OutputInterface $output, array $arguments, Instance $instance)
-    {
-        if (!isset($arguments['source'])) {
-            $output->writeln('must specify source argument for a copy:shared action (like arguments: { source: production })');
-
-            return;
-        }
-
-        $source = $arguments['source'];
-        $action = $this->agnesFactor->getCopySharedAction();
-        $copyShared = $action->createSingle($instance, $source);
-        if (null === $copyShared) {
-            return;
-        }
-
-        $this->executePayload($action, $copyShared, $output);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function executePayload(AbstractAction $action, AbstractPayload $payload, OutputInterface $output)
-    {
-        if (!$action->canExecute($payload, $output)) {
-            $this->io->warning('execution of "'.$payload->describe().'" blocked by policy; skipping');
-        } else {
-            $action->execute($payload, $output);
+            $commands = is_array($script['commands']) ? $script['commands'] : [$script['commands']];
+            $this->io->text('executing commands for '.$name.'...');
+            $instance->getConnection()->executeScript($installation->getFolder(), $commands, $arguments);
         }
     }
 }

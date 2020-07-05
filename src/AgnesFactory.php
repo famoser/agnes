@@ -2,14 +2,8 @@
 
 namespace Agnes;
 
-use Agnes\Actions\CopySharedAction;
-use Agnes\Actions\DeployAction;
-use Agnes\Actions\ReleaseAction;
-use Agnes\Actions\RollbackAction;
-use Agnes\Commands\CopySharedCommand;
-use Agnes\Commands\DeployCommand;
-use Agnes\Commands\ReleaseCommand;
-use Agnes\Commands\RollbackCommand;
+use Agnes\Actions\Executor;
+use Agnes\Actions\PayloadFactory;
 use Agnes\Services\BuildService;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
@@ -21,7 +15,6 @@ use Exception;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class AgnesFactory
@@ -57,24 +50,19 @@ class AgnesFactory
     private $policyService;
 
     /**
-     * @var CopySharedAction
+     * @var ScriptService
      */
-    private $copySharedAction;
+    private $scriptService;
 
     /**
-     * @var DeployAction
+     * @var Executor
      */
-    private $deployAction;
+    private $executor;
 
     /**
-     * @var ReleaseAction
+     * @var PayloadFactory
      */
-    private $releaseAction;
-
-    /**
-     * @var RollbackAction
-     */
-    private $rollbackAction;
+    private $payloadFactory;
 
     /**
      * AgnesFactory constructor.
@@ -88,10 +76,10 @@ class AgnesFactory
         $configurationService = new ConfigurationService();
         $buildService = new BuildService($configurationService);
         $githubService = new GithubService($pluginClient, $configurationService);
-        $installationService = new InstallationService(,);
+        $installationService = new InstallationService($io, $configurationService);
         $instanceService = new InstanceService($configurationService, $installationService);
-        $policyService = new PolicyService($configurationService, $instanceService);
-        $scriptService = new ScriptService($configurationService, $this);
+        $policyService = new PolicyService($configurationService, $instanceService, $io);
+        $scriptService = new ScriptService($io, $configurationService, $this);
 
         // set properties
         $this->buildService = $buildService;
@@ -102,11 +90,8 @@ class AgnesFactory
         $this->policyService = $policyService;
         $this->scriptService = $scriptService;
 
-        // set actions
-        $this->releaseAction = new ReleaseAction($this->buildService, $this->configurationService, $this->policyService, $this->githubService, $this->scriptService);
-        $this->copySharedAction = new CopySharedAction($this->policyService, $this->configurationService, $this->instanceService);
-        $this->deployAction = new DeployAction($this->buildService, $this->configurationService, $this->policyService, $this->instanceService, $this->installationService, $this->githubService, $this->releaseAction, $this->scriptService);
-        $this->rollbackAction = new RollbackAction($this->configurationService, $this->policyService, $this->instanceService, $this->scriptService);
+        $this->executor = new Executor();
+        $this->payloadFactory = new PayloadFactory();
     }
 
     /**
@@ -117,49 +102,14 @@ class AgnesFactory
         $this->configurationService->addConfig($path);
     }
 
-    /**
-     * @return ReleaseAction
-     */
-    public function getReleaseAction()
+    public function getExecutor(): Executor
     {
-        return $this->releaseAction;
+        return $this->executor;
     }
 
-    /**
-     * @return DeployAction
-     */
-    public function getDeployAction()
+    public function getPayloadFactory(): PayloadFactory
     {
-        return $this->deployAction;
-    }
-
-    /**
-     * @return RollbackAction
-     */
-    public function getRollbackAction()
-    {
-        return $this->rollbackAction;
-    }
-
-    /**
-     * @return CopySharedAction
-     */
-    public function getCopySharedAction()
-    {
-        return $this->copySharedAction;
-    }
-
-    /**
-     * @return Command[]
-     */
-    public function getCommands()
-    {
-        return [
-            new ReleaseCommand(),
-            new DeployCommand(),
-            new RollbackCommand(),
-            new CopySharedCommand($this, $this->instanceService),
-        ];
+        return $this->payloadFactory;
     }
 
     public function getConfigurationService(): ConfigurationService

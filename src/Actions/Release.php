@@ -2,6 +2,7 @@
 
 namespace Agnes\Actions;
 
+use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Agnes\Services\PolicyService;
 use Exception;
 
@@ -49,5 +50,10 @@ class Release extends AbstractPayload
     public function describe(): string
     {
         return 'build '.$this->getCommitish();
+    }
+
+    public function accept(AbstractActionVisitor $abstractActionVisitor): bool
+    {
+        return $abstractActionVisitor->visitRelease($this);
     }
 }
