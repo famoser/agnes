@@ -36,7 +36,7 @@ abstract class AgnesCommand extends Command
      *
      * @throws \Exception
      */
-    abstract protected function createPayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array;
+    abstract protected function createTasks(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array;
 
     /**
      * @return int|void|null
@@ -67,18 +67,16 @@ abstract class AgnesCommand extends Command
 
         // create payloads
         $io->section('creating tasks');
-        $payloads = $this->createPayloads($input, $io, $factory->getPayloadFactory());
-        if (0 === count($payloads)) {
+        $this->createTasks($input, $io, $factory->getTaskService());
+
+        $tasks = $factory->getTaskService()->getTasks();
+        if (0 === count($tasks)) {
             $io->caution('nothing to execute');
 
             return 0;
         }
 
-        // resolve additional payloads defined by the actions
-        $followupPayloads = $factory->getActionService()->getPayloads($payloads);
-        $payloads = array_merge($payloads, $followupPayloads);
-
-        $this->printPayloads($io, $payloads);
+        $this->printPayloads($io, $tasks);
 
         if ($isDryRun) {
             $io->note('dry run active; finishing now.');
@@ -87,7 +85,7 @@ abstract class AgnesCommand extends Command
         }
 
         $io->section('executing tasks');
-        $factory->getPayloadService()->execute($payloads);
+        $factory->getTasksService()->execute();
 
         $io->success('finished');
 

@@ -5,7 +5,6 @@ namespace Agnes\Services;
 use Agnes\Models\Connections\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Models\Setup;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -35,12 +34,12 @@ class InstallationService
     /**
      * @throws Exception
      */
-    public function install(Instance $target, Setup $setup): Installation
+    public function install(Instance $target, string $commitish, string $content): Installation
     {
-        $newInstallation = $this->createInstallation($target, $setup);
+        $newInstallation = $this->createInstallation($target, $commitish);
 
         $this->io->text('uploading build to '.$newInstallation->getFolder());
-        $this->uploadBuild($target->getConnection(), $setup, $newInstallation);
+        $this->uploadBuild($target->getConnection(), $newInstallation, $content);
 
         $this->io->text('creating and linking shared folders');
         $this->createAndLinkSharedFolders($target->getConnection(), $target, $newInstallation);
@@ -48,10 +47,9 @@ class InstallationService
         return $newInstallation;
     }
 
-    private function createInstallation(Instance $target, Setup $setup): Installation
+    private function createInstallation(Instance $target, string $releaseOrCommitish): Installation
     {
-        $identification = $setup->getIdentification();
-        $installationFolder = $target->getInstallationsFolder().DIRECTORY_SEPARATOR.$identification;
+        $installationFolder = $target->getInstallationsFolder().DIRECTORY_SEPARATOR.$releaseOrCommitish;
         if ($target->getConnection()->checkFolderExists($installationFolder)) {
             $duplicationCounter = 1;
             while ($target->getConnection()->checkFolderExists($installationFolder.'-'.$duplicationCounter)) {
@@ -66,7 +64,7 @@ class InstallationService
         }
         ++$maxNumber;
 
-        $installation = new Installation($installationFolder, $maxNumber, $setup);
+        $installation = new Installation($installationFolder, $maxNumber, $releaseOrCommitish);
         $target->addInstallation($installation);
 
         return $installation;
@@ -75,14 +73,14 @@ class InstallationService
     /**
      * @throws \Exception
      */
-    private function uploadBuild(Connection $connection, Setup $setup, Installation $installation): void
+    private function uploadBuild(Connection $connection, Installation $installation, string $content): void
     {
         // make empty dir for new release
         $connection->createOrClearFolder($installation->getFolder());
 
         // transfer release packet
-        $assetPath = $installation->getFolder().DIRECTORY_SEPARATOR.$setup->getIdentification().'.tar.gz';
-        $connection->writeFile($assetPath, $setup->getContent());
+        $assetPath = $installation->getFolder().DIRECTORY_SEPARATOR.'build.tar.gz';
+        $connection->writeFile($assetPath, $content);
 
         // unpack release packet
         $connection->uncompressTarGz($assetPath, $installation->getFolder());

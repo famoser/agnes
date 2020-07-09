@@ -9,7 +9,7 @@ use Symfony\Component\Console\Style\StyleInterface;
 class SetupService
 {
     /**
-     * @var BuildService
+     * @var BuildRepository
      */
     private $buildService;
 
@@ -31,7 +31,7 @@ class SetupService
     /**
      * SetupService constructor.
      */
-    public function __construct(BuildService $buildService, GithubService $githubService, ScriptService $scriptService)
+    public function __construct(BuildRepository $buildService, GithubService $githubService, ScriptService $scriptService)
     {
         $this->buildService = $buildService;
         $this->githubService = $githubService;

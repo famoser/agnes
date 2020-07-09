@@ -5,8 +5,6 @@ namespace Agnes\Actions;
 use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Agnes\Models\Instance;
 use Agnes\Models\Setup;
-use Agnes\Services\PolicyService;
-use Exception;
 
 class Deploy extends AbstractPayload
 {
@@ -39,14 +37,6 @@ class Deploy extends AbstractPayload
     public function getSetup(): Setup
     {
         return $this->setup;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function canExecute(PolicyService $policyService): bool
-    {
-        return $policyService->canDeploy($this);
     }
 
     public function describe(): string

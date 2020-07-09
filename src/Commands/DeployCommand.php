@@ -26,7 +26,7 @@ class DeployCommand extends AgnesCommand
      *
      * @return AbstractPayload[]
      */
-    protected function createPayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
+    protected function createTasks(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
     {
         $releaseOrCommitish = $input->getArgument('release or commitish');
         $target = $input->getArgument('target');

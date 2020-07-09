@@ -26,7 +26,7 @@ class CopySharedCommand extends AgnesCommand
      *
      * @return AbstractPayload[]
      */
-    protected function createPayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
+    protected function createTasks(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
     {
         $target = $input->getArgument('target');
         $source = $input->getArgument('source');

@@ -5,8 +5,6 @@ namespace Agnes\Actions;
 use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Services\PolicyService;
-use Exception;
 
 class Rollback extends AbstractPayload
 {
@@ -39,17 +37,9 @@ class Rollback extends AbstractPayload
         return $this->target;
     }
 
-    /**
-     * @throws Exception
-     */
-    public function canExecute(PolicyService $policyService): bool
-    {
-        return $policyService->canRollback($this);
-    }
-
     public function describe(): string
     {
-        return 'rollback '.$this->getInstance()->describe().' at '.$this->getInstance()->getCurrentInstallation()->getSetup()->getIdentification().'to '.$this->getTarget()->getSetup()->getIdentification();
+        return 'rollback '.$this->getInstance()->describe().' at '.$this->getInstance()->getCurrentInstallation()->getReleaseOrCommitish().'to '.$this->getTarget()->getReleaseOrCommitish();
     }
 
     public function accept(AbstractActionVisitor $abstractActionVisitor): bool

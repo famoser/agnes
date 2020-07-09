@@ -26,7 +26,7 @@ class ReleaseCommand extends AgnesCommand
      *
      * @throws \Exception
      */
-    protected function createPayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
+    protected function createTasks(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
     {
         $release = $input->getArgument('release');
         $commitish = $input->getArgument('commitish');

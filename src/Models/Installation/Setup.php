@@ -19,11 +19,6 @@ class Setup
      */
     private $hash;
 
-    /**
-     * @var string
-     */
-    private $content;
-
     private function __construct(string $commitish)
     {
         $this->commitish = $commitish;
@@ -41,7 +36,7 @@ class Setup
     public static function fromBuild(Build $build, string $commitish)
     {
         $setup = new Setup($commitish);
-        $setup->hash = $build->getHash();
+        $setup->hash = $build->getCommitish();
         $setup->content = $build->getContent();
 
         return $setup;

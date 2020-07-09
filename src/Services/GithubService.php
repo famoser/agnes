@@ -2,8 +2,6 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Build;
-use Agnes\Models\Setup;
 use Agnes\Services\Github\Client;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
@@ -54,7 +52,7 @@ class GithubService
      * @throws Exception
      * @throws \Exception
      */
-    public function createSetupByReleaseName(string $releaseName): ?Setup
+    public function getBuildByReleaseName(string $releaseName): ?string
     {
         $response = $this->getClient()->getReleases();
         $releases = json_decode($response->getBody()->getContents());
@@ -67,7 +65,7 @@ class GithubService
             $response = $this->getClient()->downloadAsset($release->assets[0]->id);
             $content = $response->getBody()->getContents();
 
-            return Setup::fromRelease($releaseName, $release->target_commitish, $content);
+            return $content;
         }
 
         return null;
@@ -77,16 +75,16 @@ class GithubService
      * @throws Exception
      * @throws \Exception
      */
-    public function publish(string $name, Build $build)
+    public function publish(string $name, string $commitish, string $content)
     {
-        $response = $this->createRelease($name, $build->getCommitish());
+        $response = $this->createRelease($name, $commitish);
 
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
         $releaseId = (int) $responseObject->id;
         $assetName = $name.'.tar.gz';
 
-        $this->getClient()->addReleaseAsset($releaseId, $assetName, 'application/zip', $build->getContent());
+        $this->getClient()->addReleaseAsset($releaseId, $assetName, 'application/zip', $content);
     }
 
     /**

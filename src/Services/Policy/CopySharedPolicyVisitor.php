@@ -39,8 +39,8 @@ class CopySharedPolicyVisitor extends PolicyVisitor
             return $this->preventExecution($this->copyShared, 'target has no active installation.');
         }
 
-        $sourceIdentification = $sourceInstallation->getSetup()->getIdentification();
-        $targetIdentification = $targetInstallation->getSetup()->getIdentification();
+        $sourceIdentification = $sourceInstallation->getReleaseOrCommitish();
+        $targetIdentification = $targetInstallation->getReleaseOrCommitish();
         if ($sourceIdentification !== $targetIdentification) {
             return $this->preventExecution($this->copyShared, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
         }

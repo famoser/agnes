@@ -4,8 +4,6 @@ namespace Agnes\Actions;
 
 use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Agnes\Models\Instance;
-use Agnes\Services\PolicyService;
-use Exception;
 
 class CopyShared extends AbstractPayload
 {
@@ -36,14 +34,6 @@ class CopyShared extends AbstractPayload
     public function getTarget(): Instance
     {
         return $this->target;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function canExecute(PolicyService $policyService): bool
-    {
-        return $policyService->canCopyShared($this);
     }
 
     public function describe(): string

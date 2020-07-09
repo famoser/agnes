@@ -158,4 +158,11 @@ class InstanceService
             $connection->removeFolder($installation->getFolder());
         }
     }
+
+    public function getInstancesBySpecification(string $target)
+    {
+        $filter = Filter::createFromInstanceSpecification($target);
+
+        return $this->getInstancesByFilter($filter);
+    }
 }

@@ -5,14 +5,14 @@ namespace Agnes;
 use Agnes\Actions\Executor;
 use Agnes\Actions\PayloadFactory;
 use Agnes\Services\ActionService;
-use Agnes\Services\BuildService;
+use Agnes\Services\BuildRepository;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
-use Agnes\Services\PayloadService;
 use Agnes\Services\PolicyService;
 use Agnes\Services\ScriptService;
+use Agnes\Services\TaskService;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
@@ -21,7 +21,7 @@ use Symfony\Component\Console\Style\StyleInterface;
 class AgnesFactory
 {
     /**
-     * @var BuildService
+     * @var BuildRepository
      */
     private $buildService;
 
@@ -71,7 +71,7 @@ class AgnesFactory
     private $actionService;
 
     /**
-     * @var PayloadService
+     * @var TaskService
      */
     private $payloadService;
 
@@ -85,7 +85,7 @@ class AgnesFactory
 
         // construct internal services
         $configurationService = new ConfigurationService();
-        $buildService = new BuildService($configurationService);
+        $buildService = new BuildRepository($configurationService);
         $githubService = new GithubService($pluginClient, $configurationService);
         $installationService = new InstallationService($io, $configurationService);
         $instanceService = new InstanceService($configurationService, $installationService);

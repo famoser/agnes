@@ -1,6 +1,6 @@
 <?php
 
-namespace Agnes\Models;
+namespace Agnes\Models\Installation;
 
 use DateTime;
 

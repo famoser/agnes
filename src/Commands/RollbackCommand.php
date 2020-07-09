@@ -31,7 +31,7 @@ If neither target nor source is supplied, it will rollback to the previously ins
      *
      * @return AbstractPayload[]
      */
-    protected function createPayloads(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
+    protected function createTasks(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
     {
         $target = $input->getArgument('target');
         $rollbackTo = $input->getOption('rollback-to');

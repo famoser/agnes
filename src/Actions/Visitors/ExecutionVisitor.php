@@ -7,7 +7,6 @@ use Agnes\Actions\Deploy;
 use Agnes\Actions\Release;
 use Agnes\Actions\Rollback;
 use Agnes\Models\Build;
-use Agnes\Models\Setup;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\FileService;
 use Agnes\Services\GithubService;
@@ -54,6 +53,16 @@ class ExecutionVisitor extends AbstractActionVisitor
     private $scriptService;
 
     /**
+     * @var string|null
+     */
+    private $commitish;
+
+    /**
+     * @var string|null
+     */
+    private $content;
+
+    /**
      * ExecutionVisitor constructor.
      */
     public function __construct(StyleInterface $io, ConfigurationService $configurationService, FileService $fileService, GithubService $githubService, InstallationService $installationService, InstanceService $instanceService, ScriptService $scriptService)
@@ -72,6 +81,13 @@ class ExecutionVisitor extends AbstractActionVisitor
      */
     public function visitCopyShared(CopyShared $copyShared): bool
     {
+        // does not make sense to copy from itself
+        if ($copyShared->getSource()->equals($copyShared->getTarget())) {
+            $this->io->warning('Skipping '.$copyShared->describe().' because source and target are same instance.');
+
+            return true;
+        }
+
         $sourceSharedPath = $copyShared->getSource()->getSharedFolder();
         $targetSharedPath = $copyShared->getTarget()->getSharedFolder();
         $connection = $copyShared->getSource()->getConnection();
@@ -93,12 +109,11 @@ class ExecutionVisitor extends AbstractActionVisitor
      */
     public function visitDeploy(Deploy $deploy): bool
     {
-        $setup = $deploy->getSetup();
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
         $this->io->text('determine target folder');
-        $newInstallation = $this->installationService->install($target, $setup);
+        $newInstallation = $this->installationService->install($target, $this->commitish, $this->content);
 
         $this->io->text('uploading files');
         $this->fileService->uploadFiles($target, $newInstallation);
@@ -124,10 +139,8 @@ class ExecutionVisitor extends AbstractActionVisitor
      */
     public function visitRelease(Release $release): bool
     {
-        $build = $this->createBuild($release->getCommitish());
-
         $this->io->text('publishing release to github');
-        $this->githubService->publish($release->getName(), $build);
+        $this->githubService->publish($release->getName(), $this->commitish, $this->content);
 
         return true;
     }
@@ -156,7 +169,7 @@ class ExecutionVisitor extends AbstractActionVisitor
     /**
      * @throws \Exception
      */
-    public function createBuild(string $committish): Build
+    public function visitBuild(Build $build): bool
     {
         $connection = $this->configurationService->getBuildConnection();
         $buildPath = $this->configurationService->getBuildPath();
@@ -166,7 +179,7 @@ class ExecutionVisitor extends AbstractActionVisitor
 
         $this->io->text('checking out repository');
         $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
-        $gitHash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $committish);
+        $this->commitish = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $build->getCommitish());
 
         $this->io->text('executing release script');
         $scripts = $this->scriptService->getBuildHookCommands();
@@ -174,28 +187,11 @@ class ExecutionVisitor extends AbstractActionVisitor
 
         $this->io->text('compressing build folder');
         $filePath = $connection->compressTarGz($buildPath, 'build..tar.gz');
-        $content = $connection->readFile($filePath);
+        $this->content = $connection->readFile($filePath);
 
         $this->io->text('removing build folder');
         $connection->removeFolder($buildPath);
 
-        return new Build($committish, $gitHash, $content);
-    }
-
-    /**
-     * @throws \Http\Client\Exception
-     */
-    public function createSetup(string $releaseOrCommitish): Setup
-    {
-        $setup = $this->githubService->createSetupByReleaseName($releaseOrCommitish);
-        if (null !== $setup) {
-            $this->io->text('Using release found on github.');
-        } else {
-            $this->io->text('No release by that name found on github. Building from commitish...');
-            $build = $this->createBuild($releaseOrCommitish);
-            $setup = Setup::fromBuild($build, $releaseOrCommitish);
-        }
-
-        return $setup;
+        return true;
     }
 }

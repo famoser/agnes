@@ -97,11 +97,11 @@ scripts:
         script:
           - php bin/console doctrine:fixtures:load -q
 
-# commands create actions which are executed on a specific instance
+# commands create tasks which are executed on a specific instance
 # after the execution finishes, you can define the next following action
 # you can constrain the proceeding action to specific instances
 # only copy:shared actions are supported; within deploy / rollback actions     
-actions:
+tasks:
     prod_data_on_staging:
         after: deploy
         instance_filter: *:*:staging
