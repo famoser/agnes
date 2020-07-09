@@ -2,7 +2,6 @@
 
 namespace Agnes\Services;
 
-use Agnes\AgnesFactory;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
@@ -17,11 +16,6 @@ class ScriptService
     private $configurationService;
 
     /**
-     * @var AgnesFactory
-     */
-    private $agnesFactor;
-
-    /**
      * @var StyleInterface
      */
     private $io;
@@ -29,11 +23,10 @@ class ScriptService
     /**
      * ScriptService constructor.
      */
-    public function __construct(StyleInterface $io, ConfigurationService $configurationService, AgnesFactory $agnesFactor)
+    public function __construct(StyleInterface $io, ConfigurationService $configurationService)
     {
         $this->io = $io;
         $this->configurationService = $configurationService;
-        $this->agnesFactor = $agnesFactor;
     }
 
     /**

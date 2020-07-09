@@ -2,9 +2,9 @@
 
 namespace Agnes\Services\Policy;
 
-use Agnes\Actions\Deploy;
 use Agnes\Models\Filter;
-use Agnes\Models\Policies\StageWriteUpPolicy;
+use Agnes\Models\Policy\StageWriteUpPolicy;
+use Agnes\Models\Task\Deploy;
 use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
@@ -61,7 +61,7 @@ class DeployPolicyVisitor extends PolicyVisitor
         // check if the release was published there at any given time
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {
-                if ($installation->getReleaseOrCommitish() === $this->deployment->getSetup()->getIdentification()) {
+                if ($installation->getReleaseOrCommitish() === $this->deployment->getReleaseOrCommitish()) {
                     return true;
                 }
             }

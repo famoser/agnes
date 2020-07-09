@@ -2,8 +2,8 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\PayloadFactory;
+use Agnes\Models\Task\AbstractTask;
+use Agnes\Services\TaskService;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -22,15 +22,15 @@ class DeployCommand extends AgnesCommand
     }
 
     /**
-     * @throws \Exception
+     * @return AbstractTask[]
      *
-     * @return AbstractPayload[]
+     *@throws \Exception
      */
-    protected function createTasks(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array
+    protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {
         $releaseOrCommitish = $input->getArgument('release or commitish');
         $target = $input->getArgument('target');
 
-        return $payloadFactory->createManyDeploy($releaseOrCommitish, $target);
+        $taskService->addDeployFromTargetSpecification($releaseOrCommitish, $target);
     }
 }

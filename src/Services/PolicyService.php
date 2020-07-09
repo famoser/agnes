@@ -2,10 +2,10 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\CopyShared;
-use Agnes\Actions\Deploy;
-use Agnes\Actions\Release;
-use Agnes\Actions\Rollback;
+use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Deploy;
+use Agnes\Models\Task\Release;
+use Agnes\Models\Task\Rollback;
 use Agnes\Services\Policy\CopySharedPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\PolicyVisitor;

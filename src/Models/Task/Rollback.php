@@ -1,12 +1,12 @@
 <?php
 
-namespace Agnes\Actions;
+namespace Agnes\Models\Task;
 
-use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Rollback extends AbstractPayload
+class Rollback extends AbstractTask
 {
     /**
      * @var Instance
@@ -42,8 +42,13 @@ class Rollback extends AbstractPayload
         return 'rollback '.$this->getInstance()->describe().' at '.$this->getInstance()->getCurrentInstallation()->getReleaseOrCommitish().'to '.$this->getTarget()->getReleaseOrCommitish();
     }
 
-    public function accept(AbstractActionVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
     {
         return $abstractActionVisitor->visitRollback($this);
+    }
+
+    public function name(): string
+    {
+        return 'rollback';
     }
 }

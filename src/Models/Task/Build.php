@@ -1,11 +1,10 @@
 <?php
 
-namespace Agnes\Models;
+namespace Agnes\Models\Task;
 
-use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\Visitors\AbstractActionVisitor;
+use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Build extends AbstractPayload
+class Build extends AbstractTask
 {
     /**
      * @var string
@@ -25,13 +24,18 @@ class Build extends AbstractPayload
         return $this->commitish;
     }
 
-    public function accept(AbstractActionVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
     {
         return $abstractActionVisitor->visitBuild($this);
     }
 
     public function describe(): string
     {
-        return 'build '.$this->commitish;
+        return 'building '.$this->commitish;
+    }
+
+    public function name(): string
+    {
+        return 'build';
     }
 }

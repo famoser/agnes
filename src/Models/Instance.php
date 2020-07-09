@@ -2,7 +2,7 @@
 
 namespace Agnes\Models;
 
-use Agnes\Models\Connections\Connection;
+use Agnes\Models\Connection\Connection;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\Server;
 

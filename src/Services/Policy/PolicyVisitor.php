@@ -2,13 +2,13 @@
 
 namespace Agnes\Services\Policy;
 
-use Agnes\Actions\AbstractPayload;
 use Agnes\Models\Filter;
-use Agnes\Models\Policies\Policy;
-use Agnes\Models\Policies\ReleaseWhitelistPolicy;
-use Agnes\Models\Policies\SameReleasePolicy;
-use Agnes\Models\Policies\StageWriteDownPolicy;
-use Agnes\Models\Policies\StageWriteUpPolicy;
+use Agnes\Models\Policy\Policy;
+use Agnes\Models\Policy\ReleaseWhitelistPolicy;
+use Agnes\Models\Policy\SameReleasePolicy;
+use Agnes\Models\Policy\StageWriteDownPolicy;
+use Agnes\Models\Policy\StageWriteUpPolicy;
+use Agnes\Models\Task\AbstractTask;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -83,7 +83,7 @@ abstract class PolicyVisitor
         return false;
     }
 
-    protected function preventExecution(AbstractPayload $payload, string $reason)
+    protected function preventExecution(AbstractTask $payload, string $reason)
     {
         $this->io->error('Cannot execute '.$payload->describe().': '.$reason);
 

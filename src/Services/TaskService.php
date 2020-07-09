@@ -2,20 +2,19 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\CopyShared;
-use Agnes\Actions\Deploy;
-use Agnes\Actions\Release;
-use Agnes\Actions\Rollback;
-use Agnes\Actions\Visitors\ExecutionVisitor;
-use Agnes\Actions\Visitors\ValidatorVisitor;
-use Agnes\Models\Build;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Models\Task\AbstractTask;
+use Agnes\Models\Task\Build;
+use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Deploy;
+use Agnes\Models\Task\Download;
+use Agnes\Models\Task\Release;
+use Agnes\Models\Task\Rollback;
+use Agnes\Services\Task\ExecutionVisitor;
 use Http\Client\Exception;
 use Symfony\Component\Console\Style\StyleInterface;
-use function Agnes\Actions\;
 
 class TaskService
 {
@@ -23,11 +22,10 @@ class TaskService
      * @var StyleInterface
      */
     private $io;
-
     /**
-     * @var ExecutionVisitor
+     * @var ConfigurationService
      */
-    private $executionVisitor;
+    private $configurationService;
 
     /**
      * @var InstanceService
@@ -40,14 +38,36 @@ class TaskService
     private $fileService;
 
     /**
-     * @var SetupService
+     * @var GithubService
      */
-    private $setupService;
+    private $githubService;
 
     /**
-     * @var AbstractPayload[]
+     * @var ExecutionVisitor
      */
-    private $payloads = [];
+    private $executionVisitor;
+
+    /**
+     * ExecutionVisitor constructor.
+     */
+    public function __construct(StyleInterface $io, ConfigurationService $configurationService, FileService $fileService, GithubService $githubService, InstallationService $installationService, InstanceService $instanceService, ScriptService $scriptService)
+    {
+        $this->io = $io;
+        $this->configurationService = $configurationService;
+        $this->instanceService = $instanceService;
+        $this->fileService = $fileService;
+        $this->githubService = $githubService;
+
+        $this->executionVisitor = new ExecutionVisitor($io, $configurationService, $fileService, $githubService, $installationService, $instanceService, $scriptService);
+    }
+
+    /**
+     * @return AbstractTask[]
+     */
+    public function getTasks(): array
+    {
+        return $this->tasks;
+    }
 
     private function createCopySharedActionFromDeployOrRollback(array $arguments, Instance $instance)
     {
@@ -121,23 +141,17 @@ class TaskService
             return null;
         }
 
-        // TODO
-        if (null === $setup) {
-            $content = $this->githubService->getBuildByReleaseName($releaseOrCommitish);
-            if ($content === null) {
-                $deploys[] = new Build($releaseOrCommitish);
-            }
-        }
+        $this->ensureBuild($releaseOrCommitish);
 
-        $deploy = new Deploy($setup, $target);
+        $deploy = new Deploy($releaseOrCommitish, $target);
         $this->addTask($deploy);
     }
 
-    private function addTask(AbstractPayload $payload)
+    private function addTask(AbstractTask $payload)
     {
         $this->tasks[] = $payload;
 
-        $actions = $this->configurationService->getActions($payload);
+        $actions = $this->configurationService->getTasks($payload);
         foreach ($actions as $action) {
             $task = $this->createPayload($payload, $action);
             $this->addTask($task);
@@ -153,6 +167,7 @@ class TaskService
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
             $this->io->error('For target specification '.$target.' no matching instances were found.');
+
             return;
         }
 
@@ -164,7 +179,10 @@ class TaskService
 
     public function createRelease(string $commitish, string $name)
     {
-        return new Release($commitish, $name);
+        $this->ensureBuild($commitish, false);
+
+        $release = new Release($commitish, $name);
+        $this->addTask($release);
     }
 
     /**
@@ -176,6 +194,7 @@ class TaskService
         $instances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($instances)) {
             $this->io->warning('For target specification '.$target.' no matching instances were found.');
+
             return;
         }
 
@@ -232,23 +251,44 @@ class TaskService
         return new Rollback($instance, $upperBoundInstallation);
     }
 
+    /**
+     * @var AbstractTask[]
+     */
+    private $tasks = [];
 
     /**
-     * @param AbstractPayload[] $payloads
+     * @param AbstractTask[] $payloads
      *
      * @throws \Exception
      */
     public function execute()
     {
-        foreach ($payloads as $item) {
-            if (!$item->accept($this->validatorVisitor)) {
-                $this->io->text('skipping '.$item->describe().' ...');
-
-                continue;
-            }
-
-            $this->io->text('executing '.$item->describe().' ...');
-            $item->accept($this->executionVisitor);
+        foreach ($this->tasks as $task) {
+            $this->io->text('executing '.$task->describe().' ...');
+            $task->accept($this->executionVisitor);
         }
+    }
+
+    /**
+     * @var string[]
+     */
+    private $builtCommitish = [];
+
+    private function ensureBuild(string $releaseOrCommitish, bool $allowDownload = true)
+    {
+        if (in_array($releaseOrCommitish, $this->builtCommitish)) {
+            return;
+        }
+
+        if ($allowDownload) {
+            $assetId = $this->githubService->getBuildByReleaseName($releaseOrCommitish);
+            $downloadGithub = new Download($releaseOrCommitish, $assetId);
+            $this->addTask($downloadGithub);
+
+            return;
+        }
+
+        $build = new Build($releaseOrCommitish);
+        $this->addTask($build);
     }
 }

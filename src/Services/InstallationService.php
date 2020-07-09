@@ -2,7 +2,7 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Connections\Connection;
+use Agnes\Models\Connection\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Exception;

@@ -1,11 +1,11 @@
 <?php
 
-namespace Agnes\Models\Policies;
+namespace Agnes\Models\Policy;
 
 use Agnes\Services\Policy\PolicyVisitor;
 use Exception;
 
-class StageWriteDownPolicy extends LayeredPolicy
+class SameReleasePolicy extends Policy
 {
     /**
      * @return bool
@@ -14,6 +14,6 @@ class StageWriteDownPolicy extends LayeredPolicy
      */
     public function accept(PolicyVisitor $visitor)
     {
-        return $visitor->visitStageWriteDown($this);
+        return $visitor->visitSameRelease($this);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Agnes\Models\Executors;
+namespace Agnes\Models\Executor;
 
 abstract class Executor
 {

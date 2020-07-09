@@ -2,10 +2,10 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\PayloadFactory;
 use Agnes\AgnesFactory;
+use Agnes\Models\Task\AbstractTask;
 use Agnes\Services\ConfigurationService;
+use Agnes\Services\TaskService;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,11 +32,11 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @return AbstractPayload[]
+     * @return AbstractTask[]
      *
      * @throws \Exception
      */
-    abstract protected function createTasks(InputInterface $input, SymfonyStyle $io, PayloadFactory $payloadFactory): array;
+    abstract protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService);
 
     /**
      * @return int|void|null
@@ -85,7 +85,7 @@ abstract class AgnesCommand extends Command
         }
 
         $io->section('executing tasks');
-        $factory->getTasksService()->execute();
+        $factory->getTaskService()->execute();
 
         $io->success('finished');
 

@@ -1,12 +1,13 @@
 <?php
 
-namespace Agnes\Actions\Visitors;
+namespace Agnes\Services\Task;
 
-use Agnes\Actions\CopyShared;
-use Agnes\Actions\Deploy;
-use Agnes\Actions\Release;
-use Agnes\Actions\Rollback;
-use Agnes\Models\Build;
+use Agnes\Models\Task\Build;
+use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Deploy;
+use Agnes\Models\Task\Download;
+use Agnes\Models\Task\Release;
+use Agnes\Models\Task\Rollback;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\FileService;
 use Agnes\Services\GithubService;
@@ -15,7 +16,7 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\ScriptService;
 use Symfony\Component\Console\Style\StyleInterface;
 
-class ExecutionVisitor extends AbstractActionVisitor
+class ExecutionVisitor extends AbstractTaskVisitor
 {
     /**
      * @var StyleInterface
@@ -109,6 +110,10 @@ class ExecutionVisitor extends AbstractActionVisitor
      */
     public function visitDeploy(Deploy $deploy): bool
     {
+        if ($deploy->getReleaseOrCommitish() !== $this->commitish) {
+            throw new \Exception('expected releae or commitish '.$deploy->getReleaseOrCommitish().' but found '.$this->commitish);
+        }
+
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
@@ -139,8 +144,12 @@ class ExecutionVisitor extends AbstractActionVisitor
      */
     public function visitRelease(Release $release): bool
     {
+        if ($release->getCommitish() !== $this->commitish) {
+            throw new \Exception('expected commitish '.$release->getCommitish().' but found '.$this->commitish);
+        }
+
         $this->io->text('publishing release to github');
-        $this->githubService->publish($release->getName(), $this->commitish, $this->content);
+        $this->githubService->publish($release->name(), $this->commitish, $this->content);
 
         return true;
     }
@@ -191,6 +200,14 @@ class ExecutionVisitor extends AbstractActionVisitor
 
         $this->io->text('removing build folder');
         $connection->removeFolder($buildPath);
+
+        return true;
+    }
+
+    public function visitDownload(Download $downloadGithub)
+    {
+        $this->commitish = $downloadGithub->getRelease();
+        $this->content = $this->githubService->downloadAsset($downloadGithub->getAssetId());
 
         return true;
     }

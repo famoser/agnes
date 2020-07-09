@@ -2,8 +2,8 @@
 
 namespace Agnes\Services\Policy;
 
-use Agnes\Actions\Rollback;
 use Agnes\Models\Filter;
+use Agnes\Models\Task\Rollback;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class RollbackPolicyVisitor extends PolicyVisitor

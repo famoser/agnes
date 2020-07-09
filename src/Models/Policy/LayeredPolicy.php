@@ -1,6 +1,6 @@
 <?php
 
-namespace Agnes\Models\Policies;
+namespace Agnes\Models\Policy;
 
 use Agnes\Models\Filter;
 

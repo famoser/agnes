@@ -1,11 +1,11 @@
 <?php
 
-namespace Agnes\Actions;
+namespace Agnes\Models\Task;
 
-use Agnes\Actions\Visitors\AbstractActionVisitor;
 use Agnes\Models\Instance;
+use Agnes\Services\Task\AbstractTaskVisitor;
 
-class CopyShared extends AbstractPayload
+class CopyShared extends AbstractTask
 {
     /**
      * @var Instance
@@ -41,8 +41,13 @@ class CopyShared extends AbstractPayload
         return 'copy shared data from '.$this->getSource()->describe().' to '.$this->getTarget()->describe();
     }
 
-    public function accept(AbstractActionVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
     {
         return $abstractActionVisitor->visitCopyShared($this);
+    }
+
+    public function name(): string
+    {
+        return 'copy_shared';
     }
 }

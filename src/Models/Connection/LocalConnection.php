@@ -1,6 +1,6 @@
 <?php
 
-namespace Agnes\Models\Connections;
+namespace Agnes\Models\Connection;
 
 use function chdir;
 use Exception;

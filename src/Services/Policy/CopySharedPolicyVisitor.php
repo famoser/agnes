@@ -2,10 +2,10 @@
 
 namespace Agnes\Services\Policy;
 
-use Agnes\Actions\CopyShared;
 use Agnes\Models\Filter;
-use Agnes\Models\Policies\SameReleasePolicy;
-use Agnes\Models\Policies\StageWriteDownPolicy;
+use Agnes\Models\Policy\SameReleasePolicy;
+use Agnes\Models\Policy\StageWriteDownPolicy;
+use Agnes\Models\Task\CopyShared;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 

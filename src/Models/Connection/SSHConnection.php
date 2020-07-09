@@ -1,8 +1,8 @@
 <?php
 
-namespace Agnes\Models\Connections;
+namespace Agnes\Models\Connection;
 
-use Agnes\Models\Executors\Executor;
+use Agnes\Models\Executor\Executor;
 use Exception;
 use function explode;
 use function file_get_contents;

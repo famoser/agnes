@@ -2,24 +2,24 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\AbstractPayload;
-use Agnes\Models\Connections\Connection;
-use Agnes\Models\Connections\LocalConnection;
-use Agnes\Models\Connections\SSHConnection;
-use Agnes\Models\Executors\BSDExecutor;
-use Agnes\Models\Executors\LinuxExecutor;
+use Agnes\Models\Connection\Connection;
+use Agnes\Models\Connection\LocalConnection;
+use Agnes\Models\Connection\SSHConnection;
+use Agnes\Models\Executor\BSDExecutor;
+use Agnes\Models\Executor\LinuxExecutor;
 use Agnes\Models\Filter;
-use Agnes\Models\Policies\Policy;
-use Agnes\Models\Policies\ReleaseWhitelistPolicy;
-use Agnes\Models\Policies\SameReleasePolicy;
-use Agnes\Models\Policies\StageWriteDownPolicy;
-use Agnes\Models\Policies\StageWriteUpPolicy;
-use Agnes\Services\Configuration\Action;
+use Agnes\Models\Policy\Policy;
+use Agnes\Models\Policy\ReleaseWhitelistPolicy;
+use Agnes\Models\Policy\SameReleasePolicy;
+use Agnes\Models\Policy\StageWriteDownPolicy;
+use Agnes\Models\Policy\StageWriteUpPolicy;
+use Agnes\Models\Task\AbstractTask;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\File;
 use Agnes\Services\Configuration\GithubConfig;
 use Agnes\Services\Configuration\Script;
 use Agnes\Services\Configuration\Server;
+use Agnes\Services\Configuration\Task;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -170,17 +170,17 @@ class ConfigurationService
     }
 
     /**
-     * @return Action[]
+     * @return Task[]
      *
      * @throws Exception
      */
-    public function getActions(AbstractPayload $payload): array
+    public function getTasks(AbstractTask $task): array
     {
-        $config = $this->getNestedConfigWithDefault([], 'actions');
+        $config = $this->getNestedConfigWithDefault([], 'tasks');
 
         $result = [];
         foreach ($config as $name => $action) {
-            if ((isset($action['after']) && $action['after'] !== $payload->describe())) {
+            if ((isset($action['after']) && $action['after'] !== $task->describe())) {
                 continue;
             }
 
@@ -192,7 +192,7 @@ class ConfigurationService
             $arguments = is_array($action['arguments']) ? $action['arguments'] : [];
             $filter = isset($action['instance_filter']) ? Filter::createFromInstanceSpecification($action['instance_filter']) : null;
 
-            $result[] = new Action($name, $action['action'], $arguments, $filter);
+            $result[] = new Task($name, $action['action'], $arguments, $filter);
         }
 
         return $result;

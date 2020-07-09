@@ -1,14 +1,16 @@
 <?php
 
-namespace Agnes\Actions\Visitors;
+namespace Agnes\Services\Task;
 
-use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\CopyShared;
-use Agnes\Actions\Deploy;
-use Agnes\Actions\Release;
-use Agnes\Actions\Rollback;
+use Agnes\Models\Task\AbstractTask;
+use Agnes\Models\Task\Build;
+use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Deploy;
+use Agnes\Models\Task\Download;
+use Agnes\Models\Task\Release;
+use Agnes\Models\Task\Rollback;
 
-abstract class AbstractActionVisitor
+abstract class AbstractTaskVisitor
 {
     /**
      * @throws \Exception
@@ -45,7 +47,23 @@ abstract class AbstractActionVisitor
     /**
      * @throws \Exception
      */
-    protected function visitDefault(AbstractPayload $payload): bool
+    public function visitDownload(Download $downloadGithub)
+    {
+        return $this->visitDefault($downloadGithub);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function visitBuild(Build $build)
+    {
+        return $this->visitDefault($build);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function visitDefault(AbstractTask $payload): bool
     {
         throw new \Exception('Not implemented for '.$payload->describe());
     }

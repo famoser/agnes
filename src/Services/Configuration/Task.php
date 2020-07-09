@@ -4,7 +4,7 @@ namespace Agnes\Services\Configuration;
 
 use Agnes\Models\Filter;
 
-class Action
+class Task
 {
     /**
      * @var string

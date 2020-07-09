@@ -2,9 +2,9 @@
 
 namespace Agnes\Services\Policy;
 
-use Agnes\Actions\Release;
 use Agnes\Models\Filter;
-use Agnes\Models\Policies\ReleaseWhitelistPolicy;
+use Agnes\Models\Policy\ReleaseWhitelistPolicy;
+use Agnes\Models\Task\Release;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class ReleasePolicyVisitor extends PolicyVisitor

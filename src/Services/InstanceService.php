@@ -2,11 +2,11 @@
 
 namespace Agnes\Services;
 
-use Agnes\Actions\Deploy;
-use Agnes\Models\Connections\Connection;
+use Agnes\Models\Connection\Connection;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Models\Task\Deploy;
 use Exception;
 
 class InstanceService

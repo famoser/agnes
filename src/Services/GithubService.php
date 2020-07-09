@@ -62,13 +62,17 @@ class GithubService
                 continue;
             }
 
-            $response = $this->getClient()->downloadAsset($release->assets[0]->id);
-            $content = $response->getBody()->getContents();
-
-            return $content;
+            return $release->assets[0]->id;
         }
 
         return null;
+    }
+
+    public function downloadAsset(string $assetId)
+    {
+        $response = $this->getClient()->downloadAsset($assetId);
+
+        return $response->getBody()->getContents();
     }
 
     /**

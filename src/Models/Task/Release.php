@@ -1,11 +1,16 @@
 <?php
 
-namespace Agnes\Actions;
+namespace Agnes\Models\Task;
 
-use Agnes\Actions\Visitors\AbstractActionVisitor;
+use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Release extends AbstractPayload
+class Release extends AbstractTask
 {
+    /**
+     * @var string
+     */
+    private $commitish;
+
     /**
      * @var string
      */
@@ -18,6 +23,7 @@ class Release extends AbstractPayload
      */
     public function __construct(string $commitish, string $name = null)
     {
+        $this->commitish = $commitish;
         $this->name = $name;
     }
 
@@ -26,18 +32,23 @@ class Release extends AbstractPayload
         return $this->commitish;
     }
 
-    public function getName(): string
+    public function name(): string
     {
         return null !== $this->name ? $this->name : $this->commitish;
     }
 
     public function describe(): string
     {
-        return 'release '.$this->getName();
+        return 'release '.$this->name();
     }
 
-    public function accept(AbstractActionVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
     {
         return $abstractActionVisitor->visitRelease($this);
+    }
+
+    public function getName(): string
+    {
+        return 'release';
     }
 }
