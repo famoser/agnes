@@ -2,8 +2,8 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Models\Task\AbstractTask;
 use Agnes\Services\TaskService;
+use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -22,15 +22,13 @@ class ReleaseCommand extends AgnesCommand
     }
 
     /**
-     * @return AbstractTask[]
-     *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {
         $release = $input->getArgument('release');
         $commitish = $input->getArgument('commitish');
 
-        $taskService->createRelease($commitish, $release);
+        $taskService->addReleaseTask($commitish, $release);
     }
 }

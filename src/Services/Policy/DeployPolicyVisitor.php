@@ -9,7 +9,7 @@ use Agnes\Services\InstanceService;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
-class DeployPolicyVisitor extends PolicyVisitor
+class DeployPolicyVisitor extends NoPolicyVisitor
 {
     /**
      * @var InstanceService
@@ -24,19 +24,23 @@ class DeployPolicyVisitor extends PolicyVisitor
     /**
      * DeployPolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, InstanceService $installationService, Deploy $deployment)
+    public function __construct(StyleInterface $io, InstanceService $installationService, Deploy $deploy)
     {
-        parent::__construct($io);
+        parent::__construct($io, $deploy);
 
         $this->installationService = $installationService;
-        $this->deployment = $deployment;
+        $this->deployment = $deploy;
     }
 
     /**
      * @throws Exception
      */
-    public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
+    protected function checkStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
+        if (!$this->filterMatches($stageWriteUpPolicy->getFilter())) {
+            return true;
+        }
+
         $targetStage = $this->deployment->getTarget()->getStage();
         $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
         if (false === $stageIndex) {
@@ -70,10 +74,7 @@ class DeployPolicyVisitor extends PolicyVisitor
         return $this->preventExecution($this->deployment, "$targetStage not lowest stage, and release was never published in the next lower layer.");
     }
 
-    /**
-     * @return bool
-     */
-    protected function filterApplies(?Filter $filter)
+    protected function filterMatches(?Filter $filter): bool
     {
         return null === $filter || $filter->instanceMatches($this->deployment->getTarget());
     }

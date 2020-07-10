@@ -3,16 +3,13 @@
 namespace Agnes\Services;
 
 use Agnes\Models\Filter;
-use Agnes\Models\Installation;
-use Agnes\Models\Instance;
 use Agnes\Models\Task\AbstractTask;
-use Agnes\Models\Task\Build;
 use Agnes\Models\Task\CopyShared;
-use Agnes\Models\Task\Deploy;
-use Agnes\Models\Task\Download;
-use Agnes\Models\Task\Release;
-use Agnes\Models\Task\Rollback;
+use Agnes\Services\Policy\AbstractPolicyVisitor;
+use Agnes\Services\Task\AfterTaskVisitor;
 use Agnes\Services\Task\ExecutionVisitor;
+use Agnes\Services\Task\PolicyVisitor;
+use Agnes\Services\Task\TaskFactory;
 use Http\Client\Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -43,9 +40,19 @@ class TaskService
     private $githubService;
 
     /**
+     * @var TaskFactory
+     */
+    private $taskFactory;
+
+    /**
      * @var ExecutionVisitor
      */
     private $executionVisitor;
+
+    /**
+     * @var PolicyVisitor
+     */
+    private $policyVisitor;
 
     /**
      * ExecutionVisitor constructor.
@@ -58,7 +65,10 @@ class TaskService
         $this->fileService = $fileService;
         $this->githubService = $githubService;
 
+        $this->taskFactory = new TaskFactory($io, $fileService, $githubService, $instanceService);
+
         $this->executionVisitor = new ExecutionVisitor($io, $configurationService, $fileService, $githubService, $installationService, $instanceService, $scriptService);
+        $this->policyVisitor = new PolicyVisitor($io, $instanceService);
     }
 
     /**
@@ -69,100 +79,19 @@ class TaskService
         return $this->tasks;
     }
 
-    private function createCopySharedActionFromDeployOrRollback(array $arguments, Instance $instance)
+    public function addReleaseTask(string $commitish, string $name)
     {
-        if (!isset($arguments['source'])) {
-            $this->io->text('must specify source argument for a copy:shared action (like arguments: { source: production })');
+        $this->ensureBuild($commitish, false);
 
-            return;
-        }
-
-        $source = $arguments['source'];
-        $action = $this->constructCopyShared($instance, $source);
-        $copyShared = $action->createSingle($instance, $source);
-        if (null === $copyShared) {
-            return;
-        }
-
-        $this->executePayload($action, $copyShared);
-    }
-
-    /**
-     * @return CopyShared[]
-     *
-     * @throws Exception
-     */
-    public function createCopySharedMany(string $target, string $sourceStage): array
-    {
-        $filter = Filter::createFromInstanceSpecification($target);
-        $targetInstances = $this->instanceService->getInstancesByFilter($filter);
-        if (0 === count($targetInstances)) {
-            $this->io->warning('For target specification '.$target.' no matching instances were found.');
-
-            return [];
-        }
-
-        /** @var CopyShared[] $copyShareds */
-        $copyShareds = [];
-        foreach ($targetInstances as $targetInstance) {
-            $copyShared = $this->constructCopyShared($targetInstance, $sourceStage);
-
-            if (null !== $copyShared) {
-                $copyShareds[] = $copyShared;
-            }
-        }
-
-        return $copyShareds;
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function constructCopyShared(Instance $targetInstance, string $sourceStage): ?CopyShared
-    {
-        $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);
-        $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
-
-        if (0 === count($sourceInstances)) {
-            $this->io->warning('For instance '.$targetInstance->describe().' no matching source was found.');
-
-            return null;
-        }
-
-        return new CopyShared($sourceInstances[0], $targetInstance);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function addDeploy(string $releaseOrCommitish, Instance $target)
-    {
-        if (!$this->fileService->allRequiredFilesExist($target)) {
-            return null;
-        }
-
-        $this->ensureBuild($releaseOrCommitish);
-
-        $deploy = new Deploy($releaseOrCommitish, $target);
-        $this->addTask($deploy);
-    }
-
-    private function addTask(AbstractTask $payload)
-    {
-        $this->tasks[] = $payload;
-
-        $actions = $this->configurationService->getTasks($payload);
-        foreach ($actions as $action) {
-            $task = $this->createPayload($payload, $action);
-            $this->addTask($task);
-        }
+        $release = $this->taskFactory->createRelease($commitish, $name);
+        $this->addTask($release);
     }
 
     /**
      * @throws \Exception
      * @throws Exception
      */
-    public function addDeployFromTargetSpecification(string $releaseOrCommitish, string $target)
+    public function addDeployTasks(string $releaseOrCommitish, string $target)
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
@@ -171,24 +100,19 @@ class TaskService
             return;
         }
 
+        $this->ensureBuild($releaseOrCommitish);
+
         $setup = null;
         foreach ($instances as $instance) {
-            $this->addDeploy($releaseOrCommitish, $instance);
+            $task = $this->taskFactory->createDeploy($releaseOrCommitish, $instance);
+            $this->addTask($task);
         }
     }
 
-    public function createRelease(string $commitish, string $name)
-    {
-        $this->ensureBuild($commitish, false);
-
-        $release = new Release($commitish, $name);
-        $this->addTask($release);
-    }
-
     /**
-     * @throws Exception
+     * @throws \Exception
      */
-    public function addManyRollback(string $target, ?string $rollbackTo, ?string $rollbackFrom)
+    public function addRollbackTasks(string $target, ?string $rollbackTo, ?string $rollbackFrom)
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $instances = $this->instanceService->getInstancesByFilter($filter);
@@ -199,73 +123,29 @@ class TaskService
         }
 
         foreach ($instances as $instance) {
-            $rollback = $this->createRollback($instance, $rollbackTo, $rollbackFrom);
-            if (null !== $rollback) {
-                $this->addTask($rollback);
-            }
+            $rollback = $this->taskFactory->createRollback($instance, $rollbackTo, $rollbackFrom);
+            $this->addTask($rollback);
         }
     }
 
-    public function createRollback(Instance $instance, ?string $rollbackTo, ?string $rollbackFrom)
-    {
-        $currentInstallation = $instance->getCurrentInstallation();
-
-        // if no installation, can not rollback
-        if (null === $currentInstallation) {
-            $this->io->warning('No active installation, can not rollback.');
-
-            return null;
-        }
-
-        // skip if rollback from does not match
-        if (null !== $rollbackFrom && $currentInstallation->getReleaseOrCommitish() !== $rollbackFrom) {
-            $this->io->warning('Active installation does not match '.$rollbackFrom.'. skipping...');
-
-            return null;
-        }
-
-        // if not target specified, simply take next lower
-        $rollbackToMatcher = null;
-        if (null !== $rollbackTo) {
-            $rollbackToMatcher = function (Installation $installation) use ($rollbackTo) {
-                return $installation->getReleaseOrCommitish() === $rollbackTo;
-            };
-        }
-
-        /** @var Installation|null $upperBoundInstallation */
-        $upperBoundInstallation = null;
-        foreach ($instance->getInstallations() as $installation) {
-            if ($installation->getNumber() < $currentInstallation->getNumber() &&
-                (null === $upperBoundInstallation || $upperBoundInstallation->getNumber() < $installation->getNumber()) &&
-                (null === $rollbackToMatcher || $rollbackToMatcher($installation))) {
-                $upperBoundInstallation = $installation;
-            }
-        }
-
-        if (null === $upperBoundInstallation) {
-            $this->io->warning('For instance '.$instance->describe().' no matching rollback installation was found.');
-
-            return null;
-        }
-
-        return new Rollback($instance, $upperBoundInstallation);
-    }
-
     /**
-     * @var AbstractTask[]
+     * @throws Exception
      */
-    private $tasks = [];
-
-    /**
-     * @param AbstractTask[] $payloads
-     *
-     * @throws \Exception
-     */
-    public function execute()
+    public function addCopySharedTasks(string $target, string $sourceStage)
     {
-        foreach ($this->tasks as $task) {
-            $this->io->text('executing '.$task->describe().' ...');
-            $task->accept($this->executionVisitor);
+        $filter = Filter::createFromInstanceSpecification($target);
+        $targetInstances = $this->instanceService->getInstancesByFilter($filter);
+        if (0 === count($targetInstances)) {
+            $this->io->warning('For target specification '.$target.' no matching instances were found.');
+
+            return;
+        }
+
+        /** @var CopyShared[] $copyShareds */
+        $copyShareds = [];
+        foreach ($targetInstances as $targetInstance) {
+            $copyShared = $this->taskFactory->createCopyShared($targetInstance, $sourceStage);
+            $this->addTask($copyShared);
         }
     }
 
@@ -281,14 +161,73 @@ class TaskService
         }
 
         if ($allowDownload) {
-            $assetId = $this->githubService->getBuildByReleaseName($releaseOrCommitish);
-            $downloadGithub = new Download($releaseOrCommitish, $assetId);
-            $this->addTask($downloadGithub);
+            $download = $this->taskFactory->createDownload($releaseOrCommitish);
+            $this->addTask($download);
+        }
+
+        $task = $this->taskFactory->createBuild($releaseOrCommitish);
+        $this->addTask($task);
+    }
+
+    private function addTask(?AbstractTask $task)
+    {
+        if (null === $task) {
+            return;
+        }
+
+        $this->tasks[] = $task;
+    }
+
+    /**
+     * @var AbstractTask[]
+     */
+    private $tasks = [];
+
+    /**
+     * @throws \Exception
+     */
+    public function executeAll()
+    {
+        foreach ($this->tasks as $task) {
+            $this->executeTask($task);
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function executeTask(AbstractTask $task)
+    {
+        $this->io->text('executing '.$task->describe().' ...');
+
+        // check if policies conflict
+        /** @var AbstractPolicyVisitor $policyVisitor */
+        $policyVisitor = $task->accept($this->policyVisitor);
+        $policies = $this->configurationService->getPolicies($task->name());
+        foreach ($policies as $policy) {
+            if (!$policy->accept($policyVisitor)) {
+                $this->io->warning('skipping '.$task->describe().' ...');
+
+                return;
+            }
+        }
+
+        if (!$task->accept($this->executionVisitor)) {
+            $this->io->error('task '.$task->describe().' failed; will not execute post-task tasks...');
 
             return;
         }
 
-        $build = new Build($releaseOrCommitish);
-        $this->addTask($build);
+        // execute post-task jobs
+        $afterTaskConfigs = $this->configurationService->getAfterTasks($task->name());
+        foreach ($afterTaskConfigs as $afterTaskConfig) {
+            $afterTaskVisitor = new AfterTaskVisitor($this->instanceService, $this->taskFactory, $afterTaskConfig);
+            $afterTasks = $task->accept($afterTaskVisitor);
+            foreach ($afterTasks as $afterTask) {
+                $this->executeTask($afterTask);
+            }
+        }
+
+        $this->io->text('finished '.$task->describe().' ...');
     }
 }

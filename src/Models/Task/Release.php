@@ -6,6 +6,8 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Release extends AbstractTask
 {
+    const NAME = 'release';
+
     /**
      * @var string
      */
@@ -42,13 +44,13 @@ class Release extends AbstractTask
         return 'release '.$this->name();
     }
 
-    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor)
     {
         return $abstractActionVisitor->visitRelease($this);
     }
 
     public function getName(): string
     {
-        return 'release';
+        return self::NAME;
     }
 }

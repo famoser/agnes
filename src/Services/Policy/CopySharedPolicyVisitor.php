@@ -9,7 +9,7 @@ use Agnes\Models\Task\CopyShared;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
-class CopySharedPolicyVisitor extends PolicyVisitor
+class CopySharedPolicyVisitor extends NoPolicyVisitor
 {
     /**
      * @var CopyShared
@@ -21,13 +21,17 @@ class CopySharedPolicyVisitor extends PolicyVisitor
      */
     public function __construct(StyleInterface $io, CopyShared $copyShared)
     {
-        parent::__construct($io);
+        parent::__construct($io, $copyShared);
 
         $this->copyShared = $copyShared;
     }
 
-    public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
+    protected function checkSameRelease(SameReleasePolicy $sameReleasePolicy): bool
     {
+        if (!$this->filterMatches($sameReleasePolicy->getFilter())) {
+            return true;
+        }
+
         $sourceInstallation = $this->copyShared->getSource()->getCurrentInstallation();
         $targetInstallation = $this->copyShared->getTarget()->getCurrentInstallation();
 
@@ -51,8 +55,12 @@ class CopySharedPolicyVisitor extends PolicyVisitor
     /**
      * @throws Exception
      */
-    public function visitStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
+    protected function checkStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
     {
+        if (!$this->filterMatches($stageWriteDownPolicy->getFilter())) {
+            return true;
+        }
+
         $targetStage = $this->copyShared->getTarget()->getStage();
         $sourceStage = $this->copyShared->getSource()->getStage();
 
@@ -80,10 +88,8 @@ class CopySharedPolicyVisitor extends PolicyVisitor
      * checks if the policy has to be checked for.
      *
      * @param Filter $filter
-     *
-     * @return bool
      */
-    protected function filterApplies(?Filter $filter)
+    protected function filterMatches(?Filter $filter): bool
     {
         return null === $filter ||
             $filter->instanceMatches($this->copyShared->getSource()) ||

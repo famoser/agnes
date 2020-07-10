@@ -2,8 +2,8 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Models\Task\AbstractTask;
 use Agnes\Services\TaskService;
+use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -22,15 +22,15 @@ class DeployCommand extends AgnesCommand
     }
 
     /**
-     * @return AbstractTask[]
-     *
-     *@throws \Exception
+     * @throws Exception
+     * @throws \Http\Client\Exception
+     * @throws \Http\Client\Exception
      */
     protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {
         $releaseOrCommitish = $input->getArgument('release or commitish');
         $target = $input->getArgument('target');
 
-        $taskService->addDeployFromTargetSpecification($releaseOrCommitish, $target);
+        $taskService->addDeployTasks($releaseOrCommitish, $target);
     }
 }

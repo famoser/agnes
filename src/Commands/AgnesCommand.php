@@ -3,7 +3,6 @@
 namespace Agnes\Commands;
 
 use Agnes\AgnesFactory;
-use Agnes\Models\Task\AbstractTask;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\TaskService;
 use Exception;
@@ -32,9 +31,7 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @return AbstractTask[]
-     *
-     * @throws \Exception
+     * @throws Exception
      */
     abstract protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService);
 
@@ -85,7 +82,7 @@ abstract class AgnesCommand extends Command
         }
 
         $io->section('executing tasks');
-        $factory->getTaskService()->execute();
+        $factory->getTaskService()->executeAll();
 
         $io->success('finished');
 

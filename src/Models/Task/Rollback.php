@@ -8,6 +8,8 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Rollback extends AbstractTask
 {
+    const NAME = 'rollback';
+
     /**
      * @var Instance
      */
@@ -42,13 +44,13 @@ class Rollback extends AbstractTask
         return 'rollback '.$this->getInstance()->describe().' at '.$this->getInstance()->getCurrentInstallation()->getReleaseOrCommitish().'to '.$this->getTarget()->getReleaseOrCommitish();
     }
 
-    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor)
     {
         return $abstractActionVisitor->visitRollback($this);
     }
 
     public function name(): string
     {
-        return 'rollback';
+        return self::NAME;
     }
 }

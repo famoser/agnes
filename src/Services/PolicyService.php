@@ -2,13 +2,14 @@
 
 namespace Agnes\Services;
 
+use Agnes\Models\Task\AbstractTask;
 use Agnes\Models\Task\CopyShared;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
 use Agnes\Services\Policy\CopySharedPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;
-use Agnes\Services\Policy\PolicyVisitor;
+use Agnes\Services\Policy\NoPolicyVisitor;
 use Agnes\Services\Policy\ReleasePolicyVisitor;
 use Agnes\Services\Policy\RollbackPolicyVisitor;
 use Exception;
@@ -39,6 +40,10 @@ class PolicyService
         $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
         $this->io = $io;
+    }
+
+    public function canExecute(AbstractTask $abstractTask)
+    {
     }
 
     /**
@@ -84,7 +89,7 @@ class PolicyService
     /**
      * @throws Exception
      */
-    private function noConflictingPolicies(PolicyVisitor $visitor, string $task): bool
+    private function noConflictingPolicies(NoPolicyVisitor $visitor, string $task): bool
     {
         $policies = $this->configurationService->getPolicies($task);
 

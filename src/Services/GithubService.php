@@ -5,6 +5,7 @@ namespace Agnes\Services;
 use Agnes\Services\Github\Client;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class GithubService
@@ -68,6 +69,10 @@ class GithubService
         return null;
     }
 
+    /**
+     * @throws Exception
+     * @throws ClientExceptionInterface
+     */
     public function downloadAsset(string $assetId)
     {
         $response = $this->getClient()->downloadAsset($assetId);

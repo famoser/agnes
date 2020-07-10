@@ -4,6 +4,7 @@ namespace Agnes\Services;
 
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class FileService
@@ -28,7 +29,7 @@ class FileService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function allRequiredFilesExist(Instance $instance): bool
     {
@@ -55,7 +56,7 @@ class FileService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function uploadFiles(Instance $instance, Installation $installation)
     {
@@ -77,11 +78,10 @@ class FileService
     private function getLocalConfigFolderPath(Instance $instance): string
     {
         $configFolder = $this->configurationService->getConfigFolder();
-        $instanceConfigFolder = $configFolder.DIRECTORY_SEPARATOR.
+
+        return $configFolder.DIRECTORY_SEPARATOR.
             $instance->getServerName().DIRECTORY_SEPARATOR.
             $instance->getEnvironmentName().DIRECTORY_SEPARATOR.
             $instance->getStage();
-
-        return $instanceConfigFolder;
     }
 }

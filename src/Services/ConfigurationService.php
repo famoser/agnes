@@ -9,11 +9,9 @@ use Agnes\Models\Executor\BSDExecutor;
 use Agnes\Models\Executor\LinuxExecutor;
 use Agnes\Models\Filter;
 use Agnes\Models\Policy\Policy;
-use Agnes\Models\Policy\ReleaseWhitelistPolicy;
 use Agnes\Models\Policy\SameReleasePolicy;
 use Agnes\Models\Policy\StageWriteDownPolicy;
 use Agnes\Models\Policy\StageWriteUpPolicy;
-use Agnes\Models\Task\AbstractTask;
 use Agnes\Services\Configuration\Environment;
 use Agnes\Services\Configuration\File;
 use Agnes\Services\Configuration\GithubConfig;
@@ -174,13 +172,13 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    public function getTasks(AbstractTask $task): array
+    public function getAfterTasks(string $hook): array
     {
         $config = $this->getNestedConfigWithDefault([], 'tasks');
 
         $result = [];
         foreach ($config as $name => $action) {
-            if ((isset($action['after']) && $action['after'] !== $task->describe())) {
+            if ((isset($action['after']) && $action['after'] !== $hook)) {
                 continue;
             }
 
@@ -338,9 +336,6 @@ class ConfigurationService
                     break;
                 case 'stage_write_down':
                     $parsedPolicies[] = new StageWriteDownPolicy($filter, $policy['layers']);
-                    break;
-                case 'release_whitelist':
-                    $parsedPolicies[] = new ReleaseWhitelistPolicy($filter, $policy['commitishes']);
                     break;
                 case 'same_release':
                     $parsedPolicies[] = new SameReleasePolicy($filter);

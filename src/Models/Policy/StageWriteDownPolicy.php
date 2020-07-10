@@ -2,7 +2,7 @@
 
 namespace Agnes\Models\Policy;
 
-use Agnes\Services\Policy\PolicyVisitor;
+use Agnes\Services\Policy\AbstractPolicyVisitor;
 use Exception;
 
 class StageWriteDownPolicy extends LayeredPolicy
@@ -12,7 +12,7 @@ class StageWriteDownPolicy extends LayeredPolicy
      *
      * @throws Exception
      */
-    public function accept(PolicyVisitor $visitor)
+    public function accept(AbstractPolicyVisitor $visitor)
     {
         return $visitor->visitStageWriteDown($this);
     }

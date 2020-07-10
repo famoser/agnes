@@ -51,6 +51,9 @@ class OnlinePeriod
         return $array;
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function fromArray(array $array): self
     {
         $start = new DateTime($array['start']);

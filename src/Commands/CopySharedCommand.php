@@ -2,8 +2,8 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Models\Task\AbstractTask;
 use Agnes\Services\TaskService;
+use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -22,15 +22,15 @@ class CopySharedCommand extends AgnesCommand
     }
 
     /**
-     * @return AbstractTask[]
-     *
-     *@throws \Exception
+     * @throws Exception
+     * @throws \Http\Client\Exception
+     * @throws \Http\Client\Exception
      */
     protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {
         $target = $input->getArgument('target');
         $source = $input->getArgument('source');
 
-        $taskService->createCopySharedMany($target, $source);
+        $taskService->addCopySharedTasks($target, $source);
     }
 }

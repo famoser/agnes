@@ -2,8 +2,8 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Models\Task\AbstractTask;
 use Agnes\Services\TaskService;
+use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -27,9 +27,9 @@ If neither target nor source is supplied, it will rollback to the previously ins
     }
 
     /**
-     * @return AbstractTask[]
-     *
-     * @throws \Exception
+     * @throws Exception
+     * @throws \Http\Client\Exception
+     * @throws \Http\Client\Exception
      */
     protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {
@@ -37,6 +37,6 @@ If neither target nor source is supplied, it will rollback to the previously ins
         $rollbackTo = $input->getOption('rollback-to');
         $rollbackFrom = $input->getOption('rollback-from');
 
-        $taskService->addManyRollback($target, $rollbackTo, $rollbackFrom);
+        $taskService->addRollbackTasks($target, $rollbackTo, $rollbackFrom);
     }
 }

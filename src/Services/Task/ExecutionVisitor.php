@@ -14,6 +14,7 @@ use Agnes\Services\GithubService;
 use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\ScriptService;
+use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class ExecutionVisitor extends AbstractTaskVisitor
@@ -78,7 +79,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function visitCopyShared(CopyShared $copyShared): bool
     {
@@ -106,12 +107,12 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function visitDeploy(Deploy $deploy): bool
     {
         if ($deploy->getReleaseOrCommitish() !== $this->commitish) {
-            throw new \Exception('expected releae or commitish '.$deploy->getReleaseOrCommitish().' but found '.$this->commitish);
+            throw new Exception('expected releae or commitish '.$deploy->getReleaseOrCommitish().' but found '.$this->commitish);
         }
 
         $target = $deploy->getTarget();
@@ -140,12 +141,12 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception|\Http\Client\Exception
+     * @throws Exception|\Http\Client\Exception
      */
     public function visitRelease(Release $release): bool
     {
         if ($release->getCommitish() !== $this->commitish) {
-            throw new \Exception('expected commitish '.$release->getCommitish().' but found '.$this->commitish);
+            throw new Exception('expected commitish '.$release->getCommitish().' but found '.$this->commitish);
         }
 
         $this->io->text('publishing release to github');
@@ -155,7 +156,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function visitRollback(Rollback $rollback): bool
     {
@@ -176,7 +177,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function visitBuild(Build $build): bool
     {

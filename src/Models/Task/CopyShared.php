@@ -7,6 +7,8 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class CopyShared extends AbstractTask
 {
+    const NAME = 'oopy_shared';
+
     /**
      * @var Instance
      */
@@ -41,13 +43,13 @@ class CopyShared extends AbstractTask
         return 'copy shared data from '.$this->getSource()->describe().' to '.$this->getTarget()->describe();
     }
 
-    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor)
     {
         return $abstractActionVisitor->visitCopyShared($this);
     }
 
     public function name(): string
     {
-        return 'copy_shared';
+        return self::NAME;
     }
 }

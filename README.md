@@ -140,15 +140,6 @@ policies:
         0: [dev]
         1: [staging]
         2: [production, education]
-    
-    # requires that releases deployed to the specified environments fulfil a commitish constraint
-    # in this case, can only deploy releases created from the master branch to production, education or staging
-    - type: release_whitelist
-      filter: # restrict where to apply the policy to
-        stages: [production, education, staging] # restrict to specific stages
-        # environments: [example.com] can also restrict to environments
-        # servers: [example] can also restrict to servers
-      commitishes: [master]
 
   copy_shared:
     # requires that the target must be one stage lower that the source

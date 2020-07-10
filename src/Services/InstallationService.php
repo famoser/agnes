@@ -71,7 +71,7 @@ class InstallationService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function uploadBuild(Connection $connection, Installation $installation, string $content): void
     {
@@ -90,7 +90,7 @@ class InstallationService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function createAndLinkSharedFolders(Connection $connection, Instance $target, Installation $installation): void
     {

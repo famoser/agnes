@@ -3,7 +3,7 @@
 namespace Agnes\Models\Policy;
 
 use Agnes\Models\Filter;
-use Agnes\Services\Policy\PolicyVisitor;
+use Agnes\Services\Policy\AbstractPolicyVisitor;
 use Exception;
 
 abstract class Policy
@@ -26,7 +26,7 @@ abstract class Policy
      *
      * @throws Exception
      */
-    abstract public function accept(PolicyVisitor $visitor);
+    abstract public function accept(AbstractPolicyVisitor $visitor);
 
     public function getFilter(): ?Filter
     {

@@ -7,6 +7,8 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Deploy extends AbstractTask
 {
+    const NAME = 'deploy';
+
     /**
      * @var Instance
      */
@@ -43,13 +45,13 @@ class Deploy extends AbstractTask
         return 'deploying to '.$this->getTarget()->describe();
     }
 
-    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor)
     {
         return $abstractActionVisitor->visitDeploy($this);
     }
 
     public function name(): string
     {
-        return 'deploy';
+        return self::NAME;
     }
 }

@@ -133,7 +133,7 @@ class InstanceService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function removeOldInstallations(Deploy $deploy, Connection $connection)
     {
@@ -159,6 +159,9 @@ class InstanceService
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function getInstancesBySpecification(string $target)
     {
         $filter = Filter::createFromInstanceSpecification($target);

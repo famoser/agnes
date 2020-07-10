@@ -9,43 +9,44 @@ use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
+use Exception;
 
 abstract class AbstractTaskVisitor
 {
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function visitCopyShared(CopyShared $copyShared): bool
+    public function visitCopyShared(CopyShared $copyShared)
     {
         return $this->visitDefault($copyShared);
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function visitDeploy(Deploy $deploy): bool
+    public function visitDeploy(Deploy $deploy)
     {
         return $this->visitDefault($deploy);
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function visitRelease(Release $release): bool
+    public function visitRelease(Release $release)
     {
         return $this->visitDefault($release);
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function visitRollback(Rollback $rollback): bool
+    public function visitRollback(Rollback $rollback)
     {
         return $this->visitDefault($rollback);
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function visitDownload(Download $downloadGithub)
     {
@@ -53,7 +54,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function visitBuild(Build $build)
     {
@@ -61,10 +62,12 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
+     *
+     * @return mixed
      */
-    protected function visitDefault(AbstractTask $payload): bool
+    protected function visitDefault(AbstractTask $payload)
     {
-        throw new \Exception('Not implemented for '.$payload->describe());
+        throw new Exception('Not implemented for '.$payload->describe());
     }
 }

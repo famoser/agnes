@@ -6,6 +6,8 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Download extends AbstractTask
 {
+    const NAME = 'download';
+
     /**
      * @var string
      */
@@ -35,7 +37,7 @@ class Download extends AbstractTask
         return $this->assetId;
     }
 
-    public function accept(AbstractTaskVisitor $abstractActionVisitor): bool
+    public function accept(AbstractTaskVisitor $abstractActionVisitor)
     {
         return $abstractActionVisitor->visitDownload($this);
     }
@@ -47,6 +49,6 @@ class Download extends AbstractTask
 
     public function name(): string
     {
-        return 'download_github';
+        return self::NAME;
     }
 }
