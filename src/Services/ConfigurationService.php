@@ -413,11 +413,11 @@ class ConfigurationService
         $executor = $this->getExecutor($system);
 
         if ('local' === $connectionType) {
-            return new LocalConnection($executor);
+            return new LocalConnection($this->io, $executor);
         } elseif ('ssh' === $connectionType) {
             $destination = $connection['destination'];
 
-            return new SSHConnection($executor, $destination);
+            return new SSHConnection($this->io, $executor, $destination);
         } else {
             throw new Exception("unknown connection type $connectionType");
         }

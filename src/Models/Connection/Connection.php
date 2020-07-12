@@ -4,6 +4,7 @@ namespace Agnes\Models\Connection;
 
 use Agnes\Models\Executor\Executor;
 use Exception;
+use Symfony\Component\Console\Style\StyleInterface;
 
 abstract class Connection
 {
@@ -18,11 +19,17 @@ abstract class Connection
     private $executor;
 
     /**
+     * @var StyleInterface
+     */
+    private $io;
+
+    /**
      * Connection constructor.
      */
-    public function __construct(Executor $executor)
+    public function __construct(StyleInterface $io, Executor $executor)
     {
         $this->executor = $executor;
+        $this->io = $io;
     }
 
     /**
@@ -73,6 +80,8 @@ abstract class Connection
      */
     protected function executeCommand(string $command): string
     {
+        $this->io->text('executing '.$command);
+
         exec($command.' 2>&1', $output, $returnVar);
 
         $outputMessage = implode("\n", $output);
