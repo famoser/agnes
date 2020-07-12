@@ -159,11 +159,19 @@ class ConfigurationService
      */
 
     /** @noinspection PhpUnusedParameterInspection */
-    public function getScriptByName(string $name)
+    public function getScriptByName(string $name): ?Script
     {
-        return $this->getScriptsByCondition(function (string $scriptName, array $script) use ($name) {
+        $scripts = $this->getScriptsByCondition(function (string $scriptName, array $script) use ($name) {
             return $scriptName === $name;
         });
+
+        if (0 === count($scripts)) {
+            $this->io->warning('script '.$name.' does not exist.');
+
+            return null;
+        }
+
+        return $scripts[0];
     }
 
     /**
