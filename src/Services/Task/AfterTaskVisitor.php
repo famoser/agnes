@@ -97,6 +97,27 @@ class AfterTaskVisitor extends AbstractTaskVisitor
     /**
      * @throws \Exception
      */
+    private function getMatchingInstances(?Instance $instance = null): array
+    {
+        if (!isset($this->task->getArguments()['target'])) {
+            if (null === $instance) {
+                $this->io->error($this->task->getName().' misses the required target argument (like arguments: { source: production }). skipping...');
+
+                return [];
+            }
+
+            return [$instance];
+        }
+
+        $target = $this->task->getArguments()['target'];
+        $filter = Filter::createFromInstanceWithOverrideInstanceSpecification($instance, $target);
+
+        return $this->instanceService->getInstancesByFilter($filter);
+    }
+
+    /**
+     * @throws \Exception
+     */
     private function createForInstance(Instance $instance, ?string $releaseOrCommitish): ?AbstractTask
     {
         switch ($this->task->getName()) {
@@ -150,26 +171,5 @@ class AfterTaskVisitor extends AbstractTaskVisitor
         $script = $this->task->getArguments()['script'];
 
         return $this->taskFactory->createRun($instance, $script);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function getMatchingInstances(?Instance $instance = null): array
-    {
-        if (!isset($this->task->getArguments()['target'])) {
-            if (null === $instance) {
-                $this->io->error($this->task->getName().' misses the required target argument (like arguments: { source: production }). skipping...');
-
-                return [];
-            }
-
-            return [$instance];
-        }
-
-        $target = $this->task->getArguments()['target'];
-        $filter = Filter::createFromInstanceWithOverrideInstanceSpecification($instance, $target);
-
-        return $this->instanceService->getInstancesByFilter($filter);
     }
 }
