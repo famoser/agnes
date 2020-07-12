@@ -55,9 +55,9 @@ class TaskFactory
         return new Build($releaseOrCommitish);
     }
 
-    public function createRun(Instance $target, string $name): ?Run
+    public function createRun(Instance $target, string $script): ?Run
     {
-        return new Run($name, $target);
+        return new Run($script, $target);
     }
 
     public function createRelease(string $commitish, string $name): ?Release
@@ -68,7 +68,7 @@ class TaskFactory
     /**
      * @throws \Exception
      */
-    public function createDeploy(string $releaseOrCommitish, Instance $target): ?Deploy
+    public function createDeploy(Instance $target, string $releaseOrCommitish): ?Deploy
     {
         if (!$this->fileService->allRequiredFilesExist($target)) {
             $this->io->warning('For instance '.$target->describe().' not all required files were found.');

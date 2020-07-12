@@ -31,6 +31,6 @@ class DeployCommand extends AgnesCommand
         $releaseOrCommitish = $input->getArgument('release or commitish');
         $target = $input->getArgument('target');
 
-        $taskService->addDeployTasks($releaseOrCommitish, $target);
+        $taskService->addDeployTasks($target, $releaseOrCommitish);
     }
 }

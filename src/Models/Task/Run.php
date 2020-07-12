@@ -17,11 +17,11 @@ class Run extends AbstractTask
     /**
      * @var string
      */
-    private $name;
+    private $script;
 
-    public function __construct(string $name, Instance $target)
+    public function __construct(string $script, Instance $target)
     {
-        $this->name = $name;
+        $this->script = $script;
         $this->target = $target;
     }
 
@@ -30,14 +30,14 @@ class Run extends AbstractTask
         return $this->target;
     }
 
-    public function getName(): string
+    public function getScript(): string
     {
-        return $this->name;
+        return $this->script;
     }
 
     public function describe(): string
     {
-        return 'running '.$this->getName().' on '.$this->getTarget()->describe();
+        return 'running '.$this->getScript().' on '.$this->getTarget()->describe();
     }
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)

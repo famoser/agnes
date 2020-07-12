@@ -13,35 +13,35 @@ class Rollback extends AbstractTask
     /**
      * @var Instance
      */
-    private $instance;
+    private $target;
 
     /**
      * @var Installation
      */
-    private $target;
+    private $installation;
 
     /**
      * Rollback constructor.
      */
-    public function __construct(Instance $instance, Installation $target)
+    public function __construct(Instance $target, Installation $installation)
     {
-        $this->instance = $instance;
         $this->target = $target;
+        $this->installation = $installation;
     }
 
-    public function getInstance(): Instance
-    {
-        return $this->instance;
-    }
-
-    public function getTarget(): Installation
+    public function getTarget(): Instance
     {
         return $this->target;
     }
 
+    public function getInstallation(): Installation
+    {
+        return $this->installation;
+    }
+
     public function describe(): string
     {
-        return 'rollback '.$this->getInstance()->describe().' at '.$this->getInstance()->getCurrentInstallation()->getReleaseOrCommitish().'to '.$this->getTarget()->getReleaseOrCommitish();
+        return 'rollback '.$this->getTarget()->describe().' at '.$this->getTarget()->getCurrentInstallation()->getReleaseOrCommitish().'to '.$this->getInstallation()->getReleaseOrCommitish();
     }
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)

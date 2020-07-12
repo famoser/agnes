@@ -93,7 +93,7 @@ class TaskService
         $this->addTask($task);
     }
 
-    public function addRunTask(string $target, string $name)
+    public function addRunTask(string $target, string $script)
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
@@ -102,15 +102,15 @@ class TaskService
             return;
         }
 
-        $script = $this->configurationService->getScriptByName($name);
-        if (null === $script) {
-            $this->io->error('No script by the name '.$name.' was found.');
+        $scriptModel = $this->configurationService->getScriptByName($script);
+        if (null === $scriptModel) {
+            $this->io->error('No script by the name '.$script.' was found.');
 
             return;
         }
 
         foreach ($instances as $instance) {
-            $task = $this->taskFactory->createRun($instance, $name);
+            $task = $this->taskFactory->createRun($instance, $script);
             $this->addTask($task);
         }
     }
@@ -119,7 +119,7 @@ class TaskService
      * @throws \Exception
      * @throws Exception
      */
-    public function addDeployTasks(string $releaseOrCommitish, string $target)
+    public function addDeployTasks(string $target, string $releaseOrCommitish)
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
@@ -132,7 +132,7 @@ class TaskService
 
         $setup = null;
         foreach ($instances as $instance) {
-            $task = $this->taskFactory->createDeploy($releaseOrCommitish, $instance);
+            $task = $this->taskFactory->createDeploy($instance, $releaseOrCommitish);
             $this->addTask($task);
         }
     }

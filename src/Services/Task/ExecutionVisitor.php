@@ -149,7 +149,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
         $target = $run->getTarget();
 
         $this->io->text('executing script');
-        $this->scriptService->executeScriptByName($target, $target->getCurrentInstallation(), $run->name());
+        $this->scriptService->executeScriptByName($target, $target->getCurrentInstallation(), $run->getScript());
 
         return true;
     }
@@ -174,8 +174,8 @@ class ExecutionVisitor extends AbstractTaskVisitor
      */
     public function visitRollback(Rollback $rollback): bool
     {
-        $instance = $rollback->getInstance();
-        $target = $rollback->getTarget();
+        $instance = $rollback->getTarget();
+        $target = $rollback->getInstallation();
 
         $this->io->text('executing rollback hook');
         $this->scriptService->executeRollbackHook($instance, $target);
