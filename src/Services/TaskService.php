@@ -18,6 +18,7 @@ class TaskService
      * @var StyleInterface
      */
     private $io;
+
     /**
      * @var ConfigurationService
      */

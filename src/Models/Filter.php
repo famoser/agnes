@@ -49,6 +49,24 @@ class Filter
         return new self($servers, $environments, $stages);
     }
 
+    public static function createFromInstanceWithOverrideInstanceSpecification(?Instance $instance, string $overrideInstanceSpecification)
+    {
+        $server = $instance->getServerName();
+        $environment = $instance->getEnvironment();
+        $stage = $instance->getStage();
+
+        $entries = explode(':', $overrideInstanceSpecification);
+
+        $override = function (string $entry, string $default) {
+            return '*' !== $entry ? $entry : $default;
+        };
+        $newSpecification = $override($entries[0], $server).':'.
+            $override($entries[1], $environment).':'.
+            $override($entries[2], $stage);
+
+        return self::createFromInstanceSpecification($newSpecification);
+    }
+
     public function instanceMatches(Instance $installation): bool
     {
         $serverName = $installation->getServerName();

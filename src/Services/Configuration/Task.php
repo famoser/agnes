@@ -40,4 +40,12 @@ class Task
     {
         return $this->name;
     }
+
+    /**
+     * @return string[]
+     */
+    public function getArguments(): array
+    {
+        return $this->arguments;
+    }
 }
