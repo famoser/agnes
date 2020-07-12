@@ -6,11 +6,12 @@ use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Models\Task\Build;
-use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
+use Agnes\Models\Task\Run;
 use Agnes\Services\FileService;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstanceService;
@@ -52,6 +53,11 @@ class TaskFactory
     public function createBuild(string $releaseOrCommitish): ?Build
     {
         return new Build($releaseOrCommitish);
+    }
+
+    public function createRun(Instance $target, string $name): ?Run
+    {
+        return new Run($name, $target);
     }
 
     public function createRelease(string $commitish, string $name): ?Release
@@ -133,7 +139,7 @@ class TaskFactory
     /**
      * @throws \Exception
      */
-    public function createCopyShared(Instance $targetInstance, string $sourceStage): ?CopyShared
+    public function createCopyShared(Instance $targetInstance, string $sourceStage): ?Copy
     {
         $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);
         $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
@@ -144,6 +150,6 @@ class TaskFactory
             return null;
         }
 
-        return new CopyShared($sourceInstances[0], $targetInstance);
+        return new Copy($sourceInstances[0], $targetInstance);
     }
 }

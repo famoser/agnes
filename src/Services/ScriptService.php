@@ -101,6 +101,21 @@ class ScriptService
     {
         $scripts = $this->configurationService->getScriptsForHook($hook);
 
+        $this->executeScripts($scripts, $instance, $installation, $arguments);
+    }
+
+    public function executeScriptByName(Instance $target, Installation $installation, string $name)
+    {
+        $scripts = $this->configurationService->getScriptByName($name);
+
+        $this->executeScriptsForHook('after_rollback', $instance, $instance->getCurrentInstallation());
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function executeScripts(array $scripts, Instance $instance, Installation $installation, array $arguments): void
+    {
         foreach ($scripts as $script) {
             // filter by instance
             if (isset($script['instance'])) {

@@ -3,7 +3,7 @@
 namespace Agnes\Services\Task;
 
 use Agnes\Models\Task\AbstractTask;
-use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Services\InstanceService;
 use Agnes\Services\Policy\CopySharedPolicyVisitor;
@@ -32,7 +32,7 @@ class PolicyVisitor extends AbstractTaskVisitor
         $this->instanceService = $instanceService;
     }
 
-    public function visitCopyShared(CopyShared $copyShared)
+    public function visitCopyShared(Copy $copyShared)
     {
         return new CopySharedPolicyVisitor($this->io, $copyShared);
     }

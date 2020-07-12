@@ -37,7 +37,7 @@ if (false === $projectRootDir) {
     require $autoloadRelativePath;
 }
 
-use Agnes\Commands\CopySharedCommand;
+use Agnes\Commands\CopyCommand;
 use Agnes\Commands\DeployCommand;
 use Agnes\Commands\ReleaseCommand;
 use Agnes\Commands\RollbackCommand;
@@ -53,7 +53,7 @@ $app = new Application();
 
 
 $app->addCommands([
-    new CopySharedCommand(),
+    new CopyCommand(),
     new DeployCommand(),
     new ReleaseCommand(),
     new RollbackCommand(),

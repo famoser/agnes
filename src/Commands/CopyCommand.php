@@ -8,11 +8,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class CopySharedCommand extends AgnesCommand
+class CopyCommand extends AgnesCommand
 {
     public function configure()
     {
-        $this->setName('copy:shared')
+        $this->setName('copy')
             ->setDescription('Copies the shared data from the source to the target')
             ->setHelp('This copies the shared data from the source to the target to replicate environment(s).')
             ->addArgument('target', InputArgument::REQUIRED, 'the instances(s) to copy data to. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION)

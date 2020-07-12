@@ -142,14 +142,42 @@ class ConfigurationService
      *
      * @throws Exception
      */
+
+    /** @noinspection PhpUnusedParameterInspection */
     public function getScriptsForHook(string $hook): array
+    {
+        return $this->getScriptsByCondition(function (string $name, array $script) use ($hook) {
+            return (isset($script['hook']) && $script['hook'] === $hook) ||
+                isset($script['hooks']) && in_array($hook, $script['hooks']);
+        });
+    }
+
+    /**
+     * @return Script[]
+     *
+     * @throws Exception
+     */
+
+    /** @noinspection PhpUnusedParameterInspection */
+    public function getScriptByName(string $name)
+    {
+        return $this->getScriptsByCondition(function (string $scriptName, array $script) use ($name) {
+            return $scriptName === $name;
+        });
+    }
+
+    /**
+     * @return Script[]
+     *
+     * @throws Exception
+     */
+    private function getScriptsByCondition(callable $condition): array
     {
         $config = $this->getNestedConfigWithDefault([], 'scripts');
 
         $result = [];
         foreach ($config as $name => $script) {
-            if ((isset($script['hook']) && $script['hook'] !== $hook) ||
-                (isset($script['hooks']) && !in_array($hook, $script['hooks']))) {
+            if (!$condition($name, $script)) {
                 continue;
             }
 

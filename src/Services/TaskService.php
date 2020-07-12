@@ -4,7 +4,7 @@ namespace Agnes\Services;
 
 use Agnes\Models\Filter;
 use Agnes\Models\Task\AbstractTask;
-use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Copy;
 use Agnes\Services\Policy\AbstractPolicyVisitor;
 use Agnes\Services\Task\AfterTaskVisitor;
 use Agnes\Services\Task\ExecutionVisitor;
@@ -87,6 +87,34 @@ class TaskService
         $this->addTask($release);
     }
 
+    public function addBuildTask(string $commitish)
+    {
+        $task = $this->taskFactory->createBuild($commitish);
+        $this->addTask($task);
+    }
+
+    public function addRunTask(string $target, string $name)
+    {
+        $instances = $this->instanceService->getInstancesBySpecification($target);
+        if (0 === count($instances)) {
+            $this->io->error('For target specification '.$target.' no matching instances were found.');
+
+            return;
+        }
+
+        $script = $this->configurationService->getScriptByName($name);
+        if (null === $script) {
+            $this->io->error('No script by the name '.$name.' was found.');
+
+            return;
+        }
+
+        foreach ($instances as $instance) {
+            $task = $this->taskFactory->createRun($instance, $name);
+            $this->addTask($task);
+        }
+    }
+
     /**
      * @throws \Exception
      * @throws Exception
@@ -141,7 +169,7 @@ class TaskService
             return;
         }
 
-        /** @var CopyShared[] $copyShareds */
+        /** @var Copy[] $copyShareds */
         $copyShareds = [];
         foreach ($targetInstances as $targetInstance) {
             $copyShared = $this->taskFactory->createCopyShared($targetInstance, $sourceStage);

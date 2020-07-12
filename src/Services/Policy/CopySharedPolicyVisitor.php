@@ -5,21 +5,21 @@ namespace Agnes\Services\Policy;
 use Agnes\Models\Filter;
 use Agnes\Models\Policy\SameReleasePolicy;
 use Agnes\Models\Policy\StageWriteDownPolicy;
-use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Copy;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class CopySharedPolicyVisitor extends NoPolicyVisitor
 {
     /**
-     * @var CopyShared
+     * @var Copy
      */
     private $copyShared;
 
     /**
      * CopySharedPolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, CopyShared $copyShared)
+    public function __construct(StyleInterface $io, Copy $copyShared)
     {
         parent::__construct($io, $copyShared);
 

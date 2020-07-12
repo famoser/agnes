@@ -3,11 +3,12 @@
 namespace Agnes\Services\Task;
 
 use Agnes\Models\Task\Build;
-use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
+use Agnes\Models\Task\Run;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\FileService;
 use Agnes\Services\GithubService;
@@ -81,7 +82,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     /**
      * @throws Exception
      */
-    public function visitCopyShared(CopyShared $copyShared): bool
+    public function visitCopyShared(Copy $copyShared): bool
     {
         // does not make sense to copy from itself
         if ($copyShared->getSource()->equals($copyShared->getTarget())) {
@@ -136,6 +137,19 @@ class ExecutionVisitor extends AbstractTaskVisitor
 
         $this->io->text('executing after deploy hook');
         $this->scriptService->executeAfterDeployHook($target);
+
+        return true;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function visitRun(Run $run): bool
+    {
+        $target = $run->getTarget();
+
+        $this->io->text('executing script');
+        $this->scriptService->executeScriptByName($target, $target->getCurrentInstallation(), $run->name());
 
         return true;
     }

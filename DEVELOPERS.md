@@ -6,7 +6,7 @@ testplan should try every essential feature
 assume instance with dev, staging, prod environments
 enabled same_release, write_up and write_down policies
 
-- `agnes deploy *:*:prod master` (fails due to write-up)
+- `agnes deploy *:*:prod master ` (fails due to write-up)
 - `agnes deploy *:*:dev master` 
 - `agnes deploy *:*:prod master`
 - `agnes copy:shared *:*:prod dev` (fails due to write-down)

@@ -5,9 +5,9 @@ namespace Agnes\Models\Task;
 use Agnes\Models\Instance;
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class CopyShared extends AbstractTask
+class Copy extends AbstractTask
 {
-    const NAME = 'oopy_shared';
+    const NAME = 'copy';
 
     /**
      * @var Instance

@@ -14,7 +14,7 @@ class RollbackCommand extends AgnesCommand
     public function configure()
     {
         $this->setName('rollback')
-            ->setDescription('Rollback a release to a previous version')
+            ->setDescription('Rollback an instance to a previously active installation')
             ->setHelp('This command executes the rollback scripts & switches to an older installation at the target instance(s).
 If rollback-to is supplied, it will rollback instances to that an installation matching the version.
 If rollback-from is supplied, it will rollback instances with that installation version.

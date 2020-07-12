@@ -14,7 +14,7 @@ class DeployCommand extends AgnesCommand
     {
         $this->setName('deploy')
             ->setDescription('Deploy a release to a specific environment')
-            ->setHelp('This command installs a release to a specific environment and if the installation succeeds, it publishes it.')
+            ->setHelp('This command installs a release to a specific instance(s) and if the installation succeeds, it publishes it.')
             ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to deploy to. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION)
             ->addArgument('release or commitish', InputArgument::REQUIRED, 'name of the (github) release or commitish');
 

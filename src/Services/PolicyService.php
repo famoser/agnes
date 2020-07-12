@@ -3,7 +3,7 @@
 namespace Agnes\Services;
 
 use Agnes\Models\Task\AbstractTask;
-use Agnes\Models\Task\CopyShared;
+use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
@@ -79,7 +79,7 @@ class PolicyService
     /**
      * @throws Exception
      */
-    public function canCopyShared(CopyShared $copyShared): bool
+    public function canCopyShared(Copy $copyShared): bool
     {
         $copySharedPolicyVisitor = new CopySharedPolicyVisitor($this->io, $copyShared);
 

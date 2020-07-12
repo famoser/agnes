@@ -105,7 +105,7 @@ tasks:
     prod_data_on_staging:
         after: deploy
         instance_filter: *:*:staging
-        action: copy:shared
+        action: copy
         arguments: { source: production }
 
 # instances are the target of your commands, each consisting of a server, an environment and a stage
