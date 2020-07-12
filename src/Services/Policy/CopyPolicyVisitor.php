@@ -9,21 +9,21 @@ use Agnes\Models\Task\Copy;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
-class CopySharedPolicyVisitor extends NoPolicyVisitor
+class CopyPolicyVisitor extends NoPolicyVisitor
 {
     /**
      * @var Copy
      */
-    private $copyShared;
+    private $copy;
 
     /**
-     * CopySharedPolicyVisitor constructor.
+     * CopyPolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, Copy $copyShared)
+    public function __construct(StyleInterface $io, Copy $copy)
     {
-        parent::__construct($io, $copyShared);
+        parent::__construct($io, $copy);
 
-        $this->copyShared = $copyShared;
+        $this->copy = $copy;
     }
 
     protected function checkSameRelease(SameReleasePolicy $sameReleasePolicy): bool
@@ -32,21 +32,21 @@ class CopySharedPolicyVisitor extends NoPolicyVisitor
             return true;
         }
 
-        $sourceInstallation = $this->copyShared->getSource()->getCurrentInstallation();
-        $targetInstallation = $this->copyShared->getTarget()->getCurrentInstallation();
+        $sourceInstallation = $this->copy->getSource()->getCurrentInstallation();
+        $targetInstallation = $this->copy->getTarget()->getCurrentInstallation();
 
         if (null === $sourceInstallation) {
-            return $this->preventExecution($this->copyShared, 'source has no active installation.');
+            return $this->preventExecution($this->copy, 'source has no active installation.');
         }
 
         if (null === $targetInstallation) {
-            return $this->preventExecution($this->copyShared, 'target has no active installation.');
+            return $this->preventExecution($this->copy, 'target has no active installation.');
         }
 
         $sourceIdentification = $sourceInstallation->getReleaseOrCommitish();
         $targetIdentification = $targetInstallation->getReleaseOrCommitish();
         if ($sourceIdentification !== $targetIdentification) {
-            return $this->preventExecution($this->copyShared, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
+            return $this->preventExecution($this->copy, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
         }
 
         return true;
@@ -61,12 +61,12 @@ class CopySharedPolicyVisitor extends NoPolicyVisitor
             return true;
         }
 
-        $targetStage = $this->copyShared->getTarget()->getStage();
-        $sourceStage = $this->copyShared->getSource()->getStage();
+        $targetStage = $this->copy->getTarget()->getStage();
+        $sourceStage = $this->copy->getSource()->getStage();
 
         $stageIndex = $stageWriteDownPolicy->getLayerIndex($sourceStage);
         if (false === $stageIndex) {
-            return $this->preventExecution($this->copyShared, "stage $targetStage not found in specified layers; policy undecidable.");
+            return $this->preventExecution($this->copy, "stage $targetStage not found in specified layers; policy undecidable.");
         }
 
         // if the stageIndex is the highest layer, we are allowed to write
@@ -78,7 +78,7 @@ class CopySharedPolicyVisitor extends NoPolicyVisitor
         $stagesToCheck = array_merge($stageWriteDownPolicy->getNextLowerLayer($stageIndex), $stageWriteDownPolicy->getLayer($stageIndex));
 
         if (!in_array($targetStage, $stagesToCheck)) {
-            return $this->preventExecution($this->copyShared, "target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
+            return $this->preventExecution($this->copy, "target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
         }
 
         return true;
@@ -92,7 +92,7 @@ class CopySharedPolicyVisitor extends NoPolicyVisitor
     protected function filterMatches(?Filter $filter): bool
     {
         return null === $filter ||
-            $filter->instanceMatches($this->copyShared->getSource()) ||
-            $filter->instanceMatches($this->copyShared->getTarget());
+            $filter->instanceMatches($this->copy->getSource()) ||
+            $filter->instanceMatches($this->copy->getTarget());
     }
 }

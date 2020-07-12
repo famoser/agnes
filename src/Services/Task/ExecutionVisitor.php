@@ -82,18 +82,18 @@ class ExecutionVisitor extends AbstractTaskVisitor
     /**
      * @throws Exception
      */
-    public function visitCopyShared(Copy $copyShared): bool
+    public function visitCopy(Copy $copy): bool
     {
         // does not make sense to copy from itself
-        if ($copyShared->getSource()->equals($copyShared->getTarget())) {
-            $this->io->warning('Skipping '.$copyShared->describe().' because source and target are same instance.');
+        if ($copy->getSource()->equals($copy->getTarget())) {
+            $this->io->warning('Skipping '.$copy->describe().' because source and target are same instance.');
 
             return true;
         }
 
-        $sourceSharedPath = $copyShared->getSource()->getSharedFolder();
-        $targetSharedPath = $copyShared->getTarget()->getSharedFolder();
-        $connection = $copyShared->getSource()->getConnection();
+        $sourceSharedPath = $copy->getSource()->getSharedFolder();
+        $targetSharedPath = $copy->getTarget()->getSharedFolder();
+        $connection = $copy->getSource()->getConnection();
 
         $sharedFolders = $this->configurationService->getSharedFolders();
         foreach ($sharedFolders as $sharedFolder) {

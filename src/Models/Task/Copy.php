@@ -20,7 +20,7 @@ class Copy extends AbstractTask
     private $target;
 
     /**
-     * CopyShared constructor.
+     * Copy constructor.
      */
     public function __construct(Instance $source, Instance $target)
     {
@@ -45,7 +45,7 @@ class Copy extends AbstractTask
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)
     {
-        return $abstractActionVisitor->visitCopyShared($this);
+        return $abstractActionVisitor->visitCopy($this);
     }
 
     public function name(): string

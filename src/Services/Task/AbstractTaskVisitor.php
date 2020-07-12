@@ -17,9 +17,9 @@ abstract class AbstractTaskVisitor
     /**
      * @throws Exception
      */
-    public function visitCopyShared(Copy $copyShared)
+    public function visitCopy(Copy $copy)
     {
-        return $this->visitDefault($copyShared);
+        return $this->visitDefault($copy);
     }
 
     /**

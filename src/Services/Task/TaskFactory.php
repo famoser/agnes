@@ -139,7 +139,7 @@ class TaskFactory
     /**
      * @throws \Exception
      */
-    public function createCopyShared(Instance $targetInstance, string $sourceStage): ?Copy
+    public function createCopy(Instance $targetInstance, string $sourceStage): ?Copy
     {
         $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);
         $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);

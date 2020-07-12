@@ -4,7 +4,6 @@ namespace Agnes\Services;
 
 use Agnes\Models\Filter;
 use Agnes\Models\Task\AbstractTask;
-use Agnes\Models\Task\Copy;
 use Agnes\Services\Policy\AbstractPolicyVisitor;
 use Agnes\Services\Task\AfterTaskVisitor;
 use Agnes\Services\Task\ExecutionVisitor;
@@ -159,7 +158,7 @@ class TaskService
     /**
      * @throws Exception
      */
-    public function addCopySharedTasks(string $target, string $sourceStage)
+    public function addCopyTasks(string $target, string $sourceStage)
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $targetInstances = $this->instanceService->getInstancesByFilter($filter);
@@ -169,11 +168,9 @@ class TaskService
             return;
         }
 
-        /** @var Copy[] $copyShareds */
-        $copyShareds = [];
         foreach ($targetInstances as $targetInstance) {
-            $copyShared = $this->taskFactory->createCopyShared($targetInstance, $sourceStage);
-            $this->addTask($copyShared);
+            $copy = $this->taskFactory->createCopy($targetInstance, $sourceStage);
+            $this->addTask($copy);
         }
     }
 

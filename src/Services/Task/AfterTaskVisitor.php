@@ -53,6 +53,16 @@ class AfterTaskVisitor extends AbstractTaskVisitor
         return $this->createFromInstance($rollback->getTarget());
     }
 
+    public function visitRun(Run $run)
+    {
+        return $this->createFromInstance($run->getTarget());
+    }
+
+    public function visitCopy(Copy $copy)
+    {
+        return $this->createFromInstance($copy->getTarget());
+    }
+
     private function createFromInstance(Instance $instance)
     {
         if (!$this->task->getFilter()->instanceMatches($instance)) {
@@ -82,7 +92,7 @@ class AfterTaskVisitor extends AbstractTaskVisitor
 
         $source = $arguments['source'];
 
-        return $this->taskFactory->createCopyShared($instance, $source);
+        return $this->taskFactory->createCopy($instance, $source);
     }
 
     private function createRunTask(Instance $instance): ?Run

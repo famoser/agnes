@@ -6,7 +6,7 @@ use Agnes\Models\Task\AbstractTask;
 use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Services\InstanceService;
-use Agnes\Services\Policy\CopySharedPolicyVisitor;
+use Agnes\Services\Policy\CopyPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\NoPolicyVisitor;
 use Symfony\Component\Console\Style\StyleInterface;
@@ -32,9 +32,9 @@ class PolicyVisitor extends AbstractTaskVisitor
         $this->instanceService = $instanceService;
     }
 
-    public function visitCopyShared(Copy $copyShared)
+    public function visitCopy(Copy $copy)
     {
-        return new CopySharedPolicyVisitor($this->io, $copyShared);
+        return new CopyPolicyVisitor($this->io, $copy);
     }
 
     public function visitDeploy(Deploy $deploy)

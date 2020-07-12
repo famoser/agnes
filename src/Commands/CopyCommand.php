@@ -31,6 +31,6 @@ class CopyCommand extends AgnesCommand
         $target = $input->getArgument('target');
         $source = $input->getArgument('source');
 
-        $taskService->addCopySharedTasks($target, $source);
+        $taskService->addCopyTasks($target, $source);
     }
 }
