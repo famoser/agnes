@@ -37,10 +37,7 @@ if (false === $projectRootDir) {
     require $autoloadRelativePath;
 }
 
-use Agnes\Commands\CopyCommand;
-use Agnes\Commands\DeployCommand;
-use Agnes\Commands\ReleaseCommand;
-use Agnes\Commands\RollbackCommand;
+use Agnes\AgnesFactory;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
 
@@ -51,12 +48,6 @@ if (file_exists('.env')) {
 
 $app = new Application();
 
-
-$app->addCommands([
-    new CopyCommand(),
-    new DeployCommand(),
-    new ReleaseCommand(),
-    new RollbackCommand(),
-]);
+$app->addCommands(AgnesFactory::getCommands());
 
 $app->run();

@@ -2,12 +2,17 @@
 
 namespace Agnes;
 
+use Agnes\Commands\BuildCommand;
+use Agnes\Commands\CopyCommand;
+use Agnes\Commands\DeployCommand;
+use Agnes\Commands\ReleaseCommand;
+use Agnes\Commands\RollbackCommand;
+use Agnes\Commands\RunCommand;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\FileService;
 use Agnes\Services\GithubService;
 use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
-use Agnes\Services\PolicyService;
 use Agnes\Services\ScriptService;
 use Agnes\Services\TaskService;
 use Http\Client\Common\Plugin\RedirectPlugin;
@@ -41,11 +46,11 @@ class AgnesFactory
         $githubService = new GithubService($pluginClient, $configurationService);
         $installationService = new InstallationService($io, $configurationService);
         $instanceService = new InstanceService($configurationService, $installationService);
-        $policyService = new PolicyService($configurationService, $instanceService, $io);
         $scriptService = new ScriptService($io, $configurationService);
         $taskService = new TaskService($io, $configurationService, $fileService, $githubService, $installationService, $instanceService, $scriptService);
 
         // set properties
+        $this->configurationService = $configurationService;
         $this->taskService = $taskService;
     }
 
@@ -57,5 +62,17 @@ class AgnesFactory
     public function getTaskService()
     {
         return $this->taskService;
+    }
+
+    public static function getCommands()
+    {
+        return [
+            new BuildCommand(),
+            new CopyCommand(),
+            new DeployCommand(),
+            new ReleaseCommand(),
+            new RollbackCommand(),
+            new RunCommand(),
+        ];
     }
 }
