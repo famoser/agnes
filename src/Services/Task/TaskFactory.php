@@ -79,16 +79,16 @@ class TaskFactory
         return new Deploy($target);
     }
 
-    public function createDownload(string $releaseOrCommitish): ?Download
+    public function createDownload(string $release): ?Download
     {
-        $commitish = $this->githubService->commitishOfReleaseByReleaseName($releaseOrCommitish);
+        $commitish = $this->githubService->commitishOfReleaseByReleaseName($release);
         if (null === $commitish) {
-            $this->io->warning('Release '.$releaseOrCommitish.' was not found.');
+            $this->io->warning('Release '.$release.' was not found.');
 
             return null;
         }
 
-        return new Download($releaseOrCommitish, $commitish);
+        return new Download($commitish, $release);
     }
 
     public function createRollback(Instance $instance, ?string $rollbackTo, ?string $rollbackFrom): ?Rollback

@@ -10,7 +10,7 @@ use Agnes\Services\Task\ExecutionVisitor\BuildResult;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
-class DeployPolicyVisitor extends NoPolicyVisitor
+class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
 {
     /**
      * @var InstanceService
@@ -23,16 +23,16 @@ class DeployPolicyVisitor extends NoPolicyVisitor
     private $deploy;
 
     /**
-     * @var BuildResult
+     * @var BuildResult|null
      */
     private $buildResult;
 
     /**
      * DeployPolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, InstanceService $installationService, Deploy $deploy, BuildResult $buildResult)
+    public function __construct(StyleInterface $io, InstanceService $installationService, ?BuildResult $buildResult, Deploy $deploy)
     {
-        parent::__construct($io, $deploy);
+        parent::__construct($io, $buildResult, $deploy);
 
         $this->installationService = $installationService;
         $this->deploy = $deploy;
@@ -51,7 +51,7 @@ class DeployPolicyVisitor extends NoPolicyVisitor
         $targetStage = $this->deploy->getTarget()->getStage();
         $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
         if (false === $stageIndex) {
-            return $this->preventExecution($this->deploy, "Stage $targetStage not found in specified layers; policy undecidable.");
+            return $this->preventExecution("Stage $targetStage not found in specified layers; policy undecidable.");
         }
 
         // if the stageIndex is the lowest layer, we are allowed to write
@@ -78,7 +78,7 @@ class DeployPolicyVisitor extends NoPolicyVisitor
             }
         }
 
-        return $this->preventExecution($this->deploy, "$targetStage not lowest stage, and release was never published in the next lower layer.");
+        return $this->preventExecution("$targetStage not lowest stage, and release was never published in the next lower layer.");
     }
 
     protected function filterMatches(?Filter $filter): bool

@@ -85,12 +85,12 @@ abstract class AbstractPolicyVisitor
 
     protected function checkDefault(Policy $policy): bool
     {
-        return $this->preventExecution($this->task, 'The policy '.get_class($policy).' has not been implemented for the executing task.');
+        return $this->preventExecution('The policy '.get_class($policy).' has not been implemented for the executing task.');
     }
 
-    protected function preventExecution(AbstractTask $payload, string $reason): bool
+    protected function preventExecution(string $reason): bool
     {
-        $this->io->error('Cannot execute '.$payload->describe().': '.$reason);
+        $this->io->error('Cannot execute '.$this->task->describe().': '.$reason);
 
         return false;
     }
@@ -105,5 +105,10 @@ abstract class AbstractPolicyVisitor
         }
 
         throw new Exception('Filter is non-null; undecidable');
+    }
+
+    public function validate()
+    {
+        return true;
     }
 }

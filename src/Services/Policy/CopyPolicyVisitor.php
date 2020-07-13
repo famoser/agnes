@@ -36,17 +36,17 @@ class CopyPolicyVisitor extends NoPolicyVisitor
         $targetInstallation = $this->copy->getTarget()->getCurrentInstallation();
 
         if (null === $sourceInstallation) {
-            return $this->preventExecution($this->copy, 'source has no active installation.');
+            return $this->preventExecution('source has no active installation.');
         }
 
         if (null === $targetInstallation) {
-            return $this->preventExecution($this->copy, 'target has no active installation.');
+            return $this->preventExecution('target has no active installation.');
         }
 
         $sourceIdentification = $sourceInstallation->getCommitish();
         $targetIdentification = $targetInstallation->getCommitish();
         if ($sourceIdentification !== $targetIdentification) {
-            return $this->preventExecution($this->copy, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
+            return $this->preventExecution("source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
         }
 
         return true;
@@ -66,7 +66,7 @@ class CopyPolicyVisitor extends NoPolicyVisitor
 
         $stageIndex = $stageWriteDownPolicy->getLayerIndex($sourceStage);
         if (false === $stageIndex) {
-            return $this->preventExecution($this->copy, "stage $targetStage not found in specified layers; policy undecidable.");
+            return $this->preventExecution("stage $targetStage not found in specified layers; policy undecidable.");
         }
 
         // if the stageIndex is the highest layer, we are allowed to write
@@ -78,7 +78,7 @@ class CopyPolicyVisitor extends NoPolicyVisitor
         $stagesToCheck = array_merge($stageWriteDownPolicy->getNextLowerLayer($stageIndex), $stageWriteDownPolicy->getLayer($stageIndex));
 
         if (!in_array($targetStage, $stagesToCheck)) {
-            return $this->preventExecution($this->copy, "target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
+            return $this->preventExecution("target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
         }
 
         return true;

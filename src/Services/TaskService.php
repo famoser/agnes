@@ -226,6 +226,13 @@ class TaskService
         $policyVisitor = new PolicyVisitor($this->io, $this->instanceService, $this->executionVisitor->getBuildResult());
         /** @var AbstractPolicyVisitor $taskPolicyVisitor */
         $taskPolicyVisitor = $task->accept($policyVisitor);
+        if (!$taskPolicyVisitor->validate()) {
+            $this->io->warning('skipping '.$task->describe().' ...');
+
+            return;
+        }
+
+        // check for conflicting policies
         $policies = $this->configurationService->getPolicies($task->name());
         foreach ($policies as $policy) {
             if (!$policy->accept($taskPolicyVisitor)) {

@@ -216,6 +216,9 @@ class ExecutionVisitor extends AbstractTaskVisitor
     public function visitDownload(Download $downloadGithub)
     {
         $content = $this->githubService->downloadAssetForReleaseByReleaseName($downloadGithub->getRelease());
+        if (null === $content) {
+            return false;
+        }
 
         $this->buildResult = new BuildResult($downloadGithub->getCommitish(), $downloadGithub->getRelease(), $content);
 
