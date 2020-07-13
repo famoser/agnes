@@ -43,7 +43,7 @@ class AgnesFactory
         // construct internal services
         $configurationService = new ConfigurationService($io);
         $fileService = new FileService($io, $configurationService);
-        $githubService = new GithubService($pluginClient, $configurationService);
+        $githubService = new GithubService($io, $pluginClient, $configurationService);
         $installationService = new InstallationService($io, $configurationService);
         $instanceService = new InstanceService($configurationService, $installationService);
         $scriptService = new ScriptService($io, $configurationService);

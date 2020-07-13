@@ -41,7 +41,7 @@ class Rollback extends AbstractTask
 
     public function describe(): string
     {
-        return 'rollback '.$this->getTarget()->describe().' at '.$this->getTarget()->getCurrentInstallation()->getReleaseOrCommitish().'to '.$this->getInstallation()->getReleaseOrCommitish();
+        return 'rollback '.$this->getTarget()->describe().' at '.$this->getTarget()->getCurrentInstallation()->getCommitish().'to '.$this->getInstallation()->getCommitish();
     }
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)

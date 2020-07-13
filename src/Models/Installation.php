@@ -20,7 +20,12 @@ class Installation
     /**
      * @var string
      */
-    private $releaseOrCommitish;
+    private $commitish;
+
+    /**
+     * @var string
+     */
+    private $releaseOrHash;
 
     /**
      * @var OnlinePeriod[]
@@ -30,11 +35,12 @@ class Installation
     /**
      * Installation constructor.
      */
-    public function __construct(string $folder, int $number, string $releaseOrCommitish, array $onlinePeriods = [])
+    public function __construct(string $folder, int $number, string $commitish, string $releaseOrHash, array $onlinePeriods = [])
     {
         $this->folder = $folder;
         $this->number = $number;
-        $this->releaseOrCommitish = $releaseOrCommitish;
+        $this->commitish = $commitish;
+        $this->releaseOrHash = $releaseOrHash;
         $this->onlinePeriods = $onlinePeriods;
     }
 
@@ -48,9 +54,14 @@ class Installation
         return $this->number;
     }
 
-    public function getReleaseOrCommitish(): string
+    public function getCommitish(): string
     {
-        return $this->releaseOrCommitish;
+        return $this->commitish;
+    }
+
+    public function getReleaseOrHash(): string
+    {
+        return $this->releaseOrHash;
     }
 
     /**
@@ -85,7 +96,7 @@ class Installation
 
     public function toArray(): array
     {
-        $array = ['number' => $this->number, 'release_or_commitish' => $this->releaseOrCommitish, 'online_periods' => []];
+        $array = ['number' => $this->number, 'commitish' => $this->commitish, 'release_or_hash' => $this->releaseOrHash, 'online_periods' => []];
 
         foreach ($this->onlinePeriods as $onlinePeriod) {
             $array['online_periods'][] = $onlinePeriod->toArray();
@@ -101,6 +112,6 @@ class Installation
             $onlinePeriods[] = OnlinePeriod::fromArray($onlinePeriod);
         }
 
-        return new Installation($folder, $array['number'], $array['release_or_commitish'], $onlinePeriods);
+        return new Installation($folder, $array['number'], $array['commitish'], $array['release_or_hash'], $onlinePeriods);
     }
 }

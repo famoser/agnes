@@ -11,30 +11,30 @@ class Download extends AbstractTask
     /**
      * @var string
      */
-    private $release;
+    private $commitish;
 
     /**
      * @var string
      */
-    private $assetId;
+    private $release;
 
     /**
      * DownloadGithub constructor.
      */
-    public function __construct(string $release, string $assetId)
+    public function __construct(string $commitish, string $release)
     {
+        $this->commitish = $commitish;
         $this->release = $release;
-        $this->assetId = $assetId;
+    }
+
+    public function getCommitish(): string
+    {
+        return $this->commitish;
     }
 
     public function getRelease(): string
     {
         return $this->release;
-    }
-
-    public function getAssetId(): string
-    {
-        return $this->assetId;
     }
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)
@@ -44,7 +44,7 @@ class Download extends AbstractTask
 
     public function describe(): string
     {
-        return 'download asset '.$this->assetId.' of release '.$this->release;
+        return 'download asset of release '.$this->release;
     }
 
     public function name(): string

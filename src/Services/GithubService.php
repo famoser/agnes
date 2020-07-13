@@ -7,9 +7,15 @@ use Http\Client\Exception;
 use Http\Client\HttpClient;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\Console\Style\OutputStyle;
 
 class GithubService
 {
+    /**
+     * @var OutputStyle
+     */
+    private $io;
+
     /**
      * @var HttpClient
      */
@@ -23,8 +29,9 @@ class GithubService
     /**
      * GithubService constructor.
      */
-    public function __construct(HttpClient $httpClient, ConfigurationService $configurationService)
+    public function __construct(OutputStyle $io, HttpClient $httpClient, ConfigurationService $configurationService)
     {
+        $this->io = $io;
         $this->httpClient = $httpClient;
         $this->configurationService = $configurationService;
     }
@@ -53,17 +60,17 @@ class GithubService
      * @throws Exception
      * @throws \Exception
      */
-    public function getBuildByReleaseName(string $releaseName): ?string
+    public function commitishOfReleaseByReleaseName(string $releaseName): ?string
     {
         $response = $this->getClient()->getReleases();
         $releases = json_decode($response->getBody()->getContents());
 
         foreach ($releases as $release) {
-            if ($release->name !== $releaseName || 0 === count($release->assets)) {
+            if ($release->name !== $releaseName) {
                 continue;
             }
 
-            return $release->assets[0]->id;
+            return $release->target_commitish;
         }
 
         return null;
@@ -73,11 +80,30 @@ class GithubService
      * @throws Exception
      * @throws ClientExceptionInterface
      */
-    public function downloadAsset(string $assetId)
+    public function downloadAssetForReleaseByReleaseName(string $releaseName)
     {
-        $response = $this->getClient()->downloadAsset($assetId);
+        $response = $this->getClient()->getReleases();
+        $releases = json_decode($response->getBody()->getContents());
 
-        return $response->getBody()->getContents();
+        foreach ($releases as $release) {
+            if ($release->name !== $releaseName) {
+                continue;
+            }
+
+            if (0 === count($release->assets)) {
+                $this->io->error('Release '.$releaseName.' has no release asset.');
+
+                return null;
+            }
+
+            $response = $this->getClient()->downloadAsset($release->assets[0]->id);
+
+            return $response->getBody()->getContents();
+        }
+
+        $this->io->error('Release '.$releaseName.' does not exist.');
+
+        return null;
     }
 
     /**

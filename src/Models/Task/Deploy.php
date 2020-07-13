@@ -15,18 +15,10 @@ class Deploy extends AbstractTask
     private $target;
 
     /**
-     * @var string
-     */
-    private $releaseOrCommitish;
-
-    /**
      * Deployment constructor.
-     *
-     * @param string[] $files
      */
-    public function __construct(string $releaseOrCommitish, Instance $target)
+    public function __construct(Instance $target)
     {
-        $this->releaseOrCommitish = $releaseOrCommitish;
         $this->target = $target;
     }
 
@@ -38,6 +30,11 @@ class Deploy extends AbstractTask
     public function getReleaseOrCommitish(): string
     {
         return $this->releaseOrCommitish;
+    }
+
+    public function isRelease(): bool
+    {
+        return $this->isRelease;
     }
 
     public function describe(): string

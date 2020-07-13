@@ -15,6 +15,7 @@ use Agnes\Services\GithubService;
 use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\ScriptService;
+use Agnes\Services\Task\ExecutionVisitor\BuildResult;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -56,14 +57,9 @@ class ExecutionVisitor extends AbstractTaskVisitor
     private $scriptService;
 
     /**
-     * @var string|null
+     * @var BuildResult|null
      */
-    private $commitish;
-
-    /**
-     * @var string|null
-     */
-    private $content;
+    private $buildResult;
 
     /**
      * ExecutionVisitor constructor.
@@ -112,15 +108,15 @@ class ExecutionVisitor extends AbstractTaskVisitor
      */
     public function visitDeploy(Deploy $deploy): bool
     {
-        if ($deploy->getReleaseOrCommitish() !== $this->commitish) {
-            throw new Exception('expected releae or commitish '.$deploy->getReleaseOrCommitish().' but found '.$this->commitish);
+        if ($deploy->getReleaseOrCommitish() !== $this->commitish && $deploy->getReleaseOrCommitish() !== $this->releaseOrHash) {
+            throw new Exception('expected release or commitish '.$deploy->getReleaseOrCommitish().' but found commitish '.$this->commitish.' and release '.$this->releaseOrHash);
         }
 
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
         $this->io->text('determine target folder');
-        $newInstallation = $this->installationService->install($target, $this->commitish, $this->content);
+        $newInstallation = $this->installationService->install($target, $this->buildResult);
 
         $this->io->text('uploading files');
         $this->fileService->uploadFiles($target, $newInstallation);
@@ -159,12 +155,8 @@ class ExecutionVisitor extends AbstractTaskVisitor
      */
     public function visitRelease(Release $release): bool
     {
-        if ($release->getCommitish() !== $this->commitish) {
-            throw new Exception('expected commitish '.$release->getCommitish().' but found '.$this->commitish);
-        }
-
         $this->io->text('publishing release to github');
-        $this->githubService->publish($release->name(), $this->commitish, $this->content);
+        $this->githubService->publish($release->name(), $this->buildResult->getCommitish(), $this->buildResult->getContent());
 
         return true;
     }
@@ -203,7 +195,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
 
         $this->io->text('checking out repository');
         $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
-        $this->commitish = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $build->getCommitish());
+        $hash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $build->getCommitish());
 
         $this->io->text('executing release script');
         $scripts = $this->scriptService->getBuildHookCommands();
@@ -211,7 +203,9 @@ class ExecutionVisitor extends AbstractTaskVisitor
 
         $this->io->text('compressing build folder');
         $filePath = $connection->compressTarGz($buildPath, 'build..tar.gz');
-        $this->content = $connection->readFile($filePath);
+        $content = $connection->readFile($filePath);
+
+        $this->buildResult = new BuildResult($build->getCommitish(), $hash, $content);
 
         $this->io->text('removing build folder');
         $connection->removeFolder($buildPath);
@@ -219,11 +213,26 @@ class ExecutionVisitor extends AbstractTaskVisitor
         return true;
     }
 
+    /**
+     * @throws \Http\Client\Exception
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     */
     public function visitDownload(Download $downloadGithub)
     {
-        $this->commitish = $downloadGithub->getRelease();
-        $this->content = $this->githubService->downloadAsset($downloadGithub->getAssetId());
+        $content = $this->githubService->downloadAssetForReleaseByReleaseName($downloadGithub->getRelease());
+
+        $this->buildResult = new BuildResult($downloadGithub->getCommitish(), $downloadGithub->getRelease(), $content);
 
         return true;
+    }
+
+    public function buildExists(): bool
+    {
+        return null !== $this->buildResult;
+    }
+
+    public function getBuildResult(): ?BuildResult
+    {
+        return $this->buildResult;
     }
 }

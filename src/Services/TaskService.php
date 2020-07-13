@@ -50,11 +50,6 @@ class TaskService
     private $executionVisitor;
 
     /**
-     * @var PolicyVisitor
-     */
-    private $policyVisitor;
-
-    /**
      * ExecutionVisitor constructor.
      */
     public function __construct(StyleInterface $io, ConfigurationService $configurationService, FileService $fileService, GithubService $githubService, InstallationService $installationService, InstanceService $instanceService, ScriptService $scriptService)
@@ -66,9 +61,7 @@ class TaskService
         $this->githubService = $githubService;
 
         $this->taskFactory = new TaskFactory($io, $fileService, $githubService, $instanceService);
-
         $this->executionVisitor = new ExecutionVisitor($io, $configurationService, $fileService, $githubService, $installationService, $instanceService, $scriptService);
-        $this->policyVisitor = new PolicyVisitor($io, $instanceService);
     }
 
     /**
@@ -83,7 +76,7 @@ class TaskService
     {
         $this->ensureBuild($commitish, false);
 
-        $release = $this->taskFactory->createRelease($commitish, $name);
+        $release = $this->taskFactory->createRelease($name);
         $this->addTask($release);
     }
 
@@ -128,11 +121,11 @@ class TaskService
             return;
         }
 
-        $this->ensureBuild($releaseOrCommitish);
+        $isRelease = $this->ensureBuild($releaseOrCommitish);
 
         $setup = null;
         foreach ($instances as $instance) {
-            $task = $this->taskFactory->createDeploy($instance, $releaseOrCommitish);
+            $task = $this->taskFactory->createDeploy($instance);
             $this->addTask($task);
         }
     }
@@ -176,23 +169,26 @@ class TaskService
     }
 
     /**
-     * @var string[]
+     * @var bool|null
      */
-    private $builtCommitish = [];
+    private $isRelease = null;
 
     private function ensureBuild(string $releaseOrCommitish, bool $allowDownload = true)
     {
-        if (in_array($releaseOrCommitish, $this->builtCommitish)) {
-            return;
+        if (null !== $this->isRelease) {
+            return $this->isRelease;
         }
 
-        if ($allowDownload) {
-            $download = $this->taskFactory->createDownload($releaseOrCommitish);
+        if ($allowDownload && null !== $download = $this->taskFactory->createDownload($releaseOrCommitish)) {
+            $this->isRelease = true;
             $this->addTask($download);
+        } else {
+            $this->isRelease = false;
+            $task = $this->taskFactory->createBuild($releaseOrCommitish);
+            $this->addTask($task);
         }
 
-        $task = $this->taskFactory->createBuild($releaseOrCommitish);
-        $this->addTask($task);
+        return $this->isRelease;
     }
 
     private function addTask(?AbstractTask $task)
@@ -227,11 +223,12 @@ class TaskService
         $this->io->text('executing '.$task->describe().' ...');
 
         // check if policies conflict
-        /** @var AbstractPolicyVisitor $policyVisitor */
-        $policyVisitor = $task->accept($this->policyVisitor);
+        $policyVisitor = new PolicyVisitor($this->io, $this->instanceService, $this->executionVisitor->getBuildResult());
+        /** @var AbstractPolicyVisitor $taskPolicyVisitor */
+        $taskPolicyVisitor = $task->accept($policyVisitor);
         $policies = $this->configurationService->getPolicies($task->name());
         foreach ($policies as $policy) {
-            if (!$policy->accept($policyVisitor)) {
+            if (!$policy->accept($taskPolicyVisitor)) {
                 $this->io->warning('skipping '.$task->describe().' ...');
 
                 return;
@@ -247,7 +244,7 @@ class TaskService
         // execute post-task jobs
         $afterTaskConfigs = $this->configurationService->getAfterTasks($task->name());
         foreach ($afterTaskConfigs as $afterTaskConfig) {
-            $afterTaskVisitor = new AfterTaskVisitor($this->instanceService, $this->taskFactory, $afterTaskConfig);
+            $afterTaskVisitor = new AfterTaskVisitor($this->instanceService, $this->taskFactory, $this->executionVisitor->buildExists(), $afterTaskConfig);
             $afterTasks = $task->accept($afterTaskVisitor);
             foreach ($afterTasks as $afterTask) {
                 $this->executeTask($afterTask);

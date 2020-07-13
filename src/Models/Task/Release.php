@@ -11,32 +11,19 @@ class Release extends AbstractTask
     /**
      * @var string
      */
-    private $commitish;
-
-    /**
-     * @var string
-     */
     private $name;
 
     /**
      * Release constructor.
-     *
-     * @param string $name
      */
-    public function __construct(string $commitish, string $name = null)
+    public function __construct(string $name)
     {
-        $this->commitish = $commitish;
         $this->name = $name;
-    }
-
-    public function getCommitish(): string
-    {
-        return $this->commitish;
     }
 
     public function name(): string
     {
-        return null !== $this->name ? $this->name : $this->commitish;
+        return $this->name;
     }
 
     public function describe(): string

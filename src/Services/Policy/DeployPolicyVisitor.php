@@ -6,6 +6,7 @@ use Agnes\Models\Filter;
 use Agnes\Models\Policy\StageWriteUpPolicy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Services\InstanceService;
+use Agnes\Services\Task\ExecutionVisitor\BuildResult;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -22,14 +23,19 @@ class DeployPolicyVisitor extends NoPolicyVisitor
     private $deployment;
 
     /**
+     * @var BuildResult
+     */
+    private $buildResult;
+
+    /**
      * DeployPolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, InstanceService $installationService, Deploy $deploy)
+    public function __construct(StyleInterface $io, InstanceService $installationService, Deploy $deploy, BuildResult $buildResult)
     {
         parent::__construct($io, $deploy);
 
         $this->installationService = $installationService;
-        $this->deployment = $deploy;
+        $this->buildResult = $buildResult;
     }
 
     /**
@@ -65,7 +71,7 @@ class DeployPolicyVisitor extends NoPolicyVisitor
         // check if the release was published there at any given time
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {
-                if ($installation->getReleaseOrCommitish() === $this->deployment->getReleaseOrCommitish()) {
+                if ($installation->getReleaseOrHash() === $this->buildResult->getReleaseOrHash()) {
                     return true;
                 }
             }

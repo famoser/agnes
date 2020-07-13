@@ -37,18 +37,24 @@ class AfterTaskVisitor extends AbstractTaskVisitor
     private $task;
 
     /**
+     * @var bool
+     */
+    private $buildExists;
+
+    /**
      * AfterTaskVisitor constructor.
      */
-    public function __construct(InstanceService $instanceService, TaskFactory $taskFactory, Task $task)
+    public function __construct(InstanceService $instanceService, TaskFactory $taskFactory, bool $buildExists, Task $task)
     {
         $this->instanceService = $instanceService;
         $this->taskFactory = $taskFactory;
+        $this->buildExists = $buildExists;
         $this->task = $task;
     }
 
     public function visitRelease(Release $release)
     {
-        return $this->createFrom(null, $release->getName());
+        return $this->createFrom();
     }
 
     public function visitDeploy(Deploy $deploy)
@@ -74,7 +80,7 @@ class AfterTaskVisitor extends AbstractTaskVisitor
     /**
      * @throws \Exception
      */
-    private function createFrom(?Instance $instance, ?string $releaseOrCommitish = null): array
+    private function createFrom(?Instance $instance = null): array
     {
         if (null !== $instance && null !== $this->task->getFilter() && !$this->task->getFilter()->instanceMatches($instance)) {
             return [];
@@ -85,7 +91,7 @@ class AfterTaskVisitor extends AbstractTaskVisitor
         /** @var AbstractTask[] $task */
         $tasks = [];
         foreach ($instances as $instance) {
-            $task = $this->createForInstance($instance, $releaseOrCommitish);
+            $task = $this->createForInstance($instance);
             if (null !== $task) {
                 $tasks[] = $task;
             }
@@ -118,15 +124,15 @@ class AfterTaskVisitor extends AbstractTaskVisitor
     /**
      * @throws \Exception
      */
-    private function createForInstance(Instance $instance, ?string $releaseOrCommitish): ?AbstractTask
+    private function createForInstance(Instance $instance): ?AbstractTask
     {
         switch ($this->task->getName()) {
             case Deploy::NAME:
-                if (null === $releaseOrCommitish) {
+                if ($this->buildExists) {
                     return null;
                 }
 
-                return $this->createDeployTask($instance, $releaseOrCommitish);
+                return $this->createDeployTask($instance);
             case Copy::NAME:
                 return $this->createCopyTask($instance);
             case Run::NAME:
@@ -139,9 +145,9 @@ class AfterTaskVisitor extends AbstractTaskVisitor
     /**
      * @throws \Exception
      */
-    private function createDeployTask(Instance $instance, string $releaseOrCommitish): ?Deploy
+    private function createDeployTask(Instance $instance): ?Deploy
     {
-        return $this->taskFactory->createDeploy($instance, $releaseOrCommitish);
+        return $this->taskFactory->createDeploy($instance);
     }
 
     /**

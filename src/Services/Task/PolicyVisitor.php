@@ -9,6 +9,7 @@ use Agnes\Services\InstanceService;
 use Agnes\Services\Policy\CopyPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\NoPolicyVisitor;
+use Agnes\Services\Task\ExecutionVisitor\BuildResult;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class PolicyVisitor extends AbstractTaskVisitor
@@ -24,12 +25,18 @@ class PolicyVisitor extends AbstractTaskVisitor
     private $instanceService;
 
     /**
+     * @var BuildResult
+     */
+    private $buildResult;
+
+    /**
      * PolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, InstanceService $instanceService)
+    public function __construct(StyleInterface $io, InstanceService $instanceService, ?BuildResult $buildResult)
     {
         $this->io = $io;
         $this->instanceService = $instanceService;
+        $this->buildResult = $buildResult;
     }
 
     public function visitCopy(Copy $copy)
@@ -39,7 +46,10 @@ class PolicyVisitor extends AbstractTaskVisitor
 
     public function visitDeploy(Deploy $deploy)
     {
-        return new DeployPolicyVisitor($this->io, $this->instanceService, $deploy);
+        // $this->buildResult is never null here
+        // a deploy task is only ever executed (hence policy checked for) after a build task has finished
+        // hence while this might look like a null-ref, application-wise this is fine
+        return new DeployPolicyVisitor($this->io, $this->instanceService, $deploy, $this->buildResult);
     }
 
     protected function visitDefault(AbstractTask $payload)

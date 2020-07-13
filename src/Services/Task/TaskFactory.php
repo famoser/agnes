@@ -60,15 +60,15 @@ class TaskFactory
         return new Run($script, $target);
     }
 
-    public function createRelease(string $commitish, string $name): ?Release
+    public function createRelease(string $name): ?Release
     {
-        return new Release($commitish, $name);
+        return new Release($name);
     }
 
     /**
      * @throws \Exception
      */
-    public function createDeploy(Instance $target, string $releaseOrCommitish): ?Deploy
+    public function createDeploy(Instance $target): ?Deploy
     {
         if (!$this->fileService->allRequiredFilesExist($target)) {
             $this->io->warning('For instance '.$target->describe().' not all required files were found.');
@@ -76,19 +76,19 @@ class TaskFactory
             return null;
         }
 
-        return new Deploy($releaseOrCommitish, $target);
+        return new Deploy($target);
     }
 
     public function createDownload(string $releaseOrCommitish): ?Download
     {
-        $assetId = $this->githubService->getBuildByReleaseName($releaseOrCommitish);
-        if (null === $assetId) {
-            $this->io->warning('For release '.$releaseOrCommitish.' no release asset was found.');
+        $commitish = $this->githubService->commitishOfReleaseByReleaseName($releaseOrCommitish);
+        if (null === $commitish) {
+            $this->io->warning('Release '.$releaseOrCommitish.' was not found.');
 
             return null;
         }
 
-        return new Download($releaseOrCommitish, $assetId);
+        return new Download($releaseOrCommitish, $commitish);
     }
 
     public function createRollback(Instance $instance, ?string $rollbackTo, ?string $rollbackFrom): ?Rollback
@@ -103,7 +103,7 @@ class TaskFactory
         }
 
         // skip if rollback from does not match
-        if (null !== $rollbackFrom && $currentInstallation->getReleaseOrCommitish() !== $rollbackFrom) {
+        if (null !== $rollbackFrom && $currentInstallation->getCommitish() !== $rollbackFrom) {
             $this->io->warning('Active installation does not match '.$rollbackFrom.'. skipping...');
 
             return null;
@@ -113,7 +113,7 @@ class TaskFactory
         $rollbackToMatcher = null;
         if (null !== $rollbackTo) {
             $rollbackToMatcher = function (Installation $installation) use ($rollbackTo) {
-                return $installation->getReleaseOrCommitish() === $rollbackTo;
+                return $installation->getCommitish() === $rollbackTo;
             };
         }
 

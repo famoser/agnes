@@ -5,6 +5,7 @@ namespace Agnes\Services;
 use Agnes\Models\Connection\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Services\Task\ExecutionVisitor\BuildResult;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -34,12 +35,12 @@ class InstallationService
     /**
      * @throws Exception
      */
-    public function install(Instance $target, string $commitish, string $content): Installation
+    public function install(Instance $target, BuildResult $buildResult): Installation
     {
-        $newInstallation = $this->createInstallation($target, $commitish);
+        $newInstallation = $this->createInstallation($target, $buildResult->getCommitish(), $buildResult->getReleaseOrHash());
 
         $this->io->text('uploading build to '.$newInstallation->getFolder());
-        $this->uploadBuild($target->getConnection(), $newInstallation, $content);
+        $this->uploadBuild($target->getConnection(), $newInstallation, $buildResult->getContent());
 
         $this->io->text('creating and linking shared folders');
         $this->createAndLinkSharedFolders($target->getConnection(), $target, $newInstallation);
@@ -47,9 +48,9 @@ class InstallationService
         return $newInstallation;
     }
 
-    private function createInstallation(Instance $target, string $releaseOrCommitish): Installation
+    private function createInstallation(Instance $target, string $commitish, string $releaseOrHash): Installation
     {
-        $installationFolder = $target->getInstallationsFolder().DIRECTORY_SEPARATOR.$releaseOrCommitish;
+        $installationFolder = $target->getInstallationsFolder().DIRECTORY_SEPARATOR.$releaseOrHash;
         if ($target->getConnection()->checkFolderExists($installationFolder)) {
             $duplicationCounter = 1;
             while ($target->getConnection()->checkFolderExists($installationFolder.'-'.$duplicationCounter)) {
@@ -64,7 +65,7 @@ class InstallationService
         }
         ++$maxNumber;
 
-        $installation = new Installation($installationFolder, $maxNumber, $releaseOrCommitish);
+        $installation = new Installation($installationFolder, $maxNumber, $commitish, $releaseOrHash);
         $target->addInstallation($installation);
 
         return $installation;
