@@ -258,6 +258,7 @@ class TaskService
             }
         }
 
-        $this->io->text('finished '.$task->describe().' ...');
+        $this->io->text('finished '.$task->describe());
+        $this->io->newLine();
     }
 }

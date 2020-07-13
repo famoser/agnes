@@ -29,7 +29,7 @@ class Deploy extends AbstractTask
 
     public function describe(): string
     {
-        return 'deploying to '.$this->getTarget()->describe();
+        return 'deploy to '.$this->getTarget()->describe();
     }
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)

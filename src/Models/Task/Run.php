@@ -37,7 +37,7 @@ class Run extends AbstractTask
 
     public function describe(): string
     {
-        return 'running '.$this->getScript().' on '.$this->getTarget()->describe();
+        return 'run '.$this->getScript().' on '.$this->getTarget()->describe();
     }
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)
