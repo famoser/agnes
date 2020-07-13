@@ -20,7 +20,7 @@ class DeployPolicyVisitor extends NoPolicyVisitor
     /**
      * @var Deploy
      */
-    private $deployment;
+    private $deploy;
 
     /**
      * @var BuildResult
@@ -35,6 +35,7 @@ class DeployPolicyVisitor extends NoPolicyVisitor
         parent::__construct($io, $deploy);
 
         $this->installationService = $installationService;
+        $this->deploy = $deploy;
         $this->buildResult = $buildResult;
     }
 
@@ -47,10 +48,10 @@ class DeployPolicyVisitor extends NoPolicyVisitor
             return true;
         }
 
-        $targetStage = $this->deployment->getTarget()->getStage();
+        $targetStage = $this->deploy->getTarget()->getStage();
         $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
         if (false === $stageIndex) {
-            return $this->preventExecution($this->deployment, "Stage $targetStage not found in specified layers; policy undecidable.");
+            return $this->preventExecution($this->deploy, "Stage $targetStage not found in specified layers; policy undecidable.");
         }
 
         // if the stageIndex is the lowest layer, we are allowed to write
@@ -60,7 +61,7 @@ class DeployPolicyVisitor extends NoPolicyVisitor
 
         // get all instances of the next lower layer
         $stagesToCheck = $stageWriteUpPolicy->getNextLowerLayer($stageIndex);
-        $filter = new Filter(null, [$this->deployment->getTarget()->getEnvironmentName()], $stagesToCheck);
+        $filter = new Filter(null, [$this->deploy->getTarget()->getEnvironmentName()], $stagesToCheck);
         $instances = $this->installationService->getInstancesByFilter($filter);
 
         // if no instances exist of the specified stages fulfil the policy trivially
@@ -77,11 +78,11 @@ class DeployPolicyVisitor extends NoPolicyVisitor
             }
         }
 
-        return $this->preventExecution($this->deployment, "$targetStage not lowest stage, and release was never published in the next lower layer.");
+        return $this->preventExecution($this->deploy, "$targetStage not lowest stage, and release was never published in the next lower layer.");
     }
 
     protected function filterMatches(?Filter $filter): bool
     {
-        return null === $filter || $filter->instanceMatches($this->deployment->getTarget());
+        return null === $filter || $filter->instanceMatches($this->deploy->getTarget());
     }
 }

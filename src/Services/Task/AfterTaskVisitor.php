@@ -59,7 +59,7 @@ class AfterTaskVisitor extends AbstractTaskVisitor
 
     public function visitDeploy(Deploy $deploy)
     {
-        return $this->createFrom($deploy->getTarget(), $deploy->getReleaseOrCommitish());
+        return $this->createFrom($deploy->getTarget());
     }
 
     public function visitRollback(Rollback $rollback)

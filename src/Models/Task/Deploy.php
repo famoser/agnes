@@ -27,16 +27,6 @@ class Deploy extends AbstractTask
         return $this->target;
     }
 
-    public function getReleaseOrCommitish(): string
-    {
-        return $this->releaseOrCommitish;
-    }
-
-    public function isRelease(): bool
-    {
-        return $this->isRelease;
-    }
-
     public function describe(): string
     {
         return 'deploying to '.$this->getTarget()->describe();

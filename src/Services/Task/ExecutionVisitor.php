@@ -108,10 +108,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
      */
     public function visitDeploy(Deploy $deploy): bool
     {
-        if ($deploy->getReleaseOrCommitish() !== $this->commitish && $deploy->getReleaseOrCommitish() !== $this->releaseOrHash) {
-            throw new Exception('expected release or commitish '.$deploy->getReleaseOrCommitish().' but found commitish '.$this->commitish.' and release '.$this->releaseOrHash);
-        }
-
         $target = $deploy->getTarget();
         $connection = $target->getConnection();
 
