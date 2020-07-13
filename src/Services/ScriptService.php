@@ -5,6 +5,7 @@ namespace Agnes\Services;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Services\Configuration\Script;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -115,18 +116,17 @@ class ScriptService
     }
 
     /**
+     * @param Script[] $scripts
+     *
      * @throws Exception
      */
     private function executeScripts(array $scripts, Instance $instance, Installation $installation, array $arguments = []): void
     {
         foreach ($scripts as $script) {
             // filter by instance
-            if (isset($script['instance'])) {
-                $filter = Filter::createFromInstanceSpecification($script['instance']);
-                if (!$filter->instanceMatches($instance)) {
-                    $this->io->text($script->getName().' script\'s filter '.$script['instance'].' does not match instance '.$instance->describe().'. skipping...');
-                    continue;
-                }
+            if (null !== $script->getFilter() && !$script->getFilter()->instanceMatches($instance)) {
+                $this->io->text($script->getName().' script\'s filter '.$script['instance'].' does not match instance '.$instance->describe().'. skipping...');
+                continue;
             }
 
             $this->io->text('executing script for '.$script->getName().'...');
