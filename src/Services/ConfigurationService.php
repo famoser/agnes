@@ -19,7 +19,7 @@ use Agnes\Services\Configuration\Script;
 use Agnes\Services\Configuration\Server;
 use Agnes\Services\Configuration\Task;
 use Exception;
-use Symfony\Component\Console\Style\StyleInterface;
+use Symfony\Component\Console\Style\OutputStyle;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
@@ -37,14 +37,14 @@ class ConfigurationService
     const AGNES_VERSION = 3;
 
     /**
-     * @var StyleInterface
+     * @var OutputStyle
      */
     private $io;
 
     /**
      * ConfigurationService constructor.
      */
-    public function __construct(StyleInterface $io)
+    public function __construct(OutputStyle $io)
     {
         $this->io = $io;
     }

@@ -28,6 +28,8 @@ Full example config:
 
 ```yml
 agnes:
+  version: 3 # the version of agnes your config file is for
+  config_folder: '.deploy' # if you have a config folder
   build_target: # where the release will be built
     connection: # the connection
       type: local # can also be of type ssh, then additionally destination must be specified

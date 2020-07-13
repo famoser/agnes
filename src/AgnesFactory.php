@@ -18,7 +18,7 @@ use Agnes\Services\TaskService;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
-use Symfony\Component\Console\Style\StyleInterface;
+use Symfony\Component\Console\Style\OutputStyle;
 
 class AgnesFactory
 {
@@ -35,7 +35,7 @@ class AgnesFactory
     /**
      * AgnesFactory constructor.
      */
-    public function __construct(StyleInterface $io)
+    public function __construct(OutputStyle $io)
     {
         $redirectPlugin = new RedirectPlugin(['preserve_header' => false]);
         $pluginClient = new PluginClient(HttpClientDiscovery::find(), [$redirectPlugin]);

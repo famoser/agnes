@@ -4,7 +4,7 @@ namespace Agnes\Models\Connection;
 
 use Agnes\Models\Executor\Executor;
 use Exception;
-use Symfony\Component\Console\Style\StyleInterface;
+use Symfony\Component\Console\Style\OutputStyle;
 
 abstract class Connection
 {
@@ -19,14 +19,14 @@ abstract class Connection
     private $executor;
 
     /**
-     * @var StyleInterface
+     * @var OutputStyle
      */
     private $io;
 
     /**
      * Connection constructor.
      */
-    public function __construct(StyleInterface $io, Executor $executor)
+    public function __construct(OutputStyle $io, Executor $executor)
     {
         $this->executor = $executor;
         $this->io = $io;
@@ -80,7 +80,9 @@ abstract class Connection
      */
     protected function executeCommand(string $command): string
     {
-        $this->io->text('executing '.$command);
+        if ($this->io->isVerbose()) {
+            $this->io->text('executing '.$command);
+        }
 
         exec($command.' 2>&1', $output, $returnVar);
 

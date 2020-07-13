@@ -7,7 +7,7 @@ use Exception;
 use function explode;
 use function file_get_contents;
 use function file_put_contents;
-use Symfony\Component\Console\Style\StyleInterface;
+use Symfony\Component\Console\Style\OutputStyle;
 use function unlink;
 
 class SSHConnection extends Connection
@@ -25,7 +25,7 @@ class SSHConnection extends Connection
     /**
      * SSHConnection constructor.
      */
-    public function __construct(StyleInterface $io, Executor $executor, string $destination)
+    public function __construct(OutputStyle $io, Executor $executor, string $destination)
     {
         parent::__construct($io, $executor);
 
