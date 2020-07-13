@@ -2,7 +2,6 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\Configuration\Script;
@@ -123,7 +122,6 @@ class ScriptService
     private function executeScripts(array $scripts, Instance $instance, Installation $installation, array $arguments = []): void
     {
         foreach ($scripts as $script) {
-            // filter by instance
             if (null !== $script->getFilter() && !$script->getFilter()->instanceMatches($instance)) {
                 $this->io->text($script->getName().' script\'s filter '.$script['instance'].' does not match instance '.$instance->describe().'. skipping...');
                 continue;

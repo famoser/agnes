@@ -39,13 +39,13 @@ github:
   api_token: '%env(GITHUB_API_TOKEN)%'
   repository: famoser/agnes
 
-files:
+data:
   shared_folders: # these folders will be shared between releases
     - var/persistent
 
   # declare files you place in the configuration folder which are uploaded to the installation location 
   # files will be expected at <config folder>/server/environment/stage
-  configuration_files: 
+  files: 
     # if deploying on example:example.com:staging, 
     # this file will be looked for at ./files/example/example.com/staging/.env.local
     # if its not found, the deployment will not be started (because its marked as required)
