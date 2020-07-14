@@ -208,13 +208,37 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    public function getAfterTasks(string $hook): array
+    public function getBeforeTasks(string $task): array
+    {
+        return $this->getTasksByCondition(function (string $name, array $taskConfig) use ($task) {
+            return isset($taskConfig['before']) && $taskConfig['before'] === $task;
+        });
+    }
+
+    /**
+     * @return Task[]
+     *
+     * @throws Exception
+     */
+    public function getAfterTasks(string $task): array
+    {
+        return $this->getTasksByCondition(function (string $name, array $taskConfig) use ($task) {
+            return isset($taskConfig['after']) && $taskConfig['after'] === $task;
+        });
+    }
+
+    /**
+     * @return Task[]
+     *
+     * @throws Exception
+     */
+    private function getTasksByCondition(callable $condition): array
     {
         $config = $this->getNestedConfigWithDefault([], 'tasks');
 
         $result = [];
         foreach ($config as $name => $task) {
-            if ((isset($task['after']) && $task['after'] !== $hook)) {
+            if (!$condition($name, $task)) {
                 continue;
             }
 

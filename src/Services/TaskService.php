@@ -4,10 +4,11 @@ namespace Agnes\Services;
 
 use Agnes\Models\Filter;
 use Agnes\Models\Task\AbstractTask;
+use Agnes\Services\Configuration\Task;
 use Agnes\Services\Policy\AbstractPolicyVisitor;
-use Agnes\Services\Task\AfterTaskVisitor;
 use Agnes\Services\Task\ExecutionVisitor;
 use Agnes\Services\Task\PolicyVisitor;
+use Agnes\Services\Task\TaskConfigVisitor;
 use Agnes\Services\Task\TaskFactory;
 use Http\Client\Exception;
 use Symfony\Component\Console\Style\StyleInterface;
@@ -218,9 +219,14 @@ class TaskService
     /**
      * @throws \Exception
      */
-    private function executeTask(AbstractTask $task)
+    private function executeTask(AbstractTask $task, bool $subSection = false)
     {
-        $this->io->section($task->describe());
+        if ($subSection) {
+            $this->io->newLine();
+            $this->io->text($task->describe());
+        } else {
+            $this->io->section($task->describe());
+        }
 
         // check if policies conflict
         $policyVisitor = new PolicyVisitor($this->io, $this->instanceService, $this->executionVisitor->getBuildResult());
@@ -242,6 +248,11 @@ class TaskService
             }
         }
 
+        // execute pre-task jobs
+        $taskConfigs = $this->configurationService->getBeforeTasks($task->name());
+        $this->executeTaskConfigs($taskConfigs, $task);
+
+        // execute
         if (!$task->accept($this->executionVisitor)) {
             $this->io->error('failed.');
 
@@ -251,12 +262,22 @@ class TaskService
         $this->io->text('finished.');
 
         // execute post-task jobs
-        $afterTaskConfigs = $this->configurationService->getAfterTasks($task->name());
-        foreach ($afterTaskConfigs as $afterTaskConfig) {
-            $afterTaskVisitor = new AfterTaskVisitor($this->instanceService, $this->taskFactory, $this->executionVisitor->buildExists(), $afterTaskConfig);
+        $taskConfigs = $this->configurationService->getAfterTasks('release');
+        $this->executeTaskConfigs($taskConfigs, $task);
+    }
+
+    /**
+     * @param Task[] $taskConfigs
+     *
+     * @throws \Exception
+     */
+    private function executeTaskConfigs(array $taskConfigs, AbstractTask $task)
+    {
+        foreach ($taskConfigs as $afterTaskConfig) {
+            $afterTaskVisitor = new TaskConfigVisitor($this->instanceService, $this->taskFactory, $this->executionVisitor->buildExists(), $afterTaskConfig);
             $afterTasks = $task->accept($afterTaskVisitor);
             foreach ($afterTasks as $afterTask) {
-                $this->executeTask($afterTask);
+                $this->executeTask($afterTask, true);
             }
         }
     }

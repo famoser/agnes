@@ -105,10 +105,15 @@ scripts:
 # only copy:shared actions are supported; within deploy / rollback actions     
 tasks:
     prod_data_on_staging:
-        after: deploy
+        before: deploy
         instance_filter: *:*:staging
         task: copy
         arguments: { source: production }
+
+  deploy_dev_after_release:
+    after: release
+    task: deploy
+    arguments: { target: '*:*:dev' }
 
 # instances are the target of your commands, each consisting of a server, an environment and a stage
 # you can match here defined instances with the expression *:*:*

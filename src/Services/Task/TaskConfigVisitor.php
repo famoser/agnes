@@ -5,6 +5,7 @@ namespace Agnes\Services\Task;
 use Agnes\Models\Filter;
 use Agnes\Models\Instance;
 use Agnes\Models\Task\AbstractTask;
+use Agnes\Models\Task\Build;
 use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Release;
@@ -14,7 +15,7 @@ use Agnes\Services\Configuration\Task;
 use Agnes\Services\InstanceService;
 use Symfony\Component\Console\Style\StyleInterface;
 
-class AfterTaskVisitor extends AbstractTaskVisitor
+class TaskConfigVisitor extends AbstractTaskVisitor
 {
     /**
      * @var StyleInterface
@@ -53,6 +54,11 @@ class AfterTaskVisitor extends AbstractTaskVisitor
     }
 
     public function visitRelease(Release $release)
+    {
+        return $this->createFrom();
+    }
+
+    public function visitBuild(Build $build)
     {
         return $this->createFrom();
     }
@@ -116,7 +122,11 @@ class AfterTaskVisitor extends AbstractTaskVisitor
         }
 
         $target = $this->task->getArguments()['target'];
-        $filter = Filter::createFromInstanceWithOverrideInstanceSpecification($instance, $target);
+        if (null === $instance) {
+            $filter = Filter::createFromInstanceSpecification($target);
+        } else {
+            $filter = Filter::createFromInstanceWithOverrideInstanceSpecification($instance, $target);
+        }
 
         return $this->instanceService->getInstancesByFilter($filter);
     }
