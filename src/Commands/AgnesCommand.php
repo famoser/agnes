@@ -68,7 +68,7 @@ abstract class AgnesCommand extends Command
 
         $tasks = $factory->getTaskService()->getTasks();
         if (0 === count($tasks)) {
-            $io->caution('nothing to execute');
+            $io->note('nothing to execute');
 
             return 0;
         }

@@ -50,8 +50,10 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
 
         $targetStage = $this->deploy->getTarget()->getStage();
         $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
+
+        // if stage not part of policy
         if (false === $stageIndex) {
-            return $this->preventExecution("Stage $targetStage not found in specified layers; policy undecidable.");
+            return true;
         }
 
         // if the stageIndex is the lowest layer, we are allowed to write

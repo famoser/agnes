@@ -127,7 +127,7 @@ class ScriptService
                 continue;
             }
 
-            $this->io->text('executing script for '.$script->getName().'...');
+            $this->io->text('executing '.$script->getName().' script.');
             $instance->getConnection()->executeScript($installation->getFolder(), $script->getScript(), $arguments);
         }
     }

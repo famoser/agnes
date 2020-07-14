@@ -7,6 +7,7 @@ use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Models\Task\Deploy;
+use Agnes\Services\Configuration\Server;
 use Exception;
 
 class InstanceService
@@ -77,7 +78,7 @@ class InstanceService
 
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
-                    $instances[] = $this->createInstance($connection, $absolutePath, $server->getName(), $environment->getName(), $stage);
+                    $instances[] = $this->createInstance($connection, $absolutePath, $server, $environment->getName(), $stage);
                 }
             }
         }
@@ -88,9 +89,9 @@ class InstanceService
     /**
      * @throws Exception
      */
-    private function createInstance(Connection $connection, string $path, string $server, string $environment, string $stage): Instance
+    private function createInstance(Connection $connection, string $path, Server $server, string $environment, string $stage): Instance
     {
-        $instance = new Instance($connection, $path, $server, $environment, $stage);
+        $instance = new Instance($connection, $path, $server->getName(), $server->getKeepInstallations(), $environment, $stage);
 
         $installations = $this->installationService->loadInstallations($instance);
         if (count($installations) > 0) {

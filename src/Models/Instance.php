@@ -22,7 +22,7 @@ class Instance
     private $server;
 
     /**
-     * @var string
+     * @var int
      */
     private $keepInstallations;
 
@@ -49,11 +49,12 @@ class Instance
     /**
      * Instance constructor.
      */
-    public function __construct(Connection $connection, string $path, string $server, string $environment, string $stage)
+    public function __construct(Connection $connection, string $path, string $server, int $keepInstallations, string $environment, string $stage)
     {
         $this->connection = $connection;
         $this->path = $path;
         $this->server = $server;
+        $this->keepInstallations = $keepInstallations;
         $this->environment = $environment;
         $this->stage = $stage;
     }
@@ -73,7 +74,7 @@ class Instance
         return $this->server;
     }
 
-    public function getKeepInstallations(): string
+    public function getKeepInstallations(): int
     {
         return $this->keepInstallations;
     }
