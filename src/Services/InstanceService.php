@@ -170,7 +170,7 @@ class InstanceService
             return;
         }
 
-        $this->io->text("removing $installationsToDelete old installations");
+        $this->io->text('removing old installations');
         foreach ($oldInstallations as $installation) {
             if ($installationsToDelete-- <= 0) {
                 break;

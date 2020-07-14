@@ -124,7 +124,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
         $this->instanceService->switchInstallation($target, $newInstallation);
         $this->io->text('release online');
 
-        $this->io->text('cleaning old installations if required');
         $this->instanceService->removeOldInstallations($deploy, $connection);
 
         $this->io->text('executing after deploy hook');
@@ -193,7 +192,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
         $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
         $hash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $build->getCommitish());
 
-        $this->io->text('executing release script');
+        $this->io->text('executing build script');
         $scripts = $this->scriptService->getBuildHookCommands();
         $connection->executeScript($buildPath, $scripts);
 
@@ -215,6 +214,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
      */
     public function visitDownload(Download $downloadGithub)
     {
+        $this->io->text('downloading asset for release '.$downloadGithub->getRelease());
         $content = $this->githubService->downloadAssetForReleaseByReleaseName($downloadGithub->getRelease());
         if (null === $content) {
             return false;
