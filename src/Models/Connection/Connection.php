@@ -249,6 +249,18 @@ abstract class Connection
     }
 
     /**
+     * @return string
+     *
+     * @throws Exception
+     */
+    public function absolutePath(string $relativePath)
+    {
+        $command = $this->executor->convertToAbsolutePath($relativePath);
+
+        return $this->executeCommand($command);
+    }
+
+    /**
      * @throws Exception
      */
     public function moveFolder(string $source, string $target)

@@ -117,4 +117,12 @@ abstract class Executor
     }
 
     abstract public function replaceSymlink(string $source, string $target): string;
+
+    /**
+     * @return string
+     */
+    public function convertToAbsolutePath(string $relativePath)
+    {
+        return "realpath $relativePath";
+    }
 }

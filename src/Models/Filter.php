@@ -52,7 +52,7 @@ class Filter
     public static function createFromInstanceWithOverrideInstanceSpecification(?Instance $instance, string $overrideInstanceSpecification)
     {
         $server = $instance->getServerName();
-        $environment = $instance->getEnvironment();
+        $environment = $instance->getEnvironmentName();
         $stage = $instance->getStage();
 
         $entries = explode(':', $overrideInstanceSpecification);

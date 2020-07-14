@@ -3,18 +3,31 @@
 namespace Agnes\Models;
 
 use Agnes\Models\Connection\Connection;
-use Agnes\Services\Configuration\Environment;
-use Agnes\Services\Configuration\Server;
 
 class Instance
 {
     /**
-     * @var Server
+     * @var Connection
+     */
+    private $connection;
+
+    /**
+     * @var string
+     */
+    private $path;
+
+    /**
+     * @var string
      */
     private $server;
 
     /**
-     * @var Environment
+     * @var string
+     */
+    private $keepInstallations;
+
+    /**
+     * @var string
      */
     private $environment;
 
@@ -35,11 +48,11 @@ class Instance
 
     /**
      * Instance constructor.
-     *
-     * @param Installation[] $installations
      */
-    public function __construct(Server $server, Environment $environment, string $stage)
+    public function __construct(Connection $connection, string $path, string $server, string $environment, string $stage)
     {
+        $this->connection = $connection;
+        $this->path = $path;
         $this->server = $server;
         $this->environment = $environment;
         $this->stage = $stage;
@@ -50,29 +63,24 @@ class Instance
         $this->installations[$installation->getNumber()] = $installation;
     }
 
-    public function getServer(): Server
-    {
-        return $this->server;
-    }
-
-    public function getEnvironment(): Environment
-    {
-        return $this->environment;
-    }
-
     public function getConnection(): Connection
     {
-        return $this->server->getConnection();
+        return $this->connection;
     }
 
     public function getServerName(): string
     {
-        return $this->server->getName();
+        return $this->server;
+    }
+
+    public function getKeepInstallations(): string
+    {
+        return $this->keepInstallations;
     }
 
     public function getEnvironmentName(): string
     {
-        return $this->environment->getName();
+        return $this->environment;
     }
 
     public function getStage(): string
@@ -133,7 +141,7 @@ class Instance
 
     private function getInstanceFolder(): string
     {
-        return $this->server->getPath().DIRECTORY_SEPARATOR.$this->environment->getName().DIRECTORY_SEPARATOR.$this->stage;
+        return $this->path.DIRECTORY_SEPARATOR.$this->environment.DIRECTORY_SEPARATOR.$this->stage;
     }
 
     /**
@@ -141,6 +149,6 @@ class Instance
      */
     public function describe()
     {
-        return $this->getServerName().':'.$this->getEnvironmentName().':'.$this->getStage();
+        return $this->server.':'.$this->environment.':'.$this->stage;
     }
 }

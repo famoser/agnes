@@ -72,9 +72,12 @@ class InstanceService
 
         $instances = [];
         foreach ($servers as $server) {
+            $connection = $server->getConnection();
+            $absolutePath = $server->getConnection()->absolutePath($server->getPath());
+
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
-                    $instances[] = $this->createInstance($server, $environment, $stage);
+                    $instances[] = $this->createInstance($connection, $absolutePath, $server->getName(), $environment->getName(), $stage);
                 }
             }
         }
@@ -85,16 +88,15 @@ class InstanceService
     /**
      * @throws Exception
      */
-    private function createInstance(Configuration\Server $server, Configuration\Environment $environment, string $stage): Instance
+    private function createInstance(Connection $connection, string $path, string $server, string $environment, string $stage): Instance
     {
-        $instance = new Instance($server, $environment, $stage);
+        $instance = new Instance($connection, $path, $server, $environment, $stage);
 
         $installations = $this->installationService->loadInstallations($instance);
         if (count($installations) > 0) {
             $symlink = $instance->getCurrentSymlink();
             $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
             $currentFolder = $symlinkExists ? $instance->getConnection()->readSymlink($symlink) : null;
-
             foreach ($installations as $installation) {
                 $instance->addInstallation($installation);
                 if ($installation->getFolder() === $currentFolder) {
@@ -149,7 +151,7 @@ class InstanceService
         ksort($oldInstallations);
 
         // remove excess releases
-        $installationsToDelete = count($oldInstallations) - $deploy->getTarget()->getServer()->getKeepInstallations();
+        $installationsToDelete = count($oldInstallations) - $deploy->getTarget()->getKeepInstallations();
         foreach ($oldInstallations as $installation) {
             if ($installationsToDelete-- <= 0) {
                 break;
