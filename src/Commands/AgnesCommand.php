@@ -63,7 +63,7 @@ abstract class AgnesCommand extends Command
         }
 
         // create payloads
-        $io->section('creating tasks');
+        $io->title('creating tasks');
         $this->createTasks($input, $io, $factory->getTaskService());
 
         $tasks = $factory->getTaskService()->getTasks();
@@ -81,7 +81,7 @@ abstract class AgnesCommand extends Command
             return 0;
         }
 
-        $io->section('executing tasks');
+        $io->title('executing tasks');
         $factory->getTaskService()->executeAll();
 
         $io->success('finished');

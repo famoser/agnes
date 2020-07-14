@@ -220,14 +220,14 @@ class TaskService
      */
     private function executeTask(AbstractTask $task)
     {
-        $this->io->text('executing '.$task->describe().' ...');
+        $this->io->section($task->describe());
 
         // check if policies conflict
         $policyVisitor = new PolicyVisitor($this->io, $this->instanceService, $this->executionVisitor->getBuildResult());
         /** @var AbstractPolicyVisitor $taskPolicyVisitor */
         $taskPolicyVisitor = $task->accept($policyVisitor);
         if (!$taskPolicyVisitor->validate()) {
-            $this->io->warning('skipping '.$task->describe().' ...');
+            $this->io->warning('skipping.');
 
             return;
         }
@@ -236,17 +236,19 @@ class TaskService
         $policies = $this->configurationService->getPoliciesForTask($task->name());
         foreach ($policies as $policy) {
             if (!$policy->accept($taskPolicyVisitor)) {
-                $this->io->warning('skipping '.$task->describe().' ...');
+                $this->io->warning('skipping.');
 
                 return;
             }
         }
 
         if (!$task->accept($this->executionVisitor)) {
-            $this->io->error('task '.$task->describe().' failed; will not execute post-task tasks...');
+            $this->io->error('failed.');
 
             return;
         }
+
+        $this->io->text('finished.');
 
         // execute post-task jobs
         $afterTaskConfigs = $this->configurationService->getAfterTasks($task->name());
@@ -257,8 +259,5 @@ class TaskService
                 $this->executeTask($afterTask);
             }
         }
-
-        $this->io->text('finished '.$task->describe());
-        $this->io->newLine();
     }
 }

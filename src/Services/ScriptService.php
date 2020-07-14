@@ -123,11 +123,10 @@ class ScriptService
     {
         foreach ($scripts as $script) {
             if (null !== $script->getFilter() && !$script->getFilter()->instanceMatches($instance)) {
-                $this->io->text($script->getName().' script\'s filter '.$script['instance'].' does not match instance '.$instance->describe().'. skipping...');
                 continue;
             }
 
-            $this->io->text('executing '.$script->getName().' script.');
+            $this->io->text('executing script '.$script->getName());
             $instance->getConnection()->executeScript($installation->getFolder(), $script->getScript(), $arguments);
         }
     }

@@ -358,7 +358,7 @@ class ConfigurationService
      */
     public function getPoliciesForTask(string $task)
     {
-        $policies = $this->getNestedConfigWithDefault([], 'policies', $task);
+        $policies = $this->getNestedConfigWithDefault([], 'policies');
 
         /** @var Policy[] $parsedPolicies */
         $parsedPolicies = [];
