@@ -262,7 +262,7 @@ class TaskService
         $this->io->text('finished.');
 
         // execute post-task jobs
-        $taskConfigs = $this->configurationService->getAfterTasks('release');
+        $taskConfigs = $this->configurationService->getAfterTasks($task->name());
         $this->executeTaskConfigs($taskConfigs, $task);
     }
 
