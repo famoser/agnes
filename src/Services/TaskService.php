@@ -122,7 +122,7 @@ class TaskService
             return;
         }
 
-        $isRelease = $this->ensureBuild($releaseOrCommitish);
+        $this->ensureBuild($releaseOrCommitish);
 
         $setup = null;
         foreach ($instances as $instance) {
@@ -170,26 +170,24 @@ class TaskService
     }
 
     /**
-     * @var bool|null
+     * @var bool
      */
-    private $isRelease = null;
+    private $built = false;
 
     private function ensureBuild(string $releaseOrCommitish, bool $allowDownload = true)
     {
-        if (null !== $this->isRelease) {
-            return $this->isRelease;
+        if ($this->built) {
+            return;
         }
 
+        $this->built = true;
+
         if ($allowDownload && null !== $download = $this->taskFactory->createDownload($releaseOrCommitish)) {
-            $this->isRelease = true;
             $this->addTask($download);
         } else {
-            $this->isRelease = false;
             $task = $this->taskFactory->createBuild($releaseOrCommitish);
             $this->addTask($task);
         }
-
-        return $this->isRelease;
     }
 
     private function addTask(?AbstractTask $task)
@@ -260,6 +258,7 @@ class TaskService
         }
 
         $this->io->text('finished.');
+        $this->io->newLine();
 
         // execute post-task jobs
         $taskConfigs = $this->configurationService->getAfterTasks($task->name());
