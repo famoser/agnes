@@ -9,9 +9,15 @@ use Agnes\Models\Instance;
 use Agnes\Models\Task\Deploy;
 use Agnes\Services\Configuration\Server;
 use Exception;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class InstanceService
 {
+    /**
+     * @var StyleInterface
+     */
+    private $io;
+
     /**
      * @var ConfigurationService
      */
@@ -30,8 +36,9 @@ class InstanceService
     /**
      * InstallationService constructor.
      */
-    public function __construct(ConfigurationService $configurationService, InstallationService $installationService)
+    public function __construct(StyleInterface $io, ConfigurationService $configurationService, InstallationService $installationService)
     {
+        $this->io = $io;
         $this->configurationService = $configurationService;
         $this->installationService = $installationService;
     }
@@ -73,6 +80,8 @@ class InstanceService
 
         $instances = [];
         foreach ($servers as $server) {
+            $this->io->text('loading instances of '.$server->getName());
+
             $connection = $server->getConnection();
             $absolutePath = $server->getConnection()->absolutePath($server->getPath());
 
@@ -95,6 +104,8 @@ class InstanceService
 
         $installations = $this->installationService->loadInstallations($instance);
         if (count($installations) > 0) {
+            $this->io->text('loaded '.count($installations).' installations of '.$server->getName().':'.$environment.':'.$stage);
+
             $symlink = $instance->getCurrentSymlink();
             $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
             $currentFolder = $symlinkExists ? $instance->getConnection()->readSymlink($symlink) : null;
@@ -104,6 +115,8 @@ class InstanceService
                     $instance->setCurrentInstallation($installation);
                 }
             }
+        } else {
+            $this->io->text('no installations yet at '.$server->getName().':'.$environment.':'.$stage.'.');
         }
 
         return $instance;
@@ -153,12 +166,18 @@ class InstanceService
 
         // remove excess releases
         $installationsToDelete = count($oldInstallations) - $deploy->getTarget()->getKeepInstallations();
+        if (0 === $installationsToDelete) {
+            return;
+        }
+
+        $this->io->text("removing $installationsToDelete old installations");
         foreach ($oldInstallations as $installation) {
             if ($installationsToDelete-- <= 0) {
                 break;
             }
 
             $connection->removeFolder($installation->getFolder());
+            $this->io->text('removed installation '.$installation->getFolder());
         }
     }
 

@@ -45,7 +45,7 @@ class AgnesFactory
         $fileService = new FileService($io, $configurationService);
         $githubService = new GithubService($io, $pluginClient, $configurationService);
         $installationService = new InstallationService($io, $configurationService);
-        $instanceService = new InstanceService($configurationService, $installationService);
+        $instanceService = new InstanceService($io, $configurationService, $installationService);
         $scriptService = new ScriptService($io, $configurationService);
         $taskService = new TaskService($io, $configurationService, $fileService, $githubService, $installationService, $instanceService, $scriptService);
 
