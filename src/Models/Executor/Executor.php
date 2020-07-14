@@ -82,9 +82,14 @@ abstract class Executor
         return "ls -1d $dir/*";
     }
 
-    public function rsync(string $source, string $target): string
+    public function rsync(string $source, string $target, ?string $permissions = null): string
     {
-        return "rsync -chavzP $source $target";
+        $chmodArgument = '';
+        if (null !== $permissions) {
+            $chmodArgument = ' --chmod='.$permissions;
+        }
+
+        return "rsync -chavzP$chmodArgument $source $target";
     }
 
     public function sshCommand(string $destination, string $command): string
