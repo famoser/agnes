@@ -138,7 +138,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     {
         switch ($this->task->getTask()) {
             case Deploy::NAME:
-                if ($this->buildExists) {
+                if (!$this->buildExists) {
                     return null;
                 }
 
