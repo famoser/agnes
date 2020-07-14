@@ -16,9 +16,9 @@ abstract class LayeredPolicy extends Policy
      *
      * @param string[][] $layers
      */
-    public function __construct(?Filter $filter, array $layers)
+    public function __construct(string $name, ?Filter $filter, array $layers)
     {
-        parent::__construct($filter);
+        parent::__construct($name, $filter);
 
         foreach ($layers as $key => $entries) {
             $this->layers[(int) $key] = $entries;

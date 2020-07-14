@@ -9,6 +9,11 @@ use Exception;
 abstract class Policy
 {
     /**
+     * @var string
+     */
+    private $name;
+
+    /**
      * @var Filter|null
      */
     private $filter;
@@ -16,8 +21,9 @@ abstract class Policy
     /**
      * Policy constructor.
      */
-    public function __construct(?Filter $filter)
+    public function __construct(string $name, ?Filter $filter)
     {
+        $this->name = $name;
         $this->filter = $filter;
     }
 
@@ -27,6 +33,11 @@ abstract class Policy
      * @throws Exception
      */
     abstract public function accept(AbstractPolicyVisitor $visitor);
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
     public function getFilter(): ?Filter
     {

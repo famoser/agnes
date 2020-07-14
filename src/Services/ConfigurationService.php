@@ -356,28 +356,37 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    public function getPolicies(string $type)
+    public function getPoliciesForTask(string $task)
     {
-        $policies = $this->getNestedConfigWithDefault([], 'policies', $type);
+        $policies = $this->getNestedConfigWithDefault([], 'policies', $task);
 
         /** @var Policy[] $parsedPolicies */
         $parsedPolicies = [];
-        foreach ($policies as $policy) {
+        foreach ($policies as $name => $policy) {
             $filter = isset($policy['filter']) ? $this->getFilter($policy['filter']) : null;
+
+            if (!isset($policy['task'])) {
+                $this->io->warning('policy '.$name.' is missing the required task property. skipping...');
+                continue;
+            }
+
+            if ($policy['task'] !== $task) {
+                continue;
+            }
 
             $policyType = $policy['type'];
             switch ($policyType) {
                 case 'stage_write_up':
-                    $parsedPolicies[] = new StageWriteUpPolicy($filter, $policy['layers']);
+                    $parsedPolicies[] = new StageWriteUpPolicy($name, $filter, $policy['layers']);
                     break;
                 case 'stage_write_down':
-                    $parsedPolicies[] = new StageWriteDownPolicy($filter, $policy['layers']);
+                    $parsedPolicies[] = new StageWriteDownPolicy($name, $filter, $policy['layers']);
                     break;
                 case 'same_release':
-                    $parsedPolicies[] = new SameReleasePolicy($filter);
+                    $parsedPolicies[] = new SameReleasePolicy($name, $filter);
                     break;
                 default:
-                    throw new Exception('Unknown policy type: '.$policyType);
+                    throw new Exception('Policy '.$name.' has unknown policy type '.$policyType.'.');
             }
         }
 

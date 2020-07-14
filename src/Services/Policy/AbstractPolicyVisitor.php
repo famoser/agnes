@@ -68,29 +68,29 @@ abstract class AbstractPolicyVisitor
         return $this->checkSameRelease($sameReleasePolicy);
     }
 
-    protected function checkStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
+    protected function checkStageWriteUp(StageWriteUpPolicy $policy): bool
     {
-        return $this->checkDefault($stageWriteUpPolicy);
+        return $this->checkDefault($policy);
     }
 
-    protected function checkStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
+    protected function checkStageWriteDown(StageWriteDownPolicy $policy): bool
     {
-        return $this->checkDefault($stageWriteDownPolicy);
+        return $this->checkDefault($policy);
     }
 
-    protected function checkSameRelease(SameReleasePolicy $sameReleasePolicy): bool
+    protected function checkSameRelease(SameReleasePolicy $policy): bool
     {
-        return $this->checkDefault($sameReleasePolicy);
+        return $this->checkDefault($policy);
     }
 
     protected function checkDefault(Policy $policy): bool
     {
-        return $this->preventExecution('The policy '.get_class($policy).' has not been implemented for the executing task.');
+        return $this->policyPreventsExecution($policy, 'policy '.get_class($policy).' has not been implemented for the executing task.');
     }
 
-    protected function preventExecution(string $reason): bool
+    protected function policyPreventsExecution(Policy $policy, string $reason): bool
     {
-        $this->io->error('Cannot execute '.$this->task->describe().': '.$reason);
+        $this->io->error('Policy '.$policy->getName().' prevents execution of '.$this->task->describe().': '.$reason);
 
         return false;
     }

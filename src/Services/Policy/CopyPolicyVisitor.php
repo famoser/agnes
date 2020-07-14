@@ -26,9 +26,9 @@ class CopyPolicyVisitor extends NoPolicyVisitor
         $this->copy = $copy;
     }
 
-    protected function checkSameRelease(SameReleasePolicy $sameReleasePolicy): bool
+    protected function checkSameRelease(SameReleasePolicy $policy): bool
     {
-        if (!$this->filterMatches($sameReleasePolicy->getFilter())) {
+        if (!$this->filterMatches($policy->getFilter())) {
             return true;
         }
 
@@ -36,17 +36,17 @@ class CopyPolicyVisitor extends NoPolicyVisitor
         $targetInstallation = $this->copy->getTarget()->getCurrentInstallation();
 
         if (null === $sourceInstallation) {
-            return $this->preventExecution('source has no active installation.');
+            return $this->policyPreventsExecution($policy, 'source has no active installation.');
         }
 
         if (null === $targetInstallation) {
-            return $this->preventExecution('target has no active installation.');
+            return $this->policyPreventsExecution($policy, 'target has no active installation.');
         }
 
         $sourceIdentification = $sourceInstallation->getCommitish();
         $targetIdentification = $targetInstallation->getCommitish();
         if ($sourceIdentification !== $targetIdentification) {
-            return $this->preventExecution("source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
+            return $this->policyPreventsExecution($policy, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
         }
 
         return true;
@@ -55,30 +55,30 @@ class CopyPolicyVisitor extends NoPolicyVisitor
     /**
      * @throws Exception
      */
-    protected function checkStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
+    protected function checkStageWriteDown(StageWriteDownPolicy $policy): bool
     {
-        if (!$this->filterMatches($stageWriteDownPolicy->getFilter())) {
+        if (!$this->filterMatches($policy->getFilter())) {
             return true;
         }
 
         $targetStage = $this->copy->getTarget()->getStage();
         $sourceStage = $this->copy->getSource()->getStage();
 
-        $stageIndex = $stageWriteDownPolicy->getLayerIndex($sourceStage);
+        $stageIndex = $policy->getLayerIndex($sourceStage);
         if (false === $stageIndex) {
-            return $this->preventExecution("stage $targetStage not found in specified layers; policy undecidable.");
+            return $this->policyPreventsExecution($policy, "stage $targetStage not found in specified layers; policy undecidable.");
         }
 
         // if the stageIndex is the highest layer, we are allowed to write
-        if ($stageWriteDownPolicy->isHighestLayer($stageIndex) || $stageWriteDownPolicy->isLowestLayer($stageIndex)) {
+        if ($policy->isHighestLayer($stageIndex) || $policy->isLowestLayer($stageIndex)) {
             return true;
         }
 
         // get the next lower layer & the current layer and check if the target is contained in there
-        $stagesToCheck = array_merge($stageWriteDownPolicy->getNextLowerLayer($stageIndex), $stageWriteDownPolicy->getLayer($stageIndex));
+        $stagesToCheck = array_merge($policy->getNextLowerLayer($stageIndex), $policy->getLayer($stageIndex));
 
         if (!in_array($targetStage, $stagesToCheck)) {
-            return $this->preventExecution("target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
+            return $this->policyPreventsExecution($policy, "target stage not within same or next lower stage as source stage. target stage $targetStage, source stage $sourceStage.");
         }
 
         return true;

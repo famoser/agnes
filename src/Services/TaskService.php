@@ -233,7 +233,7 @@ class TaskService
         }
 
         // check for conflicting policies
-        $policies = $this->configurationService->getPolicies($task->name());
+        $policies = $this->configurationService->getPoliciesForTask($task->name());
         foreach ($policies as $policy) {
             if (!$policy->accept($taskPolicyVisitor)) {
                 $this->io->warning('skipping '.$task->describe().' ...');

@@ -14,6 +14,16 @@ class NeedsBuildResultPolicyVisitor extends NoPolicyVisitor
     private $buildResult;
 
     /**
+     * @var StyleInterface
+     */
+    private $io;
+
+    /**
+     * @var AbstractTask
+     */
+    private $task;
+
+    /**
      * DeployPolicyVisitor constructor.
      */
     public function __construct(StyleInterface $io, ?BuildResult $buildResult, AbstractTask $task)
@@ -21,12 +31,16 @@ class NeedsBuildResultPolicyVisitor extends NoPolicyVisitor
         parent::__construct($io, $task);
 
         $this->buildResult = $buildResult;
+        $this->io = $io;
+        $this->task = $task;
     }
 
     public function validate()
     {
         if (null === $this->buildResult) {
-            return $this->preventExecution('To execute this task, a successful build it required.');
+            $this->io->error('To '.$this->task->describe().' a successful build it required.');
+
+            return false;
         }
 
         return parent::validate();

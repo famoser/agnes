@@ -42,14 +42,14 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
     /**
      * @throws Exception
      */
-    protected function checkStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
+    protected function checkStageWriteUp(StageWriteUpPolicy $policy): bool
     {
-        if (!$this->filterMatches($stageWriteUpPolicy->getFilter())) {
+        if (!$this->filterMatches($policy->getFilter())) {
             return true;
         }
 
         $targetStage = $this->deploy->getTarget()->getStage();
-        $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
+        $stageIndex = $policy->getLayerIndex($targetStage);
 
         // if stage not part of policy
         if (false === $stageIndex) {
@@ -57,12 +57,12 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
         }
 
         // if the stageIndex is the lowest layer, we are allowed to write
-        if ($stageWriteUpPolicy->isLowestLayer($stageIndex)) {
+        if ($policy->isLowestLayer($stageIndex)) {
             return true;
         }
 
         // get all instances of the next lower layer
-        $stagesToCheck = $stageWriteUpPolicy->getNextLowerLayer($stageIndex);
+        $stagesToCheck = $policy->getNextLowerLayer($stageIndex);
         $filter = new Filter(null, [$this->deploy->getTarget()->getEnvironmentName()], $stagesToCheck);
         $instances = $this->installationService->getInstancesByFilter($filter);
 
@@ -80,7 +80,7 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
             }
         }
 
-        return $this->preventExecution("$targetStage not lowest stage, and release was never published in the next lower layer.");
+        return $this->policyPreventsExecution($policy, "$targetStage not lowest stage, and release was never published in the next lower layer.");
     }
 
     protected function filterMatches(?Filter $filter): bool
