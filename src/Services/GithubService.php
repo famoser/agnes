@@ -2,15 +2,20 @@
 
 namespace Agnes\Services;
 
-use Agnes\Models\Build;
-use Agnes\Models\Setup;
 use Agnes\Services\Github\Client;
 use Http\Client\Exception;
 use Http\Client\HttpClient;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\Console\Style\OutputStyle;
 
 class GithubService
 {
+    /**
+     * @var OutputStyle
+     */
+    private $io;
+
     /**
      * @var HttpClient
      */
@@ -24,8 +29,9 @@ class GithubService
     /**
      * GithubService constructor.
      */
-    public function __construct(HttpClient $httpClient, ConfigurationService $configurationService)
+    public function __construct(OutputStyle $io, HttpClient $httpClient, ConfigurationService $configurationService)
     {
+        $this->io = $io;
         $this->httpClient = $httpClient;
         $this->configurationService = $configurationService;
     }
@@ -54,21 +60,48 @@ class GithubService
      * @throws Exception
      * @throws \Exception
      */
-    public function createSetupByReleaseName(string $releaseName): ?Setup
+    public function commitishOfReleaseByReleaseName(string $releaseName): ?string
     {
         $response = $this->getClient()->getReleases();
         $releases = json_decode($response->getBody()->getContents());
 
         foreach ($releases as $release) {
-            if ($release->name !== $releaseName || 0 === count($release->assets)) {
+            if ($release->name !== $releaseName) {
                 continue;
             }
 
-            $response = $this->getClient()->downloadAsset($release->assets[0]->id);
-            $content = $response->getBody()->getContents();
-
-            return Setup::fromRelease($releaseName, $release->target_commitish, $content);
+            return $release->target_commitish;
         }
+
+        return null;
+    }
+
+    /**
+     * @throws Exception
+     * @throws ClientExceptionInterface
+     */
+    public function downloadAssetForReleaseByReleaseName(string $releaseName)
+    {
+        $response = $this->getClient()->getReleases();
+        $releases = json_decode($response->getBody()->getContents());
+
+        foreach ($releases as $release) {
+            if ($release->name !== $releaseName) {
+                continue;
+            }
+
+            if (0 === count($release->assets)) {
+                $this->io->error('Release '.$releaseName.' has no release asset.');
+
+                return null;
+            }
+
+            $response = $this->getClient()->downloadAsset($release->assets[0]->id);
+
+            return $response->getBody()->getContents();
+        }
+
+        $this->io->error('Release '.$releaseName.' does not exist.');
 
         return null;
     }
@@ -77,16 +110,16 @@ class GithubService
      * @throws Exception
      * @throws \Exception
      */
-    public function publish(string $name, Build $build)
+    public function publish(string $name, string $commitish, string $content)
     {
-        $response = $this->createRelease($name, $build->getCommitish());
+        $response = $this->createRelease($name, $commitish);
 
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
         $releaseId = (int) $responseObject->id;
         $assetName = $name.'.tar.gz';
 
-        $this->getClient()->addReleaseAsset($releaseId, $assetName, 'application/zip', $build->getContent());
+        $this->getClient()->addReleaseAsset($releaseId, $assetName, 'application/zip', $content);
     }
 
     /**

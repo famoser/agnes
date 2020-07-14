@@ -2,13 +2,22 @@
 
 namespace Agnes\Services;
 
+use Agnes\Models\Connection\Connection;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
+use Agnes\Models\Task\Deploy;
+use Agnes\Services\Configuration\Server;
 use Exception;
+use Symfony\Component\Console\Style\StyleInterface;
 
 class InstanceService
 {
+    /**
+     * @var StyleInterface
+     */
+    private $io;
+
     /**
      * @var ConfigurationService
      */
@@ -27,8 +36,9 @@ class InstanceService
     /**
      * InstallationService constructor.
      */
-    public function __construct(ConfigurationService $configurationService, InstallationService $installationService)
+    public function __construct(StyleInterface $io, ConfigurationService $configurationService, InstallationService $installationService)
     {
+        $this->io = $io;
         $this->configurationService = $configurationService;
         $this->installationService = $installationService;
     }
@@ -70,14 +80,46 @@ class InstanceService
 
         $instances = [];
         foreach ($servers as $server) {
+            $this->io->text('loading instances of '.$server->getName());
+
+            $connection = $server->getConnection();
+            $absolutePath = $server->getConnection()->absolutePath($server->getPath());
+
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
-                    $instances[] = $this->createInstance($server, $environment, $stage);
+                    $instances[] = $this->createInstance($connection, $absolutePath, $server, $environment->getName(), $stage);
                 }
             }
         }
 
         return $instances;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createInstance(Connection $connection, string $path, Server $server, string $environment, string $stage): Instance
+    {
+        $instance = new Instance($connection, $path, $server->getName(), $server->getKeepInstallations(), $environment, $stage);
+
+        $installations = $this->installationService->loadInstallations($instance);
+        if (count($installations) > 0) {
+            $this->io->text('loaded '.count($installations).' installations of '.$server->getName().':'.$environment.':'.$stage);
+
+            $symlink = $instance->getCurrentSymlink();
+            $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
+            $currentFolder = $symlinkExists ? $instance->getConnection()->readSymlink($symlink) : null;
+            foreach ($installations as $installation) {
+                $instance->addInstallation($installation);
+                if ($installation->getFolder() === $currentFolder) {
+                    $instance->setCurrentInstallation($installation);
+                }
+            }
+        } else {
+            $this->io->text('no installations yet at '.$server->getName().':'.$environment.':'.$stage.'.');
+        }
+
+        return $instance;
     }
 
     /**
@@ -109,24 +151,43 @@ class InstanceService
     /**
      * @throws Exception
      */
-    private function createInstance(Configuration\Server $server, Configuration\Environment $environment, string $stage): Instance
+    public function removeOldInstallations(Deploy $deploy, Connection $connection)
     {
-        $instance = new Instance($server, $environment, $stage);
-
-        $installations = $this->installationService->loadInstallations($instance);
-        if (count($installations) > 0) {
-            $symlink = $instance->getCurrentSymlink();
-            $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
-            $currentFolder = $symlinkExists ? $instance->getConnection()->readSymlink($symlink) : null;
-
-            foreach ($installations as $installation) {
-                $instance->addInstallation($installation);
-                if ($installation->getFolder() === $currentFolder) {
-                    $instance->setCurrentInstallation($installation);
-                }
+        $onlineNumber = $deploy->getTarget()->getCurrentInstallation()->getNumber();
+        /** @var Installation[] $oldInstallations */
+        $oldInstallations = [];
+        foreach ($deploy->getTarget()->getInstallations() as $installation) {
+            if ($installation->getNumber() < $onlineNumber) {
+                $oldInstallations[$installation->getNumber()] = $installation;
             }
         }
 
-        return $instance;
+        ksort($oldInstallations);
+
+        // remove excess releases
+        $installationsToDelete = count($oldInstallations) - $deploy->getTarget()->getKeepInstallations();
+        if (0 === $installationsToDelete) {
+            return;
+        }
+
+        $this->io->text('removing old installations');
+        foreach ($oldInstallations as $installation) {
+            if ($installationsToDelete-- <= 0) {
+                break;
+            }
+
+            $connection->removeFolder($installation->getFolder());
+            $this->io->text('removed installation '.$installation->getFolder());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getInstancesBySpecification(string $target)
+    {
+        $filter = Filter::createFromInstanceSpecification($target);
+
+        return $this->getInstancesByFilter($filter);
     }
 }

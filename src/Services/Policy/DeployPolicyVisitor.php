@@ -2,14 +2,15 @@
 
 namespace Agnes\Services\Policy;
 
-use Agnes\Actions\Deploy;
 use Agnes\Models\Filter;
-use Agnes\Models\Policies\StageWriteUpPolicy;
+use Agnes\Models\Policy\StageWriteUpPolicy;
+use Agnes\Models\Task\Deploy;
 use Agnes\Services\InstanceService;
+use Agnes\Services\Task\ExecutionVisitor\BuildResult;
 use Exception;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
 
-class DeployPolicyVisitor extends PolicyVisitor
+class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
 {
     /**
      * @var InstanceService
@@ -19,40 +20,50 @@ class DeployPolicyVisitor extends PolicyVisitor
     /**
      * @var Deploy
      */
-    private $deployment;
+    private $deploy;
+
+    /**
+     * @var BuildResult|null
+     */
+    private $buildResult;
 
     /**
      * DeployPolicyVisitor constructor.
      */
-    public function __construct(OutputInterface $output, InstanceService $installationService, Deploy $deployment)
+    public function __construct(StyleInterface $io, InstanceService $installationService, ?BuildResult $buildResult, Deploy $deploy)
     {
-        parent::__construct($output);
+        parent::__construct($io, $buildResult, $deploy);
 
         $this->installationService = $installationService;
-        $this->deployment = $deployment;
+        $this->deploy = $deploy;
+        $this->buildResult = $buildResult;
     }
 
     /**
      * @throws Exception
      */
-    public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
+    protected function checkStageWriteUp(StageWriteUpPolicy $policy): bool
     {
-        $targetStage = $this->deployment->getTarget()->getStage();
-        $stageIndex = $stageWriteUpPolicy->getLayerIndex($targetStage);
-        if (false === $stageIndex) {
-            $this->preventExecution($this->deployment, "Stage $targetStage not found in specified layers; policy undecidable.");
+        if (!$this->filterMatches($policy->getFilter())) {
+            return true;
+        }
 
-            return false;
+        $targetStage = $this->deploy->getTarget()->getStage();
+        $stageIndex = $policy->getLayerIndex($targetStage);
+
+        // if stage not part of policy
+        if (false === $stageIndex) {
+            return true;
         }
 
         // if the stageIndex is the lowest layer, we are allowed to write
-        if ($stageWriteUpPolicy->isLowestLayer($stageIndex)) {
+        if ($policy->isLowestLayer($stageIndex)) {
             return true;
         }
 
         // get all instances of the next lower layer
-        $stagesToCheck = $stageWriteUpPolicy->getNextLowerLayer($stageIndex);
-        $filter = new Filter(null, [$this->deployment->getTarget()->getEnvironmentName()], $stagesToCheck);
+        $stagesToCheck = $policy->getNextLowerLayer($stageIndex);
+        $filter = new Filter(null, [$this->deploy->getTarget()->getEnvironmentName()], $stagesToCheck);
         $instances = $this->installationService->getInstancesByFilter($filter);
 
         // if no instances exist of the specified stages fulfil the policy trivially
@@ -63,22 +74,17 @@ class DeployPolicyVisitor extends PolicyVisitor
         // check if the release was published there at any given time
         foreach ($instances as $instance) {
             foreach ($instance->getInstallations() as $installation) {
-                if ($installation->getSetup()->getIdentification() === $this->deployment->getSetup()->getIdentification()) {
+                if ($installation->getReleaseOrHash() === $this->buildResult->getReleaseOrHash()) {
                     return true;
                 }
             }
         }
 
-        $this->preventExecution($this->deployment, "$targetStage not lowest stage, and release was never published in the next lower layer.");
-
-        return false;
+        return $this->policyPreventsExecution($policy, "$targetStage not lowest stage, and release was never published in the next lower layer.");
     }
 
-    /**
-     * @return bool
-     */
-    protected function filterApplies(?Filter $filter)
+    protected function filterMatches(?Filter $filter): bool
     {
-        return null === $filter || $filter->instanceMatches($this->deployment->getTarget());
+        return null === $filter || $filter->instanceMatches($this->deploy->getTarget());
     }
 }

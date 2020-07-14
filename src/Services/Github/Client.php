@@ -4,8 +4,8 @@ namespace Agnes\Services\Github;
 
 use Agnes\Services\Configuration\GithubConfig;
 use GuzzleHttp\Psr7\Request;
-use Http\Client\Exception;
 use Http\Client\HttpClient;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class Client
@@ -30,7 +30,8 @@ class Client
     }
 
     /**
-     * @throws Exception
+     * @throws ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function getReleases(): ResponseInterface
     {
@@ -42,7 +43,8 @@ class Client
     }
 
     /**
-     * @throws Exception
+     * @throws ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function downloadAsset(int $assetId): ResponseInterface
     {
@@ -54,7 +56,8 @@ class Client
     }
 
     /**
-     * @throws Exception
+     * @throws ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function createRelease(string $releaseContent): ResponseInterface
     {
@@ -69,7 +72,8 @@ class Client
     /**
      * @return ResponseInterface
      *
-     * @throws Exception
+     * @throws ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function deleteRelease(int $releaseId)
     {
@@ -79,7 +83,8 @@ class Client
     }
 
     /**
-     * @throws Exception
+     * @throws ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function addReleaseAsset(int $releaseId, string $assetName, string $assetContentType, string $assetContent): ResponseInterface
     {
@@ -95,7 +100,7 @@ class Client
      * @return ResponseInterface
      *
      * @throws \Exception
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], string $body = null)
     {

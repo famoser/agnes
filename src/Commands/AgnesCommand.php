@@ -2,14 +2,16 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\AbstractAction;
-use Agnes\Actions\AbstractPayload;
 use Agnes\AgnesFactory;
+use Agnes\Services\ConfigurationService;
+use Agnes\Services\TaskService;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\StyleInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AgnesCommand extends Command
 {
@@ -17,21 +19,6 @@ abstract class AgnesCommand extends Command
             Instances are specified in the form server:environment:stage (like aws:example.com:production deploys to production of example.com on the aws server). 
             Replace entries with stars to not enforce a constraint (like *:*:production would deploy to all production stages).
             Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).';
-
-    /**
-     * @var AgnesFactory
-     */
-    private $factory;
-
-    /**
-     * ReleaseCommand constructor.
-     */
-    public function __construct(AgnesFactory $factory)
-    {
-        parent::__construct();
-
-        $this->factory = $factory;
-    }
 
     /**
      * add options for config file & additional config folder.
@@ -44,14 +31,9 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @var string|null
+     * @throws Exception
      */
-    private $agnesConfigFolder;
-
-    protected function getConfigFolder(): ?string
-    {
-        return $this->agnesConfigFolder;
-    }
+    abstract protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService);
 
     /**
      * @return int|void|null
@@ -60,51 +42,49 @@ abstract class AgnesCommand extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        if (!$this->tryLoadConfig($input, $output)) {
+        $configFile = $input->getOption('config-file');
+        $configFolder = $input->getOption('config-folder');
+        $isDryRun = $input->getOption('dry-run');
+
+        $io = new SymfonyStyle($input, $output);
+        $factory = new AgnesFactory($io);
+
+        // dry run note
+        if ($isDryRun) {
+            $io->note('dry run active; none of the commands will actually be executed.');
+        }
+
+        // load config
+        $configurationService = $factory->getConfigurationService();
+        if (!$this->loadConfigFile($io, $configurationService, $configFile) ||
+            !$this->loadConfigFolder($io, $configurationService, $configFolder) ||
+            !$factory->getConfigurationService()->validate()) {
             return 1;
         }
 
-        $isDryRun = $input->getOption('dry-run');
-        if ($isDryRun) {
-            $output->writeln('dry run active; none of the commands will be actually executed.');
-        }
+        // create payloads
+        $io->title('creating tasks');
+        $this->createTasks($input, $io, $factory->getTaskService());
 
-        $action = $this->getAction($this->factory);
-
-        $output->writeln('');
-        $payloads = $this->createPayloads($action, $input, $output);
-        if (0 === count($payloads)) {
-            $output->writeln('nothing to execute');
+        $tasks = $factory->getTaskService()->getTasks();
+        if (0 === count($tasks)) {
+            $io->note('nothing to execute');
 
             return 0;
-        } else {
-            $output->writeln(count($payloads).' tasks created:');
-            foreach ($payloads as $payload) {
-                $output->writeln($payload->describe());
-            }
-
-            $output->writeln('');
         }
 
-        $output->writeln('starting execution...');
-        $output->writeln('======================');
-        $output->writeln('');
+        $this->printPayloads($io, $tasks);
 
-        foreach ($payloads as $payload) {
-            $description = $payload->describe();
+        if ($isDryRun) {
+            $io->note('dry run active; finishing now.');
 
-            if (!$action->canExecute($payload, $output)) {
-                $output->writeln('execution of "'.$description.'" blocked by policy; skipping');
-                $output->writeln('');
-            } elseif (!$isDryRun) {
-                $output->writeln($description);
-                $action->execute($payload, $output);
-                $output->writeln('execution finished');
-                $output->writeln('');
-            }
+            return 0;
         }
-        $output->writeln('======================');
-        $output->writeln('all tasks completed.');
+
+        $io->title('executing tasks');
+        $factory->getTaskService()->executeAll();
+
+        $io->success('finished');
 
         return 0;
     }
@@ -112,70 +92,64 @@ abstract class AgnesCommand extends Command
     /**
      * @throws Exception
      */
-    protected function tryLoadConfig(InputInterface $input, OutputInterface $output): bool
+    private function loadConfigFile(StyleInterface $style, ConfigurationService $configurationService, ?string $configFile): bool
     {
-        $configFilePath = $input->getOption('config-file');
-        $configFolder = $input->getOption('config-folder');
-
         // default config file
-        if (null === $configFilePath) {
-            if (file_exists('agnes.yml')) {
-                $configFilePath = 'agnes.yml';
-                $output->writeln('found agnes.yml in project root and will use it');
-            } elseif (null === $configFolder) {
-                $output->writeln('no configuration found or supplied');
-
-                return false;
-            }
+        if (null === $configFile) {
+            $configFile = 'agnes.yml';
         }
 
         // read config file
-        if (null !== $configFilePath) {
-            $path = realpath($configFilePath);
+        if (null !== $configFile) {
+            $path = realpath($configFile);
             if (!is_file($path)) {
-                $output->writeln('config file not found at '.$configFilePath);
+                $style->error('config file not found at '.$configFile);
 
                 return false;
             }
 
-            $this->factory->addConfig($path);
+            $configurationService->addConfig($path);
         }
 
+        return true;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function loadConfigFolder(SymfonyStyle $io, ConfigurationService $configurationService, ?bool $configFolder): bool
+    {
         if (null === $configFolder) {
-            $configFolder = $this->factory->getConfigurationService()->getAgnesConfigFolder();
+            $configFolder = $configurationService->getAgnesConfigFolder();
         }
 
         // read config folder
         if (null !== $configFolder) {
             $path = realpath($configFolder);
             if (!is_dir($path)) {
-                $output->writeln('config folder not found at '.$configFolder.' with working dir '.realpath(__DIR__));
+                $io->error('config folder not found at '.$configFolder.' with working dir '.realpath(__DIR__));
 
                 return false;
             }
 
-            $this->agnesConfigFolder = $path;
+            $configurationService->setConfigFolder($configFolder);
 
             $configFilePaths = glob($path.DIRECTORY_SEPARATOR.'*.yml');
             foreach ($configFilePaths as $configFilePath) {
-                $this->factory->addConfig($configFilePath);
+                $configurationService->addConfig($configFilePath);
             }
-        }
-
-        $agnesVersion = 3;
-        if ($this->factory->getConfigurationService()->getAgnesVersion() !== $agnesVersion) {
-            $output->writeln('expected '.$agnesVersion.' as the agnes.version value');
-
-            return false;
         }
 
         return true;
     }
 
-    abstract protected function getAction(AgnesFactory $factory): AbstractAction;
-
-    /**
-     * @return AbstractPayload[]
-     */
-    abstract protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array;
+    private function printPayloads(SymfonyStyle $io, array $payloads): void
+    {
+        $io->text(count($payloads).' tasks created');
+        $descriptions = [];
+        foreach ($payloads as $payload) {
+            $descriptions[] = $payload->describe();
+        }
+        $io->listing($descriptions);
+    }
 }

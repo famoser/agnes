@@ -8,14 +8,13 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class ReleaseCommand extends AgnesCommand
+class BuildCommand extends AgnesCommand
 {
     public function configure()
     {
-        $this->setName('release')
-            ->setDescription('Publish a new release to github')
-            ->setHelp('This command compiles the specified commitish and then publishes it to github.')
-            ->addArgument('release', InputArgument::REQUIRED, 'name of the release')
+        $this->setName('build')
+            ->setDescription('Build the commitish.')
+            ->setHelp('This command compiles the specified commitish (useful for testing).')
             ->addArgument('commitish', InputArgument::REQUIRED, 'branch or commit of the release');
 
         parent::configure();
@@ -26,9 +25,8 @@ class ReleaseCommand extends AgnesCommand
      */
     protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {
-        $release = $input->getArgument('release');
         $commitish = $input->getArgument('commitish');
 
-        $taskService->addReleaseTask($commitish, $release);
+        $taskService->addBuildTask($commitish);
     }
 }

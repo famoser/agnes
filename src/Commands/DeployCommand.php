@@ -2,79 +2,35 @@
 
 namespace Agnes\Commands;
 
-use Agnes\Actions\AbstractAction;
-use Agnes\Actions\AbstractPayload;
-use Agnes\Actions\DeployAction;
-use Agnes\AgnesFactory;
-use Agnes\Services\ConfigurationService;
-use Agnes\Services\GithubService;
-use Agnes\Services\InstanceService;
+use Agnes\Services\TaskService;
 use Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DeployCommand extends AgnesCommand
 {
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-
-    /**
-     * @var InstanceService
-     */
-    private $instanceService;
-
-    /**
-     * @var GithubService
-     */
-    private $githubService;
-
-    /**
-     * DeployCommand constructor.
-     */
-    public function __construct(AgnesFactory $factory, ConfigurationService $configurationService, InstanceService $instanceService, GithubService $githubService)
-    {
-        parent::__construct($factory);
-
-        $this->configurationService = $configurationService;
-        $this->instanceService = $instanceService;
-        $this->githubService = $githubService;
-    }
-
     public function configure()
     {
         $this->setName('deploy')
             ->setDescription('Deploy a release to a specific environment')
-            ->setHelp('This command installs a release to a specific environment and if the installation succeeds, it publishes it.')
-            ->addArgument('release or commitish', InputArgument::REQUIRED, 'name of the (github) release or commitish')
+            ->setHelp('This command installs a release to a specific instance(s) and if the installation succeeds, it publishes it.')
             ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to deploy to. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION)
-            ->addOption('skip-file-validation', null, InputOption::VALUE_NONE, 'if file validation should be skipped. the application no longer throws if a required file is not supplied.');
+            ->addArgument('release or commitish', InputArgument::REQUIRED, 'name of the (github) release or commitish');
 
         parent::configure();
     }
 
-    protected function getAction(AgnesFactory $factory): AbstractAction
-    {
-        return $factory->createDeployAction();
-    }
-
     /**
-     * @return AbstractPayload[]
-     *
      * @throws Exception
      * @throws \Http\Client\Exception
+     * @throws \Http\Client\Exception
      */
-    protected function createPayloads(AbstractAction $action, InputInterface $input, OutputInterface $output): array
+    protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {
         $releaseOrCommitish = $input->getArgument('release or commitish');
         $target = $input->getArgument('target');
-        $configFolder = $this->getConfigFolder();
-        $skipValidation = (bool) $input->getOption('skip-file-validation');
 
-        /* @var DeployAction $action */
-        return $action->createMany($releaseOrCommitish, $target, $configFolder, $skipValidation, $output);
+        $taskService->addDeployTasks($target, $releaseOrCommitish);
     }
 }

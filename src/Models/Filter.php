@@ -49,6 +49,24 @@ class Filter
         return new self($servers, $environments, $stages);
     }
 
+    public static function createFromInstanceWithOverrideInstanceSpecification(Instance $instance, string $overrideInstanceSpecification)
+    {
+        $server = $instance->getServerName();
+        $environment = $instance->getEnvironmentName();
+        $stage = $instance->getStage();
+
+        $entries = explode(':', $overrideInstanceSpecification);
+
+        $override = function (string $entry, string $default) {
+            return '*' !== $entry ? $entry : $default;
+        };
+        $newSpecification = $override($entries[0], $server).':'.
+            $override($entries[1], $environment).':'.
+            $override($entries[2], $stage);
+
+        return self::createFromInstanceSpecification($newSpecification);
+    }
+
     public function instanceMatches(Instance $installation): bool
     {
         $serverName = $installation->getServerName();
@@ -70,8 +88,12 @@ class Filter
         return true;
     }
 
-    public function filtersBySingleStage(): bool
+    public function describe()
     {
-        return null !== $this->stages && 1 === count($this->stages);
+        $serverFilter = null !== $this->servers ? implode(',', $this->servers) : '*';
+        $environementFilter = null !== $this->environments ? implode(',', $this->environments) : '*';
+        $stageFilter = null !== $this->stages ? implode(',', $this->stages) : '*';
+
+        return "$serverFilter:$environementFilter:$stageFilter";
     }
 }

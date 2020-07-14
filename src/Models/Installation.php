@@ -2,6 +2,7 @@
 
 namespace Agnes\Models;
 
+use Agnes\Models\Installation\OnlinePeriod;
 use DateTime;
 
 class Installation
@@ -17,9 +18,14 @@ class Installation
     private $number;
 
     /**
-     * @var Setup
+     * @var string
      */
-    private $setup;
+    private $commitish;
+
+    /**
+     * @var string
+     */
+    private $releaseOrHash;
 
     /**
      * @var OnlinePeriod[]
@@ -29,11 +35,12 @@ class Installation
     /**
      * Installation constructor.
      */
-    public function __construct(string $folder, int $number, Setup $setup, array $onlinePeriods = [])
+    public function __construct(string $folder, int $number, string $commitish, string $releaseOrHash, array $onlinePeriods = [])
     {
         $this->folder = $folder;
         $this->number = $number;
-        $this->setup = $setup;
+        $this->commitish = $commitish;
+        $this->releaseOrHash = $releaseOrHash;
         $this->onlinePeriods = $onlinePeriods;
     }
 
@@ -47,9 +54,14 @@ class Installation
         return $this->number;
     }
 
-    public function getSetup(): Setup
+    public function getCommitish(): string
     {
-        return $this->setup;
+        return $this->commitish;
+    }
+
+    public function getReleaseOrHash(): string
+    {
+        return $this->releaseOrHash;
     }
 
     /**
@@ -84,7 +96,7 @@ class Installation
 
     public function toArray(): array
     {
-        $array = ['number' => $this->number, 'setup' => $this->setup->toArray(), 'online_periods' => []];
+        $array = ['number' => $this->number, 'commitish' => $this->commitish, 'release_or_hash' => $this->releaseOrHash, 'online_periods' => []];
 
         foreach ($this->onlinePeriods as $onlinePeriod) {
             $array['online_periods'][] = $onlinePeriod->toArray();
@@ -95,12 +107,11 @@ class Installation
 
     public static function fromArray(string $folder, array $array): Installation
     {
-        $setup = Setup::fromArray($array['setup']);
         $onlinePeriods = [];
         foreach ($array['online_periods'] as $onlinePeriod) {
             $onlinePeriods[] = OnlinePeriod::fromArray($onlinePeriod);
         }
 
-        return new Installation($folder, $array['number'], $setup, $onlinePeriods);
+        return new Installation($folder, $array['number'], $array['commitish'], $array['release_or_hash'], $onlinePeriods);
     }
 }
