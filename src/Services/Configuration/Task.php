@@ -14,7 +14,7 @@ class Task
     /**
      * @var string
      */
-    private $action;
+    private $task;
 
     /**
      * @var string[]
@@ -28,10 +28,10 @@ class Task
      *
      * @param string[] $arguments
      */
-    public function __construct(string $name, string $action, array $arguments, ?Filter $filter)
+    public function __construct(string $name, string $task, array $arguments, ?Filter $filter)
     {
         $this->name = $name;
-        $this->action = $action;
+        $this->task = $task;
         $this->arguments = $arguments;
         $this->filter = $filter;
     }
@@ -47,5 +47,10 @@ class Task
     public function getArguments(): array
     {
         return $this->arguments;
+    }
+
+    public function getTask(): string
+    {
+        return $this->task;
     }
 }

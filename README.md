@@ -107,7 +107,7 @@ tasks:
     prod_data_on_staging:
         after: deploy
         instance_filter: *:*:staging
-        action: copy
+        task: copy
         arguments: { source: production }
 
 # instances are the target of your commands, each consisting of a server, an environment and a stage
@@ -130,28 +130,26 @@ instances:
 
 # policies prevent actions to be executed that would be unsafe to do so from the perspective of the application
 # for example, you can define here that it is not possible to deploy to production before the same release was not on a dev environment
+# if no conflicting policy is found, the task is executed
 policies:
-  strategy: unanimous # all matching policies must be valid (no other options at the moment)
-  allow_if_all_abstain: true # if no matching policy is found, the execution is allowed (no other options at the moment)
+  prod_releases_must_exist_on_staging:
+    task: deploy
+    type: stage_write_up
+    layers:
+      0: [staging]
+      1: [prod]
 
-  deploy:
-    # requires that to deploy to a higher stage, the same release must be deployed to the next lower stage
-    # if dev has v0.1 deployed, it would be allowed to deploy this to staging but not to production or education
-    - type: stage_write_up
-      layers:
-        0: [dev]
-        1: [staging]
-        2: [production, education]
+  copy_only_to_lower_environments:
+    task: copy
+    type: stage_write_down
+    layers:
+      0: [dev, staging]
+      1: [prod]
 
-  copy_shared:
-    # requires that the target must be one stage lower that the source
-    # in this case, allows production to overwrite dev but not the other way around 
-    - type: stage_write_down
-      layers:
-        0: [dev, staging, education]
-        1: [production]
-    # requires that the target/source release have to match  
-    - type: same_release
+  copy_only_within_same_release:
+    task: copy
+    type: same_release
+
 ```
 
 ## advanced config

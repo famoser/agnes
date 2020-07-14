@@ -213,20 +213,20 @@ class ConfigurationService
         $config = $this->getNestedConfigWithDefault([], 'tasks');
 
         $result = [];
-        foreach ($config as $name => $action) {
-            if ((isset($action['after']) && $action['after'] !== $hook)) {
+        foreach ($config as $name => $task) {
+            if ((isset($task['after']) && $task['after'] !== $hook)) {
                 continue;
             }
 
-            if (!isset($action['action'])) {
-                $this->io->warning('action '.$name.' is missing the required action property. skipping...');
+            if (!isset($task['task'])) {
+                $this->io->warning('task '.$name.' is missing the required task property. skipping...');
                 continue;
             }
 
-            $arguments = is_array($action['arguments']) ? $action['arguments'] : [];
-            $filter = isset($action['instance_filter']) ? Filter::createFromInstanceSpecification($action['instance_filter']) : null;
+            $arguments = is_array($task['arguments']) ? $task['arguments'] : [];
+            $filter = isset($task['instance_filter']) ? Filter::createFromInstanceSpecification($task['instance_filter']) : null;
 
-            $result[] = new Task($name, $action['action'], $arguments, $filter);
+            $result[] = new Task($name, $task['task'], $arguments, $filter);
         }
 
         return $result;

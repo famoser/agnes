@@ -126,7 +126,7 @@ class AfterTaskVisitor extends AbstractTaskVisitor
      */
     private function createForInstance(Instance $instance): ?AbstractTask
     {
-        switch ($this->task->getName()) {
+        switch ($this->task->getTask()) {
             case Deploy::NAME:
                 if ($this->buildExists) {
                     return null;
