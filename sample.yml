@@ -1,0 +1,131 @@
+agnes:
+  version: 3 # the version of agnes your config file is for
+  config_folder: '.deploy' # if you have a config folder
+  build_target: # where the release will be built
+    connection: # the connection
+      type: local # can also be of type ssh, then additionally destination must be specified
+    path: .build
+
+# github config is needed to publish or download releases from github
+github:
+  api_token: '%env(GITHUB_API_TOKEN)%'
+  repository: famoser/agnes
+
+# configure data the application needs
+data:
+  # these folders will be shared between releases
+  shared_folders:
+    - var/persistent
+
+  # declare files you place in the configuration folder which are uploaded to the installation location
+  # files will be expected at <config folder>/server/environment/stage
+  files:
+    # if deploying on example:example.com:staging,
+    # this file will be looked for at ./files/example/example.com/staging/.env.local
+    # if its not found, the deployment will not be started (because its marked as required)
+    - path: .env.local
+      required: true
+
+# instances are the target of your commands, each consisting of a server, an environment and a stage
+# you can match here defined instances with the expression *:*:*
+# the first part matches the server name (with * matching all), here the only available server is "example"
+# the second part matches the environment name (with * matching all), here the only available environment is "example.com"
+# the third part matches the stage (with * matching all), here the available stages are dev, staging, education & production
+instances:
+  example:
+    connection:
+      type: ssh
+      destination: 'admin@example.com'
+      system: FreeBSD # or Linux (default)
+    path: ~/www
+    keep_installations: 2 # how many installations to keep besides the current one, surplus are removed after a deployment
+    script_overrides:
+      php: /usr/local/php73/bin/php # you can use a placeholder in your scripts like {{php}} which is replaced to the value here
+    environments:
+      example.com: [dev, staging, education, production] # here we define four stages
+
+# scripts can be run at predefined hook points or when using the run command
+# hook points are build, deploy, after_deploy, rollback, after_rollback
+# you can additionally constrain the scripts to run only in specific environments
+scripts:
+  # build hook which executed on a freshly cloned repository
+  # install dependencies, ...
+  # produces a build which is used for a release or deployed to an installation
+  build:
+    hook: build
+    script:
+      - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
+      - '{{php}} -v' # place
+
+  # deploy hook which is executed on the final location of the build, before putting it online
+  # initialize caches, migrate databases, ...
+  # if a previous installation exists it is indicated in $HAS_PREVIOUS_INSTALLATION (value either true or false)
+  # if a previous installation exists then the path is given with $PREVIOUS_INSTALLATION_PATH
+  # for example `if [[ "$HAS_PREVIOUS_INSTALLATION" == true ]]; then cp -r $PREVIOUS_INSTALLATION_PATH/var/transient var/transient; fi`
+  deploy:
+    hook: deploy
+    script:
+      - php bin/console doctrine:migrations:migrate -q
+
+  # rollback hook which is executed on the current instance before rolling back to the previous instance
+  # revert migrations, invalidate cache, ...
+  # the path of the previous installation is given in $PREVIOUS_INSTALLATION_PATH
+  rollback:
+    hook: rollback
+    script:
+      - echo "rollbacked"
+
+  # after_deploy and after_rollback hooks are executed right after the symlink changes
+  #
+  restart_php:
+    hooks: [after_deploy, after_rollback]
+    script:
+      - killall -9 php-cgi
+
+  # load fixtures, but only in dev environment
+  fixtures:
+    hook: after_deploy
+    instance_filter: *:*:dev
+    script:
+      - wget -O composer.phar https://getcomposer.org/composer-stable.phar && chmod +x composer.phar && ./composer.phar install --optimize-autoloader --no-scripts
+      - php bin/console --env=dev doctrine:fixtures:load -q
+
+# tasks can be run automatically before or after other tasks
+# they are context-aware; so if deploying to some instance, a chained copy task is executed on the same instance
+tasks:
+  # copy data from production before deploying a new version to staging
+  prod_data_on_staging:
+    before: deploy
+    instance_filter: *:*:staging
+    task: copy
+    arguments: { source: production }
+
+  # deploy after a release to dev
+  deploy_dev_after_release:
+    after: release
+    task: deploy
+    arguments: { target: '*:*:dev' }
+
+# policies prevent tasks to be executed that would be unsafe to do so from the perspective of the application
+# the task is only executed if no conflicting policy is found
+policies:
+  # ensure the deployed version existed on staging
+  prod_releases_must_exist_on_staging:
+    task: deploy
+    type: stage_write_up
+    layers:
+      0: [staging]
+      1: [prod]
+
+  # ensure can not override production data by mistake
+  copy_only_to_lower_environments:
+    task: copy
+    type: stage_write_down
+    layers:
+      0: [dev, staging]
+      1: [prod]
+
+  # ensure only copied between same release
+  copy_only_within_same_release:
+    task: copy
+    type: same_release
