@@ -7,11 +7,14 @@ there is also a UI available at [famoser/agnes-ui](https://github.com/famoser/ag
 ## commands
 
 `php bin/agnes release v1.0 master` creates the release `v1.0` from the latest master  
-`php bin/agnes deploy v1.0 *:*:dev` installs the release `v1.0` on all instances matching `*:*:dev`  
+`php bin/agnes deploy *:*:dev v1.0` installs the release `v1.0` on all instances matching `*:*:dev`  
 `php bin/agnes rollback *:*:dev` rolls back instances matching `*:*:dev` to the previous release  
-`php bin/agnes copy:shared example:example.com:dev production` copies the shared data to the instance matching `example:example.com:dev` from the `production` stage
+`php bin/agnes copy:shared example:example.com:dev production` copies the shared data to the instance matching `example:example.com:dev` from the `production` stage  
+`php bin/agnes build master` builds the master release; useful to test the build script  
+`php bin/agnes run *:*:dev my_script` runs the script called `my_script` on the `*:*:dev` instances
 
-for details on the commands use the `--help` argument.
+for details on the commands use the `--help` argument.  
+you can remember the order of arguments because the target always is the first one.
 
 ## config
 
