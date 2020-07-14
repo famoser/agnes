@@ -1,4 +1,5 @@
 agnes:
+  version: 3
   build_target:
     connection:
       type: local
