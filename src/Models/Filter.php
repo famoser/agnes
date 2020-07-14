@@ -49,7 +49,7 @@ class Filter
         return new self($servers, $environments, $stages);
     }
 
-    public static function createFromInstanceWithOverrideInstanceSpecification(?Instance $instance, string $overrideInstanceSpecification)
+    public static function createFromInstanceWithOverrideInstanceSpecification(Instance $instance, string $overrideInstanceSpecification)
     {
         $server = $instance->getServerName();
         $environment = $instance->getEnvironmentName();

@@ -43,10 +43,10 @@ class CopyPolicyVisitor extends NoPolicyVisitor
             return $this->policyPreventsExecution($policy, 'target has no active installation.');
         }
 
-        $sourceIdentification = $sourceInstallation->getCommitish();
-        $targetIdentification = $targetInstallation->getCommitish();
-        if ($sourceIdentification !== $targetIdentification) {
-            return $this->policyPreventsExecution($policy, "source has a different version deployed as target. source: $sourceIdentification target: $targetIdentification.");
+        $sourceReleaseOrHash = $sourceInstallation->getReleaseOrHash();
+        $targetReleaseOrHash = $targetInstallation->getReleaseOrHash();
+        if ($sourceReleaseOrHash !== $targetReleaseOrHash) {
+            return $this->policyPreventsExecution($policy, "source has a different release or hash as the active installation as target. source: $sourceReleaseOrHash target: $targetReleaseOrHash.");
         }
 
         return true;
