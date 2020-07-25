@@ -6,10 +6,14 @@ agnes:
       type: local # can also be of type ssh, then additionally destination must be specified
     path: .build
 
+# configure the repository to operate on (used with the git clone command)
+repository:
+  url: 'git@github.com:famoser/agnes'
+
 # github config is needed to publish or download releases from github
 github:
   api_token: '%env(GITHUB_API_TOKEN)%'
-  repository: famoser/agnes
+  repository: famoser/agnes # you may skip the `repository.url` config if its the same anyways
 
 # configure data the application needs
 data:

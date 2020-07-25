@@ -87,9 +87,17 @@ class ConfigurationService
      */
     public function getRepositoryCloneUrl()
     {
-        $repository = $this->getNestedConfig('github', 'repository');
+        $cloneUrl = $this->getNestedConfigWithDefault(null, 'repository', 'url');
+        if (null !== $cloneUrl) {
+            return $cloneUrl;
+        }
 
-        return 'git@github.com:'.$repository;
+        $githubRepository = $this->getNestedConfigWithDefault(null, 'github', 'repository');
+        if (null !== $githubRepository) {
+            return 'git@github.com:'.$githubRepository;
+        }
+
+        throw new Exception('no git clone url configured. configure repository.url to change this.');
     }
 
     /**
