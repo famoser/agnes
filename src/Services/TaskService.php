@@ -131,6 +131,22 @@ class TaskService
         }
     }
 
+    public function addClearTask(string $target)
+    {
+        $instances = $this->instanceService->getInstancesBySpecification($target);
+        if (0 === count($instances)) {
+            $this->io->error('For target specification '.$target.' no matching instances were found.');
+
+            return;
+        }
+
+        $setup = null;
+        foreach ($instances as $instance) {
+            $task = $this->taskFactory->createClear($instance);
+            $this->addTask($task);
+        }
+    }
+
     /**
      * @throws \Exception
      */

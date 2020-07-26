@@ -3,6 +3,7 @@
 namespace Agnes\Services\Task;
 
 use Agnes\Models\Task\Build;
+use Agnes\Models\Task\Clear;
 use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
@@ -106,10 +107,24 @@ class ExecutionVisitor extends AbstractTaskVisitor
     /**
      * @throws Exception
      */
+    public function visitClear(Clear $clear): bool
+    {
+        $target = $clear->getTarget();
+
+        $this->io->text('remove folders without installations');
+        $this->installationService->removeFoldersWithoutInstallation($target);
+
+        $this->instanceService->removeOldInstallations($target);
+
+        return true;
+    }
+
+    /**
+     * @throws Exception
+     */
     public function visitDeploy(Deploy $deploy): bool
     {
         $target = $deploy->getTarget();
-        $connection = $target->getConnection();
 
         $this->io->text('determine target folder');
         $newInstallation = $this->installationService->install($target, $this->buildResult);
@@ -124,7 +139,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
         $this->instanceService->switchInstallation($target, $newInstallation);
         $this->io->text('release online');
 
-        $this->instanceService->removeOldInstallations($deploy, $connection);
+        $this->instanceService->removeOldInstallations($target);
 
         $this->io->text('executing after deploy hook');
         $this->scriptService->executeAfterDeployHook($target);

@@ -4,6 +4,7 @@ namespace Agnes\Services\Task;
 
 use Agnes\Models\Task\AbstractTask;
 use Agnes\Models\Task\Build;
+use Agnes\Models\Task\Clear;
 use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
@@ -68,6 +69,14 @@ abstract class AbstractTaskVisitor
     public function visitRun(Run $run)
     {
         return $this->visitDefault($run);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function visitClear(Clear $clear)
+    {
+        return $this->visitDefault($clear);
     }
 
     /**

@@ -146,7 +146,47 @@ class InstallationService
      *
      * @throws Exception
      */
+    public function removeFoldersWithoutInstallation(Instance $instance): array
+    {
+        $installationsByFolder = $this->loadFoldersWithInstallations($instance);
+
+        $result = [];
+        foreach ($installationsByFolder as $folder => $installation) {
+            if (null === $installation) {
+                $path = $instance->getInstallationsFolder().DIRECTORY_SEPARATOR.$folder;
+                $instance->getConnection()->removeFolder($path);
+                $this->io->text('removed '.$path);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return Installation[]
+     *
+     * @throws Exception
+     */
     public function loadInstallations(Instance $instance): array
+    {
+        $installationsByFolder = $this->loadFoldersWithInstallations($instance);
+
+        $result = [];
+        foreach ($installationsByFolder as $folder => $installation) {
+            if (null !== $installation) {
+                $result[] = $installation;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array[]
+     *
+     * @throws Exception
+     */
+    private function loadFoldersWithInstallations(Instance $instance): array
     {
         $installationsFolder = $instance->getInstallationsFolder();
 
@@ -155,10 +195,7 @@ class InstallationService
         $installations = [];
 
         foreach ($folders as $folder) {
-            $installation = $this->getInstallationFromFolder($instance, $folder);
-            if (null !== $installation) {
-                $installations[] = $installation;
-            }
+            $installations[$folder] = $this->getInstallationFromFolder($instance, $folder);
         }
 
         return $installations;

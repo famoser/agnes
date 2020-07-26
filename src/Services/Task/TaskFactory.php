@@ -6,6 +6,7 @@ use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Models\Task\Build;
+use Agnes\Models\Task\Clear;
 use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
@@ -77,6 +78,11 @@ class TaskFactory
         }
 
         return new Deploy($target);
+    }
+
+    public function createClear(Instance $instance)
+    {
+        return new Clear($instance);
     }
 
     public function createDownload(string $release): ?Download

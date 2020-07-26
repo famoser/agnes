@@ -6,7 +6,6 @@ use Agnes\Models\Connection\Connection;
 use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Agnes\Models\Task\Deploy;
 use Agnes\Services\Configuration\Server;
 use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
@@ -151,12 +150,12 @@ class InstanceService
     /**
      * @throws Exception
      */
-    public function removeOldInstallations(Deploy $deploy, Connection $connection)
+    public function removeOldInstallations(Instance $instance)
     {
-        $onlineNumber = $deploy->getTarget()->getCurrentInstallation()->getNumber();
+        $onlineNumber = $instance->getCurrentInstallation()->getNumber();
         /** @var Installation[] $oldInstallations */
         $oldInstallations = [];
-        foreach ($deploy->getTarget()->getInstallations() as $installation) {
+        foreach ($instance->getInstallations() as $installation) {
             if ($installation->getNumber() < $onlineNumber) {
                 $oldInstallations[$installation->getNumber()] = $installation;
             }
@@ -165,18 +164,17 @@ class InstanceService
         ksort($oldInstallations);
 
         // remove excess releases
-        $installationsToDelete = count($oldInstallations) - $deploy->getTarget()->getKeepInstallations();
+        $installationsToDelete = count($oldInstallations) - $instance->getKeepInstallations();
         if (0 === $installationsToDelete) {
             return;
         }
 
-        $this->io->text('removing old installations');
         foreach ($oldInstallations as $installation) {
             if ($installationsToDelete-- <= 0) {
                 break;
             }
 
-            $connection->removeFolder($installation->getFolder());
+            $instance->getConnection()->removeFolder($installation->getFolder());
             $this->io->text('removed installation '.$installation->getFolder());
         }
     }
