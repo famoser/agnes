@@ -3,6 +3,8 @@
 namespace Agnes\Commands;
 
 use Agnes\AgnesFactory;
+use Agnes\Models\Connection\LocalConnection;
+use Agnes\Models\Executor\LinuxExecutor;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\TaskService;
 use Exception;
@@ -27,7 +29,7 @@ abstract class AgnesCommand extends Command
     {
         $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'should the command skip the actual execution (useful for you to preview the potential impact)');
         $this->addOption('config-file', null, InputOption::VALUE_OPTIONAL, 'agnes main config file');
-        $this->addOption('config-folder', null, InputOption::VALUE_OPTIONAL, 'agnes config folder');
+        $this->addOption('config-path', null, InputOption::VALUE_OPTIONAL, 'agnes config folder path');
     }
 
     /**
@@ -43,7 +45,7 @@ abstract class AgnesCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $configFile = $input->getOption('config-file');
-        $configFolder = $input->getOption('config-folder');
+        $configPath = $input->getOption('config-path');
         $isDryRun = $input->getOption('dry-run');
 
         $io = new SymfonyStyle($input, $output);
@@ -57,7 +59,7 @@ abstract class AgnesCommand extends Command
         // load config
         $configurationService = $factory->getConfigurationService();
         if (!$this->loadConfigFile($io, $configurationService, $configFile) ||
-            !$this->loadConfigFolder($io, $configurationService, $configFolder) ||
+            !$this->loadConfigFolder($io, $configurationService, $configPath) ||
             !$factory->getConfigurationService()->validate()) {
             return 1;
         }
@@ -102,7 +104,7 @@ abstract class AgnesCommand extends Command
         // read config file
         if (null !== $configFile) {
             $path = realpath($configFile);
-            if (!is_file($path)) {
+            if (!$path || !is_file($path)) {
                 $style->error('config file not found at '.$configFile);
 
                 return false;
@@ -117,24 +119,34 @@ abstract class AgnesCommand extends Command
     /**
      * @throws Exception
      */
-    private function loadConfigFolder(SymfonyStyle $io, ConfigurationService $configurationService, ?bool $configFolder): bool
+    private function loadConfigFolder(SymfonyStyle $io, ConfigurationService $configurationService, ?string $configPath): bool
     {
-        if (null === $configFolder) {
-            $configFolder = $configurationService->getAgnesConfigFolder();
+        if (null === $configPath) {
+            $configPath = $configurationService->getConfigPath();
         }
 
-        // read config folder
-        if (null !== $configFolder) {
-            $path = realpath($configFolder);
-            if (!is_dir($path)) {
-                $io->error('config folder not found at '.$configFolder.' with working dir '.realpath(__DIR__));
+        // if config path exists & same vlaue as configured, then pull the config repository
+        if (null !== $configPath && $configPath === $configurationService->getConfigPath()) {
+            $configConnection = new LocalConnection($io, new LinuxExecutor());
+            $configRepository = $configurationService->getConfigRepositoryUrl();
 
-                return false;
+            if (!is_dir($configPath)) {
+                if (null === $configRepository) {
+                    $io->error('config folder not found at '.$configPath.' with working dir '.getcwd().' and not config repository configured.');
+
+                    return false;
+                }
+
+                $io->text('cloning config repository');
+                $configConnection->checkoutRepository($configPath, $configRepository);
+            } elseif (null !== $configRepository) {
+                $io->text('pulling config repository');
+                $configConnection->gitPull($configPath);
             }
 
-            $configurationService->setConfigFolder($configFolder);
+            $configurationService->setConfigFolder($configPath);
 
-            $configFilePaths = glob($path.DIRECTORY_SEPARATOR.'*.yml');
+            $configFilePaths = glob($configPath.DIRECTORY_SEPARATOR.'*.yml');
             foreach ($configFilePaths as $configFilePath) {
                 $configurationService->addConfig($configFilePath);
             }

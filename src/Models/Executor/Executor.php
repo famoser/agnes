@@ -130,4 +130,9 @@ abstract class Executor
     {
         return "realpath $relativePath";
     }
+
+    public function gitPull(string $path)
+    {
+        return "git  --git-dir=$path/.git  --work-tree=$path pull";
+    }
 }

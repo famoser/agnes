@@ -189,8 +189,8 @@ class ExecutionVisitor extends AbstractTaskVisitor
         $connection->createOrClearFolder($buildPath);
 
         $this->io->text('checking out repository');
-        $repositoryCloneUrl = $this->configurationService->getRepositoryCloneUrl();
-        $hash = $connection->checkoutRepository($buildPath, $repositoryCloneUrl, $build->getCommitish());
+        $repositoryCloneUrl = $this->configurationService->getRepositoryUrl();
+        $hash = $connection->getRepositoryStateAtCommitish($buildPath, $repositoryCloneUrl, $build->getCommitish());
 
         $this->io->text('executing build script');
         $scripts = $this->scriptService->getBuildHookCommands();

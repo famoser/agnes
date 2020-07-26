@@ -136,21 +136,38 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function checkoutRepository(string $buildPath, string $repository, string $commitish)
+    public function getRepositoryStateAtCommitish(string $path, string $repository, string $commitish)
     {
-        $gitClone = $this->executor->gitClone($buildPath, $repository);
-        $this->executeCommand($gitClone);
+        $this->checkoutRepository($path, $repository);
 
-        $gitCheckout = $this->executor->gitCheckout($buildPath, $commitish);
+        $gitCheckout = $this->executor->gitCheckout($path, $commitish);
         $this->executeCommand($gitCheckout);
 
-        $gitShowHash = $this->executor->gitShowHash($buildPath);
+        $gitShowHash = $this->executor->gitShowHash($path);
         $hash = $this->executeCommand($gitShowHash);
 
-        $removeRecursively = $this->executor->removeRecursive($buildPath.'/.git');
+        $removeRecursively = $this->executor->removeRecursive($path.'/.git');
         $this->executeCommand($removeRecursively);
 
         return $hash;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function checkoutRepository(string $path, string $repository)
+    {
+        $gitClone = $this->executor->gitClone($path, $repository);
+        $this->executeCommand($gitClone);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function gitPull(string $path)
+    {
+        $gitPull = $this->executor->gitPull($path);
+        $this->executeCommand($gitPull);
     }
 
     /**

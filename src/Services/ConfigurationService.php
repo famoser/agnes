@@ -34,7 +34,7 @@ class ConfigurationService
      */
     private $configFolder = null;
 
-    const AGNES_VERSION = 3;
+    const AGNES_VERSION = 4;
 
     /**
      * @var OutputStyle
@@ -59,7 +59,7 @@ class ConfigurationService
 
         $version = $this->getNestedConfig('agnes', 'version');
         if (self::AGNES_VERSION !== $version) {
-            $this->io->error('expected '.$version.' as the agnes.version value');
+            $this->io->error('expected '.self::AGNES_VERSION.' as the agnes.version value');
 
             return false;
         }
@@ -81,11 +81,21 @@ class ConfigurationService
     }
 
     /**
+     * @return string|null
+     *
+     * @throws Exception
+     */
+    public function getConfigRepositoryUrl()
+    {
+        return $this->getNestedConfigWithDefault(null, 'config', 'repository', 'url');
+    }
+
+    /**
      * @return string
      *
      * @throws Exception
      */
-    public function getRepositoryCloneUrl()
+    public function getRepositoryUrl()
     {
         $cloneUrl = $this->getNestedConfigWithDefault(null, 'repository', 'url');
         if (null !== $cloneUrl) {
@@ -125,7 +135,7 @@ class ConfigurationService
      */
     public function getBuildConnection()
     {
-        $connection = $this->getNestedConfig('agnes', 'build_target', 'connection');
+        $connection = $this->getNestedConfigWithDefault([], 'build', 'connection');
 
         return $this->getConnection($connection);
     }
@@ -137,7 +147,7 @@ class ConfigurationService
      */
     public function getBuildPath()
     {
-        return $this->getNestedConfig('agnes', 'build_target', 'path');
+        return $this->getNestedConfig('build', 'path');
     }
 
     /**
@@ -145,9 +155,9 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    public function getAgnesConfigFolder()
+    public function getConfigPath()
     {
-        return $this->getNestedConfigWithDefault(null, 'agnes', 'config_folder');
+        return $this->getNestedConfigWithDefault(null, 'config', 'path');
     }
 
     /**
@@ -451,13 +461,12 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    private function getConnection($connection)
+    private function getConnection(array $connection)
     {
-        $connectionType = $this->getValue($connection, 'type');
-
         $system = $this->getValue($connection, 'system', 'Linux');
         $executor = $this->getExecutor($system);
 
+        $connectionType = $this->getValue($connection, 'type', 'local');
         if ('local' === $connectionType) {
             return new LocalConnection($this->io, $executor);
         } elseif ('ssh' === $connectionType) {
