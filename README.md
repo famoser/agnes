@@ -2,19 +2,23 @@
 
 releases safely to various environments, and allows to perform other common tasks.
 
-there is also a UI available at [famoser/agnes-ui](https://github.com/famoser/agnes-ui).
+install with 
+```bash
+composer require famoser/agnes --dev
+```
 
 ## commands
 
-`php bin/agnes release v1.0 master` creates the release `v1.0` from the latest master  
-`php bin/agnes deploy *:*:dev v1.0` installs the release `v1.0` on all instances matching `*:*:dev`  
-`php bin/agnes rollback *:*:dev` rolls back instances matching `*:*:dev` to the previous release  
-`php bin/agnes copy:shared example:example.com:dev production` copies the shared data to the instance matching `example:example.com:dev` from the `production` stage  
-`php bin/agnes build master` builds the master release; useful to test the build script  
-`php bin/agnes run *:*:dev my_script` runs the script called `my_script` on the `*:*:dev` instances
+`php vendor/bin/agnes release v1.0 master` creates the release `v1.0` from the latest master  
+`php vendor/bin/agnes deploy *:*:dev v1.0` installs the release `v1.0` on all instances matching `*:*:dev`  
+`php vendor/bin/agnes rollback *:*:dev` rolls back instances matching `*:*:dev` to the previous release  
+`php vendor/bin/agnes copy example:example.com:dev production` copies the shared data to the instance matching `example:example.com:dev` from the `production` stage  
+`php vendor/bin/agnes build master` builds the master release; useful to test the build script  
+`php vendor/bin/agnes run *:*:dev my_script` runs the script called `my_script` on the `*:*:dev` instances  
+`php vendor/bin/agnes clear *:*:dev` clears surplus & invalid installations
 
 for details on the commands use the `--help` argument.  
-you can remember the order of arguments because the target always is the first one.
+to easily remember the order of arguments observe that the target is always first.
 
 ## config
 
@@ -31,8 +35,7 @@ Full example config in [sample.yml](sample.yml).
 
 ## advanced config
 
-if you have an SSH connection configured
-you can speed up command execution greatly by caching the connection in `~/.ssh/config`:
+if you have an SSH connection configured you can speed up command execution greatly by caching the connection in `~/.ssh/config`:
 
 ```
 Host *

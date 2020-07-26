@@ -3,6 +3,7 @@
 namespace Agnes;
 
 use Agnes\Commands\BuildCommand;
+use Agnes\Commands\ClearCommand;
 use Agnes\Commands\CopyCommand;
 use Agnes\Commands\DeployCommand;
 use Agnes\Commands\ReleaseCommand;
@@ -68,6 +69,7 @@ class AgnesFactory
     {
         return [
             new BuildCommand(),
+            new ClearCommand(),
             new CopyCommand(),
             new DeployCommand(),
             new ReleaseCommand(),
