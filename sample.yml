@@ -109,6 +109,7 @@ scripts:
   fixtures:
     hook: after_deploy
     instance_filter: *:*:dev
+    order: -1 # ensure the script is run before restart_php (default value for order is 0)
     script:
       - wget -O composer.phar https://getcomposer.org/composer-stable.phar && chmod +x composer.phar && ./composer.phar install --optimize-autoloader --no-scripts
       - php bin/console --env=dev doctrine:fixtures:load -q

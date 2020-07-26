@@ -219,9 +219,12 @@ class ConfigurationService
 
             $commands = is_array($script['script']) ? $script['script'] : [$script['script']];
             $filter = isset($script['instance_filter']) ? Filter::createFromInstanceSpecification($script['instance_filter']) : null;
+            $order = isset($script['order']) ? (int) $script['order'] : 0;
 
-            $result[] = new Script($name, $commands, $filter);
+            $result[$order] = new Script($name, $commands, $filter);
         }
+
+        ksort($result);
 
         return $result;
     }
