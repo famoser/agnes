@@ -107,6 +107,11 @@ class ConfigurationService
      */
     public function getGithubConfig()
     {
+        $githubConfig = $this->getNestedConfigWithDefault(null, 'github');
+        if (null === $githubConfig) {
+            return null;
+        }
+
         $apiToken = $this->getNestedConfig('github', 'api_token');
         $repository = $this->getNestedConfig('github', 'repository');
 

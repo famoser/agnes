@@ -81,6 +81,10 @@ class TaskFactory
 
     public function createDownload(string $release): ?Download
     {
+        if (!$this->githubService->configured()) {
+            return null;
+        }
+
         $commitish = $this->githubService->commitishOfReleaseByReleaseName($release);
         if (null === $commitish) {
             $this->io->warning('Release '.$release.' was not found.');

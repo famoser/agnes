@@ -50,6 +50,10 @@ class GithubService
     {
         if (null === $this->clientCache) {
             $config = $this->configurationService->getGithubConfig();
+            if (null === $config) {
+                throw new \Exception('github not configured; can not create github client');
+            }
+
             $this->clientCache = new Client($this->httpClient, $config);
         }
 
@@ -149,5 +153,15 @@ class GithubService
     private function booleanToString(bool $input)
     {
         return $input ? 'true' : 'false';
+    }
+
+    /**
+     * @return bool
+     *
+     * @throws \Exception
+     */
+    public function configured()
+    {
+        return null !== $this->configurationService->getGithubConfig();
     }
 }
