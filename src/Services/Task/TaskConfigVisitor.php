@@ -137,15 +137,15 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     private function createForInstance(Instance $instance): ?AbstractTask
     {
         switch ($this->task->getTask()) {
-            case Deploy::NAME:
+            case Deploy::TYPE:
                 if (!$this->buildExists) {
                     return null;
                 }
 
                 return $this->createDeployTask($instance);
-            case Copy::NAME:
+            case Copy::TYPE:
                 return $this->createCopyTask($instance);
-            case Run::NAME:
+            case Run::TYPE:
                 return $this->createRunTask($instance);
             default:
                 return null;

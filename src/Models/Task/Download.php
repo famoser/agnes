@@ -6,7 +6,7 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Download extends AbstractTask
 {
-    const NAME = 'download';
+    const TYPE = 'download';
 
     /**
      * @var string
@@ -47,8 +47,8 @@ class Download extends AbstractTask
         return 'download asset of release '.$this->release;
     }
 
-    public function name(): string
+    public function type(): string
     {
-        return self::NAME;
+        return self::TYPE;
     }
 }

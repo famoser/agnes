@@ -7,7 +7,7 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Copy extends AbstractTask
 {
-    const NAME = 'copy';
+    const TYPE = 'copy';
 
     /**
      * @var Instance
@@ -48,8 +48,8 @@ class Copy extends AbstractTask
         return $abstractActionVisitor->visitCopy($this);
     }
 
-    public function name(): string
+    public function type(): string
     {
-        return self::NAME;
+        return self::TYPE;
     }
 }

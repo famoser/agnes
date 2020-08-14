@@ -253,7 +253,7 @@ class TaskService
         }
 
         // check for conflicting policies
-        $policies = $this->configurationService->getPoliciesForTask($task->name());
+        $policies = $this->configurationService->getPoliciesForTask($task->type());
         foreach ($policies as $policy) {
             if (!$policy->accept($taskPolicyVisitor)) {
                 $this->io->warning('skipping.');
@@ -263,7 +263,7 @@ class TaskService
         }
 
         // execute pre-task jobs
-        $taskConfigs = $this->configurationService->getBeforeTasks($task->name());
+        $taskConfigs = $this->configurationService->getBeforeTasks($task->type());
         $this->executeTaskConfigs($taskConfigs, $task);
 
         // execute
@@ -277,7 +277,7 @@ class TaskService
         $this->io->newLine();
 
         // execute post-task jobs
-        $taskConfigs = $this->configurationService->getAfterTasks($task->name());
+        $taskConfigs = $this->configurationService->getAfterTasks($task->type());
         $this->executeTaskConfigs($taskConfigs, $task);
     }
 

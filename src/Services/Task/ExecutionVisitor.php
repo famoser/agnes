@@ -166,7 +166,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     public function visitRelease(Release $release): bool
     {
         $this->io->text('publishing release to github');
-        $this->githubService->publish($release->name(), $this->buildResult->getCommitish(), $this->buildResult->getContent());
+        $this->githubService->publish($release->getName(), $this->buildResult->getCommitish(), $this->buildResult->getContent());
 
         return true;
     }

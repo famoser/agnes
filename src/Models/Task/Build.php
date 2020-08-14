@@ -6,7 +6,7 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Build extends AbstractTask
 {
-    const NAME = 'build';
+    const TYPE = 'build';
 
     /**
      * @var string
@@ -36,8 +36,8 @@ class Build extends AbstractTask
         return 'build '.$this->commitish;
     }
 
-    public function name(): string
+    public function type(): string
     {
-        return self::NAME;
+        return self::TYPE;
     }
 }

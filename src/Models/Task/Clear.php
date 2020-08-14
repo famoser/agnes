@@ -7,7 +7,7 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Clear extends AbstractTask
 {
-    const NAME = 'clear';
+    const TYPE = 'clear';
 
     /**
      * @var Instance
@@ -37,8 +37,8 @@ class Clear extends AbstractTask
         return $abstractActionVisitor->visitClear($this);
     }
 
-    public function name(): string
+    public function type(): string
     {
-        return self::NAME;
+        return self::TYPE;
     }
 }

@@ -14,5 +14,5 @@ abstract class AbstractTask
 
     abstract public function describe(): string;
 
-    abstract public function name(): string;
+    abstract public function type(): string;
 }

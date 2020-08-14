@@ -7,7 +7,7 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Deploy extends AbstractTask
 {
-    const NAME = 'deploy';
+    const TYPE = 'deploy';
 
     /**
      * @var Instance
@@ -37,8 +37,8 @@ class Deploy extends AbstractTask
         return $abstractActionVisitor->visitDeploy($this);
     }
 
-    public function name(): string
+    public function type(): string
     {
-        return self::NAME;
+        return self::TYPE;
     }
 }

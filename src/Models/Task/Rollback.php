@@ -8,7 +8,7 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 
 class Rollback extends AbstractTask
 {
-    const NAME = 'rollback';
+    const TYPE = 'rollback';
 
     /**
      * @var Instance
@@ -49,8 +49,8 @@ class Rollback extends AbstractTask
         return $abstractActionVisitor->visitRollback($this);
     }
 
-    public function name(): string
+    public function type(): string
     {
-        return self::NAME;
+        return self::TYPE;
     }
 }
