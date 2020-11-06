@@ -24,6 +24,11 @@ abstract class Executor
         return "readlink -f $filePath";
     }
 
+    public function convertToAbsolutePath(string $relativePath)
+    {
+        return "readlink -f $relativePath";
+    }
+
     public function uncompressTarGz(string $archivePath, string $targetFolder): string
     {
         return "tar -xzf $archivePath -C $targetFolder";
@@ -122,14 +127,6 @@ abstract class Executor
     }
 
     abstract public function replaceSymlink(string $source, string $target): string;
-
-    /**
-     * @return string
-     */
-    public function convertToAbsolutePath(string $relativePath)
-    {
-        return "realpath $relativePath";
-    }
 
     public function gitPull(string $path)
     {
