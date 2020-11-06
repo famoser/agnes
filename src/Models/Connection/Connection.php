@@ -196,7 +196,14 @@ abstract class Connection
      */
     public function compressTarGz(string $folder, string $fileName)
     {
-        $command = $this->executor->tarCompress($folder, $fileName);
+        $targetFilePath = $folder.'/'.$fileName;
+        $command = $this->executor->rmIfExists($targetFilePath);
+        $this->executeCommand($command);
+
+        $command = $this->executor->touch($targetFilePath);
+        $this->executeCommand($command);
+
+        $command = $this->executor->tarCompressInSameFolder($folder, $fileName);
         $this->executeCommand($command);
 
         return $folder.DIRECTORY_SEPARATOR.$fileName;
@@ -282,7 +289,7 @@ abstract class Connection
      */
     public function moveFolder(string $source, string $target)
     {
-        $command = $this->executor->moveAndReplace($source, $target);
+        $command = $this->executor->rmMoveAndReplace($source, $target);
         $this->executeCommand($command);
     }
 

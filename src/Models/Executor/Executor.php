@@ -14,6 +14,21 @@ abstract class Executor
         return "rm -rf $folder";
     }
 
+    public function rmMoveAndReplace(string $source, string $target): string
+    {
+        return "rm -rf $target && mv -f $source $target";
+    }
+
+    public function rmIfExists(string $target): string
+    {
+        return "rm -f $target";
+    }
+
+    public function touch(string $target): string
+    {
+        return "touch $target";
+    }
+
     public function lnCreateSymbolicLink(string $filePath, string $destination): string
     {
         return "ln -s $destination $filePath";
@@ -24,7 +39,7 @@ abstract class Executor
         return "readlink -f $filePath";
     }
 
-    public function tarCompress(string $folder, string $fileName): string
+    public function tarCompressInSameFolder(string $folder, string $fileName): string
     {
         return "tar -czvf $folder/$fileName --exclude=$fileName -C $folder .";
     }
@@ -49,10 +64,7 @@ abstract class Executor
         return "git  --git-dir=$path/.git  --work-tree=$path pull";
     }
 
-    /**
-     * @return string
-     */
-    public function gitShowHash(string $path)
+    public function gitShowHash(string $path): string
     {
         return "git --git-dir=$path/.git  --work-tree=$path show -s --format=%H";
     }
@@ -97,28 +109,14 @@ abstract class Executor
         return 'ssh '.$destination." '$command'";
     }
 
-    /**
-     * @return string
-     */
-    public function cdToFolderAndExecute(string $folder, string $command)
+    public function cdToFolderAndExecute(string $folder, string $command): string
     {
         return "cd $folder && $command";
     }
 
-    /**
-     * @return string
-     */
-    public function chmodSetPermissions(string $filePath, int $permissions)
+    public function chmodSetPermissions(string $filePath, int $permissions): string
     {
         return "chmod $permissions $filePath";
-    }
-
-    /**
-     * @return string
-     */
-    public function moveAndReplace(string $source, string $target)
-    {
-        return "rm -rf $target && mv -f $source $target";
     }
 
     abstract public function mvSymlinkAtomicReplace(string $source, string $target): string;
