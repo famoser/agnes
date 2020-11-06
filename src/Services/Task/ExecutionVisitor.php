@@ -212,7 +212,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
         $connection->executeScript($buildPath, $scripts);
 
         $this->io->text('compressing build folder');
-        $filePath = $connection->compressTarGz($buildPath, 'build..tar.gz');
+        $filePath = $connection->compressTarGz($buildPath, 'build.tar.gz');
         $content = $connection->readFile($filePath);
 
         $this->buildResult = new BuildResult($build->getCommitish(), $hash, $content);

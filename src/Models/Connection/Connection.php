@@ -146,7 +146,7 @@ abstract class Connection
         $gitShowHash = $this->executor->gitShowHash($path);
         $hash = $this->executeCommand($gitShowHash);
 
-        $removeRecursively = $this->executor->removeRecursive($path.'/.git');
+        $removeRecursively = $this->executor->rmRecursive($path.'/.git');
         $this->executeCommand($removeRecursively);
 
         return $hash;
@@ -175,7 +175,7 @@ abstract class Connection
      */
     public function createOrClearFolder(string $folder)
     {
-        $command = $this->executor->removeRecursive($folder);
+        $command = $this->executor->rmRecursive($folder);
         $this->executeCommand($command);
         $this->createFolder($folder);
     }
@@ -185,7 +185,7 @@ abstract class Connection
      */
     public function createFolder(string $folder)
     {
-        $command = $this->executor->makeDirRecursive($folder);
+        $command = $this->executor->mkdirRecursive($folder);
         $this->executeCommand($command);
     }
 
@@ -196,7 +196,7 @@ abstract class Connection
      */
     public function compressTarGz(string $folder, string $fileName)
     {
-        $command = $this->executor->compressTarGz($folder, $fileName);
+        $command = $this->executor->tarCompress($folder, $fileName);
         $this->executeCommand($command);
 
         return $folder.DIRECTORY_SEPARATOR.$fileName;
@@ -207,7 +207,7 @@ abstract class Connection
      */
     public function uncompressTarGz(string $archivePath, string $targetFolder)
     {
-        $command = $this->executor->uncompressTarGz($archivePath, $targetFolder);
+        $command = $this->executor->tarUncompress($archivePath, $targetFolder);
         $this->executeCommand($command);
     }
 
@@ -216,7 +216,7 @@ abstract class Connection
      */
     public function removeFile(string $path)
     {
-        $command = $this->executor->removeRecursive($path);
+        $command = $this->executor->rmRecursive($path);
         $this->executeCommand($command);
     }
 
@@ -226,7 +226,7 @@ abstract class Connection
     public function createSymlink(string $source, string $target)
     {
         $relativeSharedFolder = $this->getRelativeSymlinkPath($source, $target);
-        $command = $this->executor->createSymbolicLink($source, $relativeSharedFolder);
+        $command = $this->executor->lnCreateSymbolicLink($source, $relativeSharedFolder);
         $this->executeCommand($command);
     }
 
@@ -235,7 +235,7 @@ abstract class Connection
      */
     public function readSymlink(string $symlink): string
     {
-        $command = $this->executor->readSymbolicLink($symlink);
+        $command = $this->executor->readlinkCanonicalize($symlink);
 
         return $this->executeCommand($command);
     }
@@ -272,7 +272,7 @@ abstract class Connection
      */
     public function absolutePath(string $relativePath)
     {
-        $command = $this->executor->convertToAbsolutePath($relativePath);
+        $command = $this->executor->readlinkCanonicalize($relativePath);
 
         return $this->executeCommand($command);
     }
@@ -292,7 +292,7 @@ abstract class Connection
     public function copyFolderContent(string $source, string $target)
     {
         $sourceContent = $source.DIRECTORY_SEPARATOR.'.';
-        $command = $this->executor->copyRecursive($sourceContent, $target);
+        $command = $this->executor->cpRecursive($sourceContent, $target);
         $this->executeCommand($command);
     }
 
@@ -301,7 +301,7 @@ abstract class Connection
      */
     public function removeFolder(string $folder)
     {
-        $command = $this->executor->removeRecursive($folder);
+        $command = $this->executor->rmRecursive($folder);
         $this->executeCommand($command);
     }
 
@@ -310,7 +310,7 @@ abstract class Connection
      */
     public function replaceSymlink(string $source, string $target)
     {
-        $command = $this->executor->replaceSymlink($source, $target);
+        $command = $this->executor->mvSymlinkAtomicReplace($source, $target);
         $this->executeCommand($command);
     }
 

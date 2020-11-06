@@ -4,32 +4,32 @@ namespace Agnes\Models\Executor;
 
 abstract class Executor
 {
-    public function copyRecursive(string $source, string $destination): string
+    public function cpRecursive(string $source, string $destination): string
     {
         return "cp -r $source $destination";
     }
 
-    public function removeRecursive(string $folder): string
+    public function rmRecursive(string $folder): string
     {
         return "rm -rf $folder";
     }
 
-    public function createSymbolicLink(string $filePath, string $destination): string
+    public function lnCreateSymbolicLink(string $filePath, string $destination): string
     {
         return "ln -s $destination $filePath";
     }
 
-    public function readSymbolicLink(string $filePath): string
+    public function readlinkCanonicalize(string $filePath): string
     {
         return "readlink -f $filePath";
     }
 
-    public function convertToAbsolutePath(string $relativePath)
+    public function tarCompress(string $folder, string $fileName): string
     {
-        return "readlink -f $relativePath";
+        return "tar -czvf $folder/$fileName --exclude=$fileName -C $folder .";
     }
 
-    public function uncompressTarGz(string $archivePath, string $targetFolder): string
+    public function tarUncompress(string $archivePath, string $targetFolder): string
     {
         return "tar -xzf $archivePath -C $targetFolder";
     }
@@ -44,6 +44,11 @@ abstract class Executor
         return "git --git-dir=$path/.git  --work-tree=$path checkout ".$commitish;
     }
 
+    public function gitPull(string $path)
+    {
+        return "git  --git-dir=$path/.git  --work-tree=$path pull";
+    }
+
     /**
      * @return string
      */
@@ -52,14 +57,9 @@ abstract class Executor
         return "git --git-dir=$path/.git  --work-tree=$path show -s --format=%H";
     }
 
-    public function makeDirRecursive(string $folder): string
+    public function mkdirRecursive(string $folder): string
     {
         return "mkdir -m 0777 -p $folder";
-    }
-
-    public function compressTarGz(string $folder, string $fileName): string
-    {
-        return "touch $folder/$fileName && tar -czvf $folder/$fileName --exclude=$fileName -C $folder .";
     }
 
     public function testFolderExists(string $folderPath, string $outputIfTrue): string
@@ -82,22 +82,17 @@ abstract class Executor
         return "test $testArgs && echo \"$outputIfTrue\"";
     }
 
-    public function listFolders(string $dir): string
+    public function lsFolders(string $dir): string
     {
         return "ls -1d $dir/*";
     }
 
-    public function rsync(string $source, string $target, ?string $permissions = null): string
+    public function scpCopy(string $source, string $destination): string
     {
-        $chmodArgument = '';
-        if (null !== $permissions) {
-            $chmodArgument = ' --chmod='.$permissions;
-        }
-
-        return "rsync -chavzP$chmodArgument $source $target";
+        return "scp $source $destination";
     }
 
-    public function sshCommand(string $destination, string $command): string
+    public function sshExecute(string $destination, string $command): string
     {
         return 'ssh '.$destination." '$command'";
     }
@@ -105,15 +100,15 @@ abstract class Executor
     /**
      * @return string
      */
-    public function executeWithinWorkingFolder(string $workingFolder, string $command)
+    public function cdToFolderAndExecute(string $folder, string $command)
     {
-        return "cd $workingFolder && $command";
+        return "cd $folder && $command";
     }
 
     /**
      * @return string
      */
-    public function setPermissions(string $filePath, int $permissions)
+    public function chmodSetPermissions(string $filePath, int $permissions)
     {
         return "chmod $permissions $filePath";
     }
@@ -126,10 +121,5 @@ abstract class Executor
         return "rm -rf $target && mv -f $source $target";
     }
 
-    abstract public function replaceSymlink(string $source, string $target): string;
-
-    public function gitPull(string $path)
-    {
-        return "git  --git-dir=$path/.git  --work-tree=$path pull";
-    }
+    abstract public function mvSymlinkAtomicReplace(string $source, string $target): string;
 }

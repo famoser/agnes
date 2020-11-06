@@ -38,7 +38,7 @@ class SSHConnection extends Connection
      */
     public function executeCommand(string $command): string
     {
-        $command = $this->executor->sshCommand($this->getDestination(), $command);
+        $command = $this->executor->sshExecute($this->getDestination(), $command);
 
         return parent::executeCommand($command);
     }
@@ -52,7 +52,7 @@ class SSHConnection extends Connection
     {
         // prepare commands for execution
         foreach ($commands as &$command) {
-            $command = $this->executor->executeWithinWorkingFolder($workingFolder, $command);
+            $command = $this->executor->cdToFolderAndExecute($workingFolder, $command);
         }
 
         // execute commands
@@ -72,8 +72,8 @@ class SSHConnection extends Connection
         $tempFile = self::getTempFile();
 
         // download file
-        $source = $this->getSSHRsyncPath($filePath);
-        $command = $this->executor->rsync($source, $tempFile);
+        $source = $this->getDestination().':'.$filePath;
+        $command = $this->executor->scpCopy($source, $tempFile);
         parent::executeCommand($command);
 
         $content = file_get_contents($tempFile);
@@ -91,9 +91,13 @@ class SSHConnection extends Connection
         file_put_contents($tempFile, $content);
 
         // download file
-        $destination = $this->getSSHRsyncPath($filePath);
-        $command = $this->executor->rsync($tempFile, $destination, '644');
+        $destination = $this->getDestination().':'.$filePath;
+        $command = $this->executor->scpCopy($tempFile, $destination);
         parent::executeCommand($command);
+
+        // set permissions
+        $command = $this->executor->chmodSetPermissions($filePath, '644');
+        $this->executeCommand($command);
     }
 
     /**
@@ -104,7 +108,7 @@ class SSHConnection extends Connection
     public function getFolders(string $dir): array
     {
         try {
-            $command = $this->executor->listFolders($dir);
+            $command = $this->executor->lsFolders($dir);
             $response = $this->executeCommand($command);
         } catch (Exception $exception) {
             return [];
@@ -148,14 +152,6 @@ class SSHConnection extends Connection
         }
 
         return false !== strpos($output, $expected);
-    }
-
-    /**
-     * @return string
-     */
-    private function getSSHRsyncPath(string $filePath)
-    {
-        return $this->getDestination().':'.$filePath;
     }
 
     /**
