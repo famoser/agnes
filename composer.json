@@ -16,7 +16,6 @@
   ],
   "license": "MIT",
   "require": {
-    "php": "^7.2",
     "symfony/console": "^4.3 || ^5.0",
     "symfony/yaml": "^4.3 || ^5.0",
     "symfony/dotenv": "^4.3 || ^5.0",
