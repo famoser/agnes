@@ -6,6 +6,7 @@ use Agnes\Models\Filter;
 
 class Script
 {
+    use FilterTrait;
     /**
      * @var string
      */
@@ -15,8 +16,6 @@ class Script
      * @var string[]
      */
     private $script;
-
-    use FilterTrait;
 
     /**
      * Script constructor.

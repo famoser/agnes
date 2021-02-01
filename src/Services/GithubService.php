@@ -3,8 +3,6 @@
 namespace Agnes\Services;
 
 use Agnes\Services\Github\Client;
-use Http\Client\Exception;
-use Http\Client\HttpClient;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Style\OutputStyle;
@@ -17,11 +15,6 @@ class GithubService
     private $io;
 
     /**
-     * @var HttpClient
-     */
-    private $httpClient;
-
-    /**
      * @var ConfigurationService
      */
     private $configurationService;
@@ -29,10 +22,9 @@ class GithubService
     /**
      * GithubService constructor.
      */
-    public function __construct(OutputStyle $io, HttpClient $httpClient, ConfigurationService $configurationService)
+    public function __construct(OutputStyle $io, ConfigurationService $configurationService)
     {
         $this->io = $io;
-        $this->httpClient = $httpClient;
         $this->configurationService = $configurationService;
     }
 

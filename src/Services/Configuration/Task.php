@@ -6,6 +6,7 @@ use Agnes\Models\Filter;
 
 class Task
 {
+    use FilterTrait;
     /**
      * @var string
      */
@@ -20,8 +21,6 @@ class Task
      * @var string[]
      */
     private $arguments;
-
-    use FilterTrait;
 
     /**
      * Action constructor.

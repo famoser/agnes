@@ -3,18 +3,11 @@
 namespace Agnes\Services\Github;
 
 use Agnes\Services\Configuration\GithubConfig;
-use GuzzleHttp\Psr7\Request;
-use Http\Client\HttpClient;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class Client
 {
-    /**
-     * @var HttpClient
-     */
-    private $httpClient;
-
     /**
      * @var GithubConfig
      */
@@ -23,9 +16,8 @@ class Client
     /**
      * Client constructor.
      */
-    public function __construct(HttpClient $httpClient, GithubConfig $githubConfig)
+    public function __construct(GithubConfig $githubConfig)
     {
-        $this->httpClient = $httpClient;
         $this->githubConfig = $githubConfig;
     }
 
@@ -104,14 +96,13 @@ class Client
      */
     private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], string $body = null)
     {
-        $headers = [
+        $headers = array_merge([
             'Authorization' => 'token '.$this->githubConfig->getApiToken(),
             'Accept' => 'application/vnd.github.v3+json',
-        ];
-        $headers = array_merge($headers, $additionalHeaders);
-        $request = new Request($method, $url, $headers, $body);
+        ], $additionalHeaders);
 
-        $response = $this->httpClient->sendRequest($request);
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request($method, $url, ['headers' => $headers]);
 
         if ($response->getStatusCode() !== $expectedStatusCode) {
             throw new \Exception("Request failed: $method $url with status code ".$response->getStatusCode()."\n".$response->getBody());

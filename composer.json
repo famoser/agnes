@@ -16,14 +16,12 @@
   ],
   "license": "MIT",
   "require": {
-    "symfony/console": "^4.3 || ^5.0",
-    "symfony/yaml": "^4.3 || ^5.0",
-    "symfony/dotenv": "^4.3 || ^5.0",
-    "php-http/guzzle6-adapter": "^2.0",
     "ext-json": "*",
     "ext-zip": "*",
-    "php-http/client-common": "^2.0",
-    "php-http/curl-client": "^2.0"
+    "guzzlehttp/guzzle": "^7.2",
+    "symfony/console": "^4.3 || ^5.0",
+    "symfony/dotenv": "^4.3 || ^5.0",
+    "symfony/yaml": "^4.3 || ^5.0"
   },
   "require-dev": {
     "brainmaestro/composer-git-hooks": "^2.8",
@@ -52,7 +50,7 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "7.3.8"
+      "php": "8.0"
     }
   },
   "extra": {

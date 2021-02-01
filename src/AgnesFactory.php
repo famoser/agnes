@@ -16,9 +16,6 @@ use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\ScriptService;
 use Agnes\Services\TaskService;
-use Http\Client\Common\Plugin\RedirectPlugin;
-use Http\Client\Common\PluginClient;
-use Http\Discovery\HttpClientDiscovery;
 use Symfony\Component\Console\Style\OutputStyle;
 
 class AgnesFactory
@@ -38,13 +35,10 @@ class AgnesFactory
      */
     public function __construct(OutputStyle $io)
     {
-        $redirectPlugin = new RedirectPlugin(['preserve_header' => false]);
-        $pluginClient = new PluginClient(HttpClientDiscovery::find(), [$redirectPlugin]);
-
         // construct internal services
         $configurationService = new ConfigurationService($io);
         $fileService = new FileService($io, $configurationService);
-        $githubService = new GithubService($io, $pluginClient, $configurationService);
+        $githubService = new GithubService($io, $configurationService);
         $installationService = new InstallationService($io, $configurationService);
         $instanceService = new InstanceService($io, $configurationService, $installationService);
         $scriptService = new ScriptService($io, $configurationService);
