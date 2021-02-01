@@ -46,7 +46,7 @@ class GithubService
                 throw new \Exception('github not configured; can not create github client');
             }
 
-            $this->clientCache = new Client($this->httpClient, $config);
+            $this->clientCache = new Client($config);
         }
 
         return $this->clientCache;
