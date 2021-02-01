@@ -101,8 +101,13 @@ class Client
             'Accept' => 'application/vnd.github.v3+json',
         ], $additionalHeaders);
 
+        $options = ['headers' => $headers];
+        if (null !== $body) {
+            $options['body'] = $body;
+        }
+
         $client = new \GuzzleHttp\Client();
-        $response = $client->request($method, $url, ['headers' => $headers]);
+        $response = $client->request($method, $url, $options);
 
         if ($response->getStatusCode() !== $expectedStatusCode) {
             throw new \Exception("Request failed: $method $url with status code ".$response->getStatusCode()."\n".$response->getBody());
