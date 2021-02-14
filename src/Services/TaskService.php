@@ -289,8 +289,8 @@ class TaskService
     private function executeTaskConfigs(array $taskConfigs, AbstractTask $task)
     {
         foreach ($taskConfigs as $afterTaskConfig) {
-            $afterTaskVisitor = new TaskConfigVisitor($this->instanceService, $this->taskFactory, $this->executionVisitor->buildExists(), $afterTaskConfig);
-            $afterTasks = $task->accept($afterTaskVisitor);
+            $taskVisitor = new TaskConfigVisitor($this->instanceService, $this->taskFactory, $this->executionVisitor->buildExists(), $afterTaskConfig);
+            $afterTasks = $task->accept($taskVisitor);
             foreach ($afterTasks as $afterTask) {
                 $this->executeTask($afterTask, true);
             }
