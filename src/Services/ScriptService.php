@@ -54,7 +54,7 @@ class ScriptService
     /**
      * @throws Exception
      */
-    public function executeDeployHook(Instance $instance, Installation $newInstallation)
+    public function executeDeployHook(Instance $instance, Installation $newInstallation): void
     {
         $previousInstallation = $instance->getCurrentInstallation();
 
@@ -71,7 +71,7 @@ class ScriptService
     /**
      * @throws Exception
      */
-    public function executeAfterDeployHook(Instance $instance)
+    public function executeAfterDeployHook(Instance $instance): void
     {
         $this->executeScriptsForHook('after_deploy', $instance, $instance->getCurrentInstallation());
     }
@@ -79,7 +79,7 @@ class ScriptService
     /**
      * @throws Exception
      */
-    public function executeRollbackHook(Instance $instance, Installation $previousInstallation)
+    public function executeRollbackHook(Instance $instance, Installation $previousInstallation): void
     {
         $arguments = ['PREVIOUS_INSTALLATION_PATH' => $previousInstallation->getFolder()];
 
@@ -89,7 +89,7 @@ class ScriptService
     /**
      * @throws Exception
      */
-    public function executeAfterRollbackHook(Instance $instance)
+    public function executeAfterRollbackHook(Instance $instance): void
     {
         $this->executeScriptsForHook('after_rollback', $instance, $instance->getCurrentInstallation());
     }
@@ -97,7 +97,7 @@ class ScriptService
     /**
      * @throws Exception
      */
-    private function executeScriptsForHook(string $hook, Instance $instance, Installation $installation, array $arguments = [])
+    private function executeScriptsForHook(string $hook, Instance $instance, Installation $installation, array $arguments = []): void
     {
         $scripts = $this->configurationService->getScriptsForHook($hook);
 
@@ -107,7 +107,7 @@ class ScriptService
     /**
      * @throws Exception
      */
-    public function executeScriptByName(Instance $target, Installation $installation, string $name)
+    public function executeScriptByName(Instance $target, Installation $installation, string $name): void
     {
         $script = $this->configurationService->getScriptByName($name);
 

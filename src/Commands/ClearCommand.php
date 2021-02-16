@@ -22,8 +22,6 @@ class ClearCommand extends AgnesCommand
 
     /**
      * @throws Exception
-     * @throws \Http\Client\Exception
-     * @throws \Http\Client\Exception
      */
     protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {

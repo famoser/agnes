@@ -7,6 +7,7 @@ use Agnes\Models\Task\Copy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Release;
 use Agnes\Services\InstanceService;
+use Agnes\Services\Policy\AbstractPolicyVisitor;
 use Agnes\Services\Policy\CopyPolicyVisitor;
 use Agnes\Services\Policy\DeployPolicyVisitor;
 use Agnes\Services\Policy\NeedsBuildResultPolicyVisitor;
@@ -41,22 +42,22 @@ class PolicyVisitor extends AbstractTaskVisitor
         $this->buildResult = $buildResult;
     }
 
-    public function visitCopy(Copy $copy)
+    public function visitCopy(Copy $copy): AbstractPolicyVisitor
     {
         return new CopyPolicyVisitor($this->io, $copy);
     }
 
-    public function visitDeploy(Deploy $deploy)
+    public function visitDeploy(Deploy $deploy): AbstractPolicyVisitor
     {
         return new DeployPolicyVisitor($this->io, $this->instanceService, $this->buildResult, $deploy);
     }
 
-    public function visitRelease(Release $release)
+    public function visitRelease(Release $release): AbstractPolicyVisitor
     {
         return new NeedsBuildResultPolicyVisitor($this->io, $this->buildResult, $release);
     }
 
-    protected function visitDefault(AbstractTask $payload)
+    protected function visitDefault(AbstractTask $payload): AbstractPolicyVisitor
     {
         return new NoPolicyVisitor($this->io, $payload);
     }

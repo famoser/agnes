@@ -107,7 +107,7 @@ abstract class AbstractPolicyVisitor
         throw new Exception('Filter is non-null; undecidable');
     }
 
-    public function validate()
+    public function validate(): bool
     {
         return true;
     }

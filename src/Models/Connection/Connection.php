@@ -43,7 +43,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function executeScript(string $workingFolder, array $commands, array $envVariables = [])
+    public function executeScript(string $workingFolder, array $commands, array $envVariables = []): void
     {
         $commands = $this->prependEnvVariables($commands, $envVariables);
         $commands = $this->applyScriptOverrides($commands);
@@ -56,11 +56,11 @@ abstract class Connection
      *
      * @throws Exception
      */
-    abstract protected function executeWithinWorkingFolder(string $workingFolder, array $commands);
+    abstract protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void;
 
     abstract public function readFile(string $filePath): string;
 
-    abstract public function writeFile(string $filePath, string $content);
+    abstract public function writeFile(string $filePath, string $content): void;
 
     /**
      * @return string[]
@@ -136,7 +136,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function getRepositoryStateAtCommitish(string $path, string $repository, string $commitish)
+    public function getRepositoryStateAtCommitish(string $path, string $repository, string $commitish): string
     {
         $this->checkoutRepository($path, $repository);
 
@@ -155,7 +155,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function checkoutRepository(string $path, string $repository)
+    public function checkoutRepository(string $path, string $repository): void
     {
         $gitClone = $this->executor->gitClone($path, $repository);
         $this->executeCommand($gitClone);
@@ -164,7 +164,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function gitPull(string $path)
+    public function gitPull(string $path): void
     {
         $gitPull = $this->executor->gitPull($path);
         $this->executeCommand($gitPull);
@@ -173,7 +173,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function createOrClearFolder(string $folder)
+    public function createOrClearFolder(string $folder): void
     {
         $command = $this->executor->rmRecursive($folder);
         $this->executeCommand($command);
@@ -183,18 +183,16 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function createFolder(string $folder)
+    public function createFolder(string $folder): void
     {
         $command = $this->executor->mkdirRecursive($folder);
         $this->executeCommand($command);
     }
 
     /**
-     * @return string
-     *
      * @throws Exception
      */
-    public function compressTarGz(string $folder, string $fileName)
+    public function compressTarGz(string $folder, string $fileName): string
     {
         $targetFilePath = $folder.'/'.$fileName;
         $command = $this->executor->rmIfExists($targetFilePath);
@@ -212,7 +210,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function uncompressTarGz(string $archivePath, string $targetFolder)
+    public function uncompressTarGz(string $archivePath, string $targetFolder): void
     {
         $command = $this->executor->tarUncompress($archivePath, $targetFolder);
         $this->executeCommand($command);
@@ -221,7 +219,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function removeFile(string $path)
+    public function removeFile(string $path): void
     {
         $command = $this->executor->rmRecursive($path);
         $this->executeCommand($command);
@@ -230,7 +228,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function createSymlink(string $source, string $target)
+    public function createSymlink(string $source, string $target): void
     {
         $relativeSharedFolder = $this->getRelativeSymlinkPath($source, $target);
         $command = $this->executor->lnCreateSymbolicLink($source, $relativeSharedFolder);
@@ -247,10 +245,7 @@ abstract class Connection
         return $this->executeCommand($command);
     }
 
-    /**
-     * @return string
-     */
-    private function getRelativeSymlinkPath(string $source, string $target)
+    private function getRelativeSymlinkPath(string $source, string $target): string
     {
         $sourceArray = explode(DIRECTORY_SEPARATOR, $source);
         $targetArray = explode(DIRECTORY_SEPARATOR, $target);
@@ -273,11 +268,9 @@ abstract class Connection
     }
 
     /**
-     * @return string
-     *
      * @throws Exception
      */
-    public function absolutePath(string $relativePath)
+    public function absolutePath(string $relativePath): string
     {
         $command = $this->executor->readlinkCanonicalize($relativePath);
 
@@ -287,7 +280,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function moveFolder(string $source, string $target)
+    public function moveFolder(string $source, string $target): void
     {
         $command = $this->executor->rmMoveAndReplace($source, $target);
         $this->executeCommand($command);
@@ -296,7 +289,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function copyFolderContent(string $source, string $target)
+    public function copyFolderContent(string $source, string $target): void
     {
         $sourceContent = $source.DIRECTORY_SEPARATOR.'.';
         $command = $this->executor->cpRecursive($sourceContent, $target);
@@ -306,7 +299,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function removeFolder(string $folder)
+    public function removeFolder(string $folder): void
     {
         $command = $this->executor->rmRecursive($folder);
         $this->executeCommand($command);
@@ -315,7 +308,7 @@ abstract class Connection
     /**
      * @throws Exception
      */
-    public function replaceSymlink(string $source, string $target)
+    public function replaceSymlink(string $source, string $target): void
     {
         $command = $this->executor->mvSymlinkAtomicReplace($source, $target);
         $this->executeCommand($command);
@@ -324,9 +317,9 @@ abstract class Connection
     /**
      * @param string[] $commands
      *
-     * @return array|string[]
+     * @return string[]
      */
-    private function applyScriptOverrides(array $commands)
+    private function applyScriptOverrides(array $commands): array
     {
         $overrideMatch = '/{{[^{}]*}}/';
 

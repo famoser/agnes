@@ -3,7 +3,6 @@
 namespace Agnes\Services;
 
 use Agnes\Services\Github\Client;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Style\OutputStyle;
 
@@ -34,11 +33,9 @@ class GithubService
     private $clientCache;
 
     /**
-     * @return Client
-     *
      * @throws \Exception
      */
-    private function getClient()
+    private function getClient(): Client
     {
         if (null === $this->clientCache) {
             $config = $this->configurationService->getGithubConfig();
@@ -53,7 +50,6 @@ class GithubService
     }
 
     /**
-     * @throws Exception
      * @throws \Exception
      */
     public function commitishOfReleaseByReleaseName(string $releaseName): ?string
@@ -73,10 +69,9 @@ class GithubService
     }
 
     /**
-     * @throws Exception
-     * @throws ClientExceptionInterface
+     * @throws \Exception
      */
-    public function downloadAssetForReleaseByReleaseName(string $releaseName)
+    public function downloadAssetForReleaseByReleaseName(string $releaseName): ?string
     {
         $response = $this->getClient()->getReleases();
         $releases = json_decode($response->getBody()->getContents());
@@ -103,10 +98,9 @@ class GithubService
     }
 
     /**
-     * @throws Exception
      * @throws \Exception
      */
-    public function publish(string $name, string $commitish, string $content)
+    public function publish(string $name, string $commitish, string $content): void
     {
         $response = $this->createRelease($name, $commitish);
 
@@ -119,7 +113,6 @@ class GithubService
     }
 
     /**
-     * @throws Exception
      * @throws \Exception
      */
     private function createRelease(string $name, string $commitish): ResponseInterface
@@ -139,20 +132,15 @@ class GithubService
         return $this->getClient()->createRelease($body);
     }
 
-    /**
-     * @return string
-     */
-    private function booleanToString(bool $input)
+    private function booleanToString(bool $input): string
     {
         return $input ? 'true' : 'false';
     }
 
     /**
-     * @return bool
-     *
      * @throws \Exception
      */
-    public function configured()
+    public function configured(): bool
     {
         return null !== $this->configurationService->getGithubConfig();
     }

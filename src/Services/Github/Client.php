@@ -3,7 +3,6 @@
 namespace Agnes\Services\Github;
 
 use Agnes\Services\Configuration\GithubConfig;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class Client
@@ -21,10 +20,6 @@ class Client
         $this->githubConfig = $githubConfig;
     }
 
-    /**
-     * @throws ClientExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function getReleases(): ResponseInterface
     {
         return $this->executeRequest(
@@ -34,10 +29,6 @@ class Client
         );
     }
 
-    /**
-     * @throws ClientExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function downloadAsset(int $assetId): ResponseInterface
     {
         return $this->executeRequest(
@@ -47,10 +38,6 @@ class Client
         );
     }
 
-    /**
-     * @throws ClientExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function createRelease(string $releaseContent): ResponseInterface
     {
         return $this->executeRequest(
@@ -61,23 +48,13 @@ class Client
         );
     }
 
-    /**
-     * @return ResponseInterface
-     *
-     * @throws ClientExceptionInterface
-     * @throws ClientExceptionInterface
-     */
-    public function deleteRelease(int $releaseId)
+    public function deleteRelease(int $releaseId): ResponseInterface
     {
         return $this->executeRequest(
             'DELETE', 'https://api.github.com/repos/'.$this->githubConfig->getRepository().'/releases/'.$releaseId, 204
         );
     }
 
-    /**
-     * @throws ClientExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function addReleaseAsset(int $releaseId, string $assetName, string $assetContentType, string $assetContent): ResponseInterface
     {
         return $this->executeRequest(
@@ -88,13 +65,7 @@ class Client
         );
     }
 
-    /**
-     * @return ResponseInterface
-     *
-     * @throws \Exception
-     * @throws ClientExceptionInterface
-     */
-    private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], string $body = null)
+    private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], string $body = null): ResponseInterface
     {
         $headers = array_merge([
             'Authorization' => 'token '.$this->githubConfig->getApiToken(),

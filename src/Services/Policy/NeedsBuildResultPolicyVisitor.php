@@ -35,7 +35,7 @@ class NeedsBuildResultPolicyVisitor extends NoPolicyVisitor
         $this->task = $task;
     }
 
-    public function validate()
+    public function validate(): bool
     {
         if (null === $this->buildResult) {
             $this->io->error('To '.$this->task->describe().' a successful build it required.');

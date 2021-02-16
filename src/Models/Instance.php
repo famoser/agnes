@@ -59,7 +59,7 @@ class Instance
         $this->stage = $stage;
     }
 
-    public function addInstallation(Installation $installation)
+    public function addInstallation(Installation $installation): void
     {
         $this->installations[$installation->getNumber()] = $installation;
     }
@@ -102,15 +102,12 @@ class Instance
         return $this->currentInstallation;
     }
 
-    public function setCurrentInstallation(Installation $target)
+    public function setCurrentInstallation(Installation $target): void
     {
         $this->currentInstallation = $target;
     }
 
-    /**
-     * @return bool
-     */
-    public function equals(Instance $other)
+    public function equals(Instance $other): bool
     {
         if ($this === $other) {
             return true;
@@ -145,10 +142,7 @@ class Instance
         return $this->path.DIRECTORY_SEPARATOR.$this->environment.DIRECTORY_SEPARATOR.$this->stage;
     }
 
-    /**
-     * @return string
-     */
-    public function describe()
+    public function describe(): string
     {
         return $this->server.':'.$this->environment.':'.$this->stage;
     }

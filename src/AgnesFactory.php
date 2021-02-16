@@ -2,6 +2,7 @@
 
 namespace Agnes;
 
+use Agnes\Commands\AgnesCommand;
 use Agnes\Commands\BuildCommand;
 use Agnes\Commands\ClearCommand;
 use Agnes\Commands\CopyCommand;
@@ -54,12 +55,15 @@ class AgnesFactory
         return $this->configurationService;
     }
 
-    public function getTaskService()
+    public function getTaskService(): TaskService
     {
         return $this->taskService;
     }
 
-    public static function getCommands()
+    /**
+     * @return AgnesCommand[]
+     */
+    public static function getCommands(): array
     {
         return [
             new BuildCommand(),

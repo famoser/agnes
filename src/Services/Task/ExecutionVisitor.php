@@ -160,9 +160,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
         return true;
     }
 
-    /**
-     * @throws Exception|\Http\Client\Exception
-     */
     public function visitRelease(Release $release): bool
     {
         $this->io->text('publishing release to github');
@@ -171,9 +168,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
         return true;
     }
 
-    /**
-     * @throws Exception
-     */
     public function visitRollback(Rollback $rollback): bool
     {
         $instance = $rollback->getTarget();
@@ -192,9 +186,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
         return true;
     }
 
-    /**
-     * @throws Exception
-     */
     public function visitBuild(Build $build): bool
     {
         $connection = $this->configurationService->getBuildConnection();
@@ -223,11 +214,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
         return true;
     }
 
-    /**
-     * @throws \Http\Client\Exception
-     * @throws \Psr\Http\Client\ClientExceptionInterface
-     */
-    public function visitDownload(Download $downloadGithub)
+    public function visitDownload(Download $downloadGithub): bool
     {
         $this->io->text('downloading asset for release '.$downloadGithub->getRelease());
         $content = $this->githubService->downloadAssetForReleaseByReleaseName($downloadGithub->getRelease());

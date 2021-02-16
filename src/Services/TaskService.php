@@ -10,7 +10,6 @@ use Agnes\Services\Task\ExecutionVisitor;
 use Agnes\Services\Task\PolicyVisitor;
 use Agnes\Services\Task\TaskConfigVisitor;
 use Agnes\Services\Task\TaskFactory;
-use Http\Client\Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class TaskService
@@ -73,7 +72,7 @@ class TaskService
         return $this->tasks;
     }
 
-    public function addReleaseTask(string $commitish, string $name)
+    public function addReleaseTask(string $commitish, string $name): void
     {
         $this->ensureBuild($commitish, false);
 
@@ -81,13 +80,13 @@ class TaskService
         $this->addTask($release);
     }
 
-    public function addBuildTask(string $commitish)
+    public function addBuildTask(string $commitish): void
     {
         $task = $this->taskFactory->createBuild($commitish);
         $this->addTask($task);
     }
 
-    public function addRunTask(string $target, string $script)
+    public function addRunTask(string $target, string $script): void
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
@@ -109,11 +108,7 @@ class TaskService
         }
     }
 
-    /**
-     * @throws \Exception
-     * @throws Exception
-     */
-    public function addDeployTasks(string $target, string $releaseOrCommitish)
+    public function addDeployTasks(string $target, string $releaseOrCommitish): void
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
@@ -131,7 +126,7 @@ class TaskService
         }
     }
 
-    public function addClearTask(string $target)
+    public function addClearTask(string $target): void
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
@@ -147,10 +142,7 @@ class TaskService
         }
     }
 
-    /**
-     * @throws \Exception
-     */
-    public function addRollbackTasks(string $target, ?string $rollbackTo, ?string $rollbackFrom)
+    public function addRollbackTasks(string $target, ?string $rollbackTo, ?string $rollbackFrom): void
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $instances = $this->instanceService->getInstancesByFilter($filter);
@@ -166,10 +158,7 @@ class TaskService
         }
     }
 
-    /**
-     * @throws Exception
-     */
-    public function addCopyTasks(string $target, string $sourceStage)
+    public function addCopyTasks(string $target, string $sourceStage): void
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $targetInstances = $this->instanceService->getInstancesByFilter($filter);
@@ -190,7 +179,7 @@ class TaskService
      */
     private $built = false;
 
-    private function ensureBuild(string $releaseOrCommitish, bool $allowDownload = true)
+    private function ensureBuild(string $releaseOrCommitish, bool $allowDownload = true): void
     {
         if ($this->built) {
             return;
@@ -206,7 +195,7 @@ class TaskService
         }
     }
 
-    private function addTask(?AbstractTask $task)
+    private function addTask(?AbstractTask $task): void
     {
         if (null === $task) {
             return;
@@ -220,20 +209,14 @@ class TaskService
      */
     private $tasks = [];
 
-    /**
-     * @throws \Exception
-     */
-    public function executeAll()
+    public function executeAll(): void
     {
         foreach ($this->tasks as $task) {
             $this->executeTask($task);
         }
     }
 
-    /**
-     * @throws \Exception
-     */
-    private function executeTask(AbstractTask $task, bool $subSection = false)
+    private function executeTask(AbstractTask $task, bool $subSection = false): void
     {
         if ($subSection) {
             $this->io->newLine();
@@ -283,10 +266,8 @@ class TaskService
 
     /**
      * @param Task[] $taskConfigs
-     *
-     * @throws \Exception
      */
-    private function executeTaskConfigs(array $taskConfigs, AbstractTask $task)
+    private function executeTaskConfigs(array $taskConfigs, AbstractTask $task): void
     {
         foreach ($taskConfigs as $afterTaskConfig) {
             $taskVisitor = new TaskConfigVisitor($this->instanceService, $this->taskFactory, $this->executionVisitor->buildExists(), $afterTaskConfig);

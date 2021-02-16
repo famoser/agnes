@@ -75,7 +75,7 @@ class Installation
     /**
      * persists that the installation is now taken online.
      */
-    public function startOnlinePeriod()
+    public function startOnlinePeriod(): void
     {
         $onlinePeriod = new OnlinePeriod(new DateTime(), null);
         $this->onlinePeriods[] = $onlinePeriod;
@@ -84,7 +84,7 @@ class Installation
     /**
      * persists that the installation is now taken offline.
      */
-    public function stopOnlinePeriod()
+    public function stopOnlinePeriod(): void
     {
         if (0 === count($this->onlinePeriods)) {
             return;

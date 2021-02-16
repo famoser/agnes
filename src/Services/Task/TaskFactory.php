@@ -80,7 +80,7 @@ class TaskFactory
         return new Deploy($target);
     }
 
-    public function createClear(Instance $instance)
+    public function createClear(Instance $instance): Clear
     {
         return new Clear($instance);
     }

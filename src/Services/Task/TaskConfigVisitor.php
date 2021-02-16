@@ -53,32 +53,32 @@ class TaskConfigVisitor extends AbstractTaskVisitor
         $this->task = $task;
     }
 
-    public function visitRelease(Release $release)
+    public function visitRelease(Release $release): array
     {
         return $this->createFrom();
     }
 
-    public function visitBuild(Build $build)
+    public function visitBuild(Build $build): array
     {
         return $this->createFrom();
     }
 
-    public function visitDeploy(Deploy $deploy)
+    public function visitDeploy(Deploy $deploy): array
     {
         return $this->createFrom($deploy->getTarget());
     }
 
-    public function visitRollback(Rollback $rollback)
+    public function visitRollback(Rollback $rollback): array
     {
         return $this->createFrom($rollback->getTarget());
     }
 
-    public function visitRun(Run $run)
+    public function visitRun(Run $run): array
     {
         return $this->createFrom($run->getTarget());
     }
 
-    public function visitCopy(Copy $copy)
+    public function visitCopy(Copy $copy): array
     {
         return $this->createFrom($copy->getTarget());
     }
