@@ -106,7 +106,7 @@ abstract class Executor
 
     public function sshExecute(string $destination, string $command): string
     {
-        return 'ssh '.$destination." '$command'";
+        return "ssh $destination '$command'";
     }
 
     public function cdToFolderAndExecute(string $folder, string $command): string
