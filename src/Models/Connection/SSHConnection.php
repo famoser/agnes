@@ -48,7 +48,7 @@ class SSHConnection extends Connection
      *
      * @throws Exception
      */
-    protected function executeWithinWorkingFolder(string $workingFolder, array $commands)
+    protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void
     {
         // prepare commands for execution
         foreach ($commands as &$command) {
@@ -85,7 +85,7 @@ class SSHConnection extends Connection
     /**
      * @throws Exception
      */
-    public function writeFile(string $filePath, string $content)
+    public function writeFile(string $filePath, string $content): void
     {
         $tempFile = self::getTempFile();
         file_put_contents($tempFile, $content);
@@ -140,10 +140,7 @@ class SSHConnection extends Connection
         return $this->testForOutput($command, 'yes');
     }
 
-    /**
-     * @return bool
-     */
-    private function testForOutput(string $command, string $expected)
+    private function testForOutput(string $command, string $expected): bool
     {
         try {
             $output = $this->executeCommand($command);
@@ -154,10 +151,7 @@ class SSHConnection extends Connection
         return false !== strpos($output, $expected);
     }
 
-    /**
-     * @return string
-     */
-    private static function getTempFile()
+    private static function getTempFile(): string
     {
         return tempnam(sys_get_temp_dir(), 'Agnes');
     }

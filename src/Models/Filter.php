@@ -49,7 +49,7 @@ class Filter
         return new self($servers, $environments, $stages);
     }
 
-    public static function createFromInstanceWithOverrideInstanceSpecification(Instance $instance, string $overrideInstanceSpecification)
+    public static function createFromInstanceWithOverrideInstanceSpecification(Instance $instance, string $overrideInstanceSpecification): Filter
     {
         $server = $instance->getServerName();
         $environment = $instance->getEnvironmentName();
@@ -88,7 +88,7 @@ class Filter
         return true;
     }
 
-    public function describe()
+    public function describe(): string
     {
         $serverFilter = null !== $this->servers ? implode(',', $this->servers) : '*';
         $environementFilter = null !== $this->environments ? implode(',', $this->environments) : '*';

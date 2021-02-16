@@ -142,24 +142,21 @@ class InstallationService
     }
 
     /**
-     * @return Installation[]
-     *
      * @throws Exception
      */
-    public function removeFoldersWithoutInstallation(Instance $instance): array
+    public function removeFoldersWithoutInstallation(Instance $instance): void
     {
-        $installationsByFolder = $this->loadFoldersWithInstallations($instance);
+        $installationsFolder = $instance->getInstallationsFolder();
+        $folders = $instance->getConnection()->getFolders($installationsFolder);
 
-        $result = [];
-        foreach ($installationsByFolder as $folder => $installation) {
+        foreach ($folders as $folder) {
+            $installation = $this->getInstallationFromFolder($instance, $folder);
             if (null === $installation) {
                 $path = $instance->getInstallationsFolder().DIRECTORY_SEPARATOR.$folder;
                 $instance->getConnection()->removeFolder($path);
                 $this->io->text('removed '.$path);
             }
         }
-
-        return $result;
     }
 
     /**
@@ -169,33 +166,15 @@ class InstallationService
      */
     public function loadInstallations(Instance $instance): array
     {
-        $installationsByFolder = $this->loadFoldersWithInstallations($instance);
-
-        $result = [];
-        foreach ($installationsByFolder as $folder => $installation) {
-            if (null !== $installation) {
-                $result[] = $installation;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return array[]
-     *
-     * @throws Exception
-     */
-    private function loadFoldersWithInstallations(Instance $instance): array
-    {
         $installationsFolder = $instance->getInstallationsFolder();
-
         $folders = $instance->getConnection()->getFolders($installationsFolder);
 
         $installations = [];
-
         foreach ($folders as $folder) {
-            $installations[$folder] = $this->getInstallationFromFolder($instance, $folder);
+            $installation = $this->getInstallationFromFolder($instance, $folder);
+            if (null !== $installation) {
+                $installations[$folder] = $installation;
+            }
         }
 
         return $installations;

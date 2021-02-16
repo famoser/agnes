@@ -6,6 +6,7 @@ use Agnes\Models\Connection\Connection;
 use Agnes\Models\Connection\LocalConnection;
 use Agnes\Models\Connection\SSHConnection;
 use Agnes\Models\Executor\BSDExecutor;
+use Agnes\Models\Executor\Executor;
 use Agnes\Models\Executor\LinuxExecutor;
 use Agnes\Models\Filter;
 use Agnes\Models\Policy\Policy;
@@ -49,6 +50,9 @@ class ConfigurationService
         $this->io = $io;
     }
 
+    /**
+     * @throws Exception
+     */
     public function validate(): bool
     {
         if (0 === count($this->config)) {
@@ -70,7 +74,7 @@ class ConfigurationService
     /**
      * @throws Exception
      */
-    public function addConfig(string $path)
+    public function addConfig(string $path): void
     {
         $configFileContent = file_get_contents($path);
         $config = Yaml::parse($configFileContent);
@@ -81,21 +85,17 @@ class ConfigurationService
     }
 
     /**
-     * @return string|null
-     *
      * @throws Exception
      */
-    public function getConfigRepositoryUrl()
+    public function getConfigRepositoryUrl(): ?string
     {
         return $this->getNestedConfigWithDefault(null, 'config', 'repository', 'url');
     }
 
     /**
-     * @return string
-     *
      * @throws Exception
      */
-    public function getRepositoryUrl()
+    public function getRepositoryUrl(): string
     {
         $cloneUrl = $this->getNestedConfigWithDefault(null, 'repository', 'url');
         if (null !== $cloneUrl) {
@@ -111,11 +111,9 @@ class ConfigurationService
     }
 
     /**
-     * @return GithubConfig
-     *
      * @throws Exception
      */
-    public function getGithubConfig()
+    public function getGithubConfig(): ?GithubConfig
     {
         $githubConfig = $this->getNestedConfigWithDefault(null, 'github');
         if (null === $githubConfig) {
@@ -129,11 +127,9 @@ class ConfigurationService
     }
 
     /**
-     * @return Connection
-     *
      * @throws Exception
      */
-    public function getBuildConnection()
+    public function getBuildConnection(): ?Connection
     {
         $connection = $this->getNestedConfigWithDefault([], 'build', 'connection');
 
@@ -141,21 +137,17 @@ class ConfigurationService
     }
 
     /**
-     * @return string
-     *
      * @throws Exception
      */
-    public function getBuildPath()
+    public function getBuildPath(): string
     {
         return $this->getNestedConfig('build', 'path');
     }
 
     /**
-     * @return string|null
-     *
      * @throws Exception
      */
-    public function getConfigPath()
+    public function getConfigPath(): ?string
     {
         return $this->getNestedConfigWithDefault(null, 'config', 'path');
     }
@@ -165,8 +157,6 @@ class ConfigurationService
      *
      * @throws Exception
      */
-
-    /** @noinspection PhpUnusedParameterInspection */
     public function getScriptsForHook(string $hook): array
     {
         return $this->getScriptsByCondition(function (string $name, array $script) use ($hook) {
@@ -180,8 +170,6 @@ class ConfigurationService
      *
      * @throws Exception
      */
-
-    /** @noinspection PhpUnusedParameterInspection */
     public function getScriptByName(string $name): ?Script
     {
         $scripts = $this->getScriptsByCondition(function (string $scriptName, array $script) use ($name) {
@@ -406,7 +394,7 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    public function getPoliciesForTask(string $task)
+    public function getPoliciesForTask(string $task): array
     {
         $policies = $this->getNestedConfigWithDefault([], 'policies');
 
@@ -445,10 +433,8 @@ class ConfigurationService
 
     /**
      * @param string[] $filter
-     *
-     * @return Filter
      */
-    private function getFilter(array $filter)
+    private function getFilter(array $filter): Filter
     {
         $servers = isset($filter['servers']) ? $filter['servers'] : [];
         $environments = isset($filter['environments']) ? $filter['environments'] : [];
@@ -458,13 +444,11 @@ class ConfigurationService
     }
 
     /**
-     * @param $connection
-     *
-     * @return LocalConnection|SSHConnection
+     * @param string[] $connection
      *
      * @throws Exception
      */
-    private function getConnection(array $connection)
+    private function getConnection(array $connection): Connection
     {
         $system = $this->getValue($connection, 'system', 'Linux');
         $executor = $this->getExecutor($system);
@@ -482,11 +466,9 @@ class ConfigurationService
     }
 
     /**
-     * @return BSDExecutor|LinuxExecutor
-     *
      * @throws Exception
      */
-    private function getExecutor(string $system)
+    private function getExecutor(string $system): Executor
     {
         switch ($system) {
             case 'Linux':
@@ -503,7 +485,7 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    public function getSharedFolders()
+    public function getSharedFolders(): array
     {
         return $this->getNestedConfigWithDefault([], 'data', 'shared_folders');
     }
@@ -513,7 +495,7 @@ class ConfigurationService
      *
      * @throws Exception
      */
-    public function getFiles()
+    public function getFiles(): array
     {
         $entries = $this->getNestedConfigWithDefault([], 'data', 'files');
 

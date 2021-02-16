@@ -15,7 +15,7 @@ class LocalConnection extends Connection
     /**
      * @throws Exception
      */
-    protected function executeWithinWorkingFolder(string $workingFolder, array $commands)
+    protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void
     {
         // change working directory
         $originWorkingFolder = getcwd();
@@ -33,7 +33,7 @@ class LocalConnection extends Connection
         return file_get_contents($filePath);
     }
 
-    public function writeFile(string $filePath, string $content)
+    public function writeFile(string $filePath, string $content): void
     {
         file_put_contents($filePath, $content);
     }
@@ -68,7 +68,7 @@ class LocalConnection extends Connection
         return $connection instanceof LocalConnection;
     }
 
-    public function removeFile(string $path)
+    public function removeFile(string $path): void
     {
         unlink($path);
     }

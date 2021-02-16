@@ -58,7 +58,7 @@ class FileService
     /**
      * @throws Exception
      */
-    public function uploadFiles(Instance $instance, Installation $installation)
+    public function uploadFiles(Instance $instance, Installation $installation): void
     {
         $instanceConfigFolder = $this->getLocalConfigFolderPath($instance);
 

@@ -20,11 +20,6 @@ build:
   # connection:
   #  type: local # local connection; hence operating on filesystem of same machine
 
-
-  # optionally could specify build connection
-  # connection:
-  #  type: local # local connection; hence operating on filesystem of same machine
-
 # configure the repository to operate on (used with the git clone command)
 repository:
   url: 'git@github.com:famoser/agnes'
@@ -78,7 +73,7 @@ scripts:
     hook: build
     script:
       - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
-      - '{{php}} -v' # place
+      - '{{php}} -v'
 
   # deploy hook which is executed on the final location of the build, before putting it online
   # initialize caches, migrate databases, ...
@@ -99,7 +94,6 @@ scripts:
       - echo "rollbacked"
 
   # after_deploy and after_rollback hooks are executed right after the symlink changes
-  #
   restart_php:
     hooks: [after_deploy, after_rollback]
     script:

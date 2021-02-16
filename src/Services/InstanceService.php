@@ -47,7 +47,7 @@ class InstanceService
      *
      * @throws Exception
      */
-    public function getInstancesByFilter(?Filter $filter)
+    public function getInstancesByFilter(?Filter $filter): array
     {
         if (null === $this->instancesCache) {
             $this->instancesCache = $this->loadInstances();
@@ -73,7 +73,7 @@ class InstanceService
      *
      * @throws Exception
      */
-    private function loadInstances()
+    private function loadInstances(): array
     {
         $servers = $this->configurationService->getServers();
 
@@ -150,7 +150,7 @@ class InstanceService
     /**
      * @throws Exception
      */
-    public function removeOldInstallations(Instance $instance)
+    public function removeOldInstallations(Instance $instance): void
     {
         $onlineNumber = $instance->getCurrentInstallation()->getNumber();
         /** @var Installation[] $oldInstallations */
@@ -180,9 +180,11 @@ class InstanceService
     }
 
     /**
+     * @return Instance[]
+     *
      * @throws Exception
      */
-    public function getInstancesBySpecification(string $target)
+    public function getInstancesBySpecification(string $target): array
     {
         $filter = Filter::createFromInstanceSpecification($target);
 
