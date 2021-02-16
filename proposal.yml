@@ -1,0 +1,92 @@
+# config refactor targets:
+# - separate agnes, application & operation
+# - adapt tasks executed on specific environment to be adapted by it
+# no complete; there are open TODOs, and simplicity not reached yet
+# TODO: simple use cases should not need more complex specification than before!
+
+# agnes specific info
+agnes:
+  version: 5
+  config:
+    path: .config
+    repository:
+      url: 'git@gitlab.com:famoser-deploy/agnes'
+
+# application specific config (except repo; as only used during build)
+data:
+  shared_folders:
+    - path: var/persistent
+    - path: var/transient
+      copy_shared: false
+  configuration_files:
+    - path: .env.local
+      required: true
+
+# deployment specific
+instances:
+  example:
+    connection:
+      type: ssh
+      destination: 'admin@example.com'
+      system: FreeBSD # TODO: allow to override system easily; for example to terminate php after exchanging symlink
+    path: ~/www
+    keep_installations: 2
+    script_overrides:
+      php: /usr/local/php73/bin/php
+    environments:
+      example.com: [dev, staging, prod]
+
+# scripts as its own section to allow reuse
+scripts:
+  build:
+    - composer install --verbose --prefer-dist --no-interaction --no-dev --optimize-autoloader --no-scripts
+  deploy:
+    - php bin/console doctrine:migrations:migrate -q
+  rollback:
+    - echo "rollbacked"
+  fixtures:
+    - wget -O composer.phar https://getcomposer.org/composer-stable.phar && chmod +x composer.phar && ./composer.phar install --optimize-autoloader --no-scripts
+    - php bin/console --env=dev doctrine:fixtures:load -q
+
+# config for each command
+build:
+  path: .build
+  repository:
+    url: 'git@github.com:famoser/agnes'
+  connection:
+    type: local
+  scripts: # TODO: inject script automatically with same name than command?
+    - script: build
+
+release:
+  provider:
+    type: github
+    api_token: '%env(GITHUB_API_TOKEN)%'
+    repository: famoser/agnes
+  after:
+    - command: release
+      arguments: { target: '*:*:dev' }
+
+copy:
+  policies:
+    - type: stage_write_down # TODO: policies are confusing. are they not going to be reused for sure?
+      layers:
+        0: [dev, staging]
+        1: [prod]
+    - type: same_release
+
+deploy:
+  before:
+    - command: copy
+      arguments: { source: production }
+      instance_filter: '*:*:staging'
+  scripts:
+    - script: fixtures
+      instance_filter: '*:*:dev'
+      order: -1
+  policies:
+    - type: stage_write_up
+      layers:
+        0: [ staging ]
+        1: [ prod ]
+
