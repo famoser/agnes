@@ -209,12 +209,16 @@ class ConfigurationService
             $filter = isset($script['instance_filter']) ? Filter::createFromInstanceSpecification($script['instance_filter']) : null;
             $order = isset($script['order']) ? (int) $script['order'] : 0;
 
-            $result[$order] = new Script($name, $commands, $filter);
+            if (!isset($result[$order])) {
+                $result[$order] = [];
+            }
+
+            $result[$order][] = new Script($name, $commands, $filter);
         }
 
         ksort($result);
 
-        return $result;
+        return array_merge(...$result);
     }
 
     /**
