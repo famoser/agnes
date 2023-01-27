@@ -91,7 +91,7 @@ class SSHConnection extends Connection
         file_put_contents($tempFile, $content);
 
         // create folder
-        $folder = dirname($this->getDestination());
+        $folder = dirname($filePath);
         $command = $this->executor->mkdirRecursive($folder);
         $this->executeCommand($command);
 
