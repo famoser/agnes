@@ -35,6 +35,11 @@ class LocalConnection extends Connection
 
     public function writeFile(string $filePath, string $content): void
     {
+        $folder = dirname($filePath);
+        if (!is_dir($folder)) {
+            mkdir($folder, 0777, true);
+        }
+
         file_put_contents($filePath, $content);
     }
 

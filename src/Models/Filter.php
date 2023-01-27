@@ -67,12 +67,8 @@ class Filter
         return self::createFromInstanceSpecification($newSpecification);
     }
 
-    public function instanceMatches(Instance $installation): bool
+    public function matches(string $serverName, string $environmentName, string $stage): bool
     {
-        $serverName = $installation->getServerName();
-        $environmentName = $installation->getEnvironmentName();
-        $stage = $installation->getStage();
-
         if (null !== $this->servers && !in_array($serverName, $this->servers)) {
             return false;
         }
@@ -88,12 +84,21 @@ class Filter
         return true;
     }
 
+    public function instanceMatches(Instance $instance): bool
+    {
+        $serverName = $instance->getServerName();
+        $environmentName = $instance->getEnvironmentName();
+        $stage = $instance->getStage();
+
+        return $this->matches($serverName, $environmentName, $stage);
+    }
+
     public function describe(): string
     {
         $serverFilter = null !== $this->servers ? implode(',', $this->servers) : '*';
-        $environementFilter = null !== $this->environments ? implode(',', $this->environments) : '*';
+        $environmentFilter = null !== $this->environments ? implode(',', $this->environments) : '*';
         $stageFilter = null !== $this->stages ? implode(',', $this->stages) : '*';
 
-        return "$serverFilter:$environementFilter:$stageFilter";
+        return "$serverFilter:$environmentFilter:$stageFilter";
     }
 }

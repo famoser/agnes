@@ -61,7 +61,7 @@ class InstallationService
 
         $maxNumber = 0;
         foreach ($target->getInstallations() as $installation) {
-            $maxNumber = max((int) $installation->getNumber(), $maxNumber);
+            $maxNumber = max($installation->getNumber(), $maxNumber);
         }
         ++$maxNumber;
 

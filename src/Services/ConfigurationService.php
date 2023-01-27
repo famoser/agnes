@@ -440,9 +440,9 @@ class ConfigurationService
      */
     private function getFilter(array $filter): Filter
     {
-        $servers = isset($filter['servers']) ? $filter['servers'] : [];
-        $environments = isset($filter['environments']) ? $filter['environments'] : [];
-        $stages = isset($filter['stages']) ? $filter['stages'] : [];
+        $servers = is_array($filter['servers']) ? $filter['servers'] : [];
+        $environments = is_array($filter['environments']) ? $filter['environments'] : [];
+        $stages = is_array($filter['stages']) ? $filter['stages'] : [];
 
         return new Filter($servers, $environments, $stages);
     }
