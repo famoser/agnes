@@ -80,13 +80,9 @@ class InstanceService
         $instances = [];
         foreach ($servers as $server) {
             $this->io->text('loading instances of '.$server->getName());
-
-            $connection = $server->getConnection();
-            $absolutePath = $server->getConnection()->absolutePath($server->getPath());
-
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
-                    $instances[] = $this->createInstance($connection, $absolutePath, $server, $environment->getName(), $stage);
+                    $instances[] = $this->createInstance($server->getConnection(), $server->getPath(), $server, $environment->getName(), $stage);
                 }
             }
         }
