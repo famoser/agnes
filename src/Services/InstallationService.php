@@ -77,7 +77,7 @@ class InstallationService
     private function uploadBuild(Connection $connection, Installation $installation, string $content): void
     {
         // make empty dir for new release
-        $connection->clearFolderIfExists($installation->getFolder());
+        $connection->createOrClearFolder($installation->getFolder());
 
         // transfer release packet
         $assetPath = $installation->getFolder().DIRECTORY_SEPARATOR.'build.tar.gz';
