@@ -90,11 +90,6 @@ class SSHConnection extends Connection
         $tempFile = self::getTempFile();
         file_put_contents($tempFile, $content);
 
-        // create folder
-        $folder = dirname($filePath);
-        $command = $this->executor->mkdirRecursive($folder);
-        $this->executeCommand($command);
-
         // upload file
         $destination = $this->getDestination().':'.$filePath;
         $command = $this->executor->scpCopy($tempFile, $destination);

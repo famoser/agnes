@@ -69,7 +69,9 @@ class FileService
 
             if (file_exists($expectedFilePath)) {
                 $fullPath = $installation->getFolder().DIRECTORY_SEPARATOR.$configuredFileKey;
+                $folder = dirname($fullPath);
                 $content = file_get_contents($expectedFilePath);
+                $instance->getConnection()->createFolder($folder);
                 $instance->getConnection()->writeFile($fullPath, $content);
             }
         }
