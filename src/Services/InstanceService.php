@@ -73,13 +73,13 @@ class InstanceService
 
         $instances = [];
         foreach ($servers as $server) {
-            $this->io->text('loading instances of ' . $server->getName());
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
                     if (!$filter->matches($server->getName(), $environment->getName(), $stage)) {
                         continue;
                     }
 
+                    $this->io->text('loading  ' . $server->getName() . ":" . $environment->getName() . ":" . $stage);
                     $instances[] = $this->createInstance($server->getConnection(), $server->getPath(), $server, $environment->getName(), $stage);
                 }
             }
