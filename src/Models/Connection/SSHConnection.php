@@ -93,7 +93,7 @@ class SSHConnection extends Connection
         // create folder
         $folder = dirname($this->getDestination());
         $command = $this->executor->mkdirRecursive($folder);
-        parent::executeCommand($command);
+        $this->executeCommand($command);
 
         // upload file
         $destination = $this->getDestination().':'.$filePath;
