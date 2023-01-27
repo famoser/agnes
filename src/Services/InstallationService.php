@@ -61,7 +61,7 @@ class InstallationService
 
         $maxNumber = 0;
         foreach ($target->getInstallations() as $installation) {
-            $maxNumber = max((int) $installation->getNumber(), $maxNumber);
+            $maxNumber = max($installation->getNumber(), $maxNumber);
         }
         ++$maxNumber;
 
@@ -77,7 +77,7 @@ class InstallationService
     private function uploadBuild(Connection $connection, Installation $installation, string $content): void
     {
         // make empty dir for new release
-        $connection->createOrClearFolder($installation->getFolder());
+        $connection->clearFolderIfExists($installation->getFolder());
 
         // transfer release packet
         $assetPath = $installation->getFolder().DIRECTORY_SEPARATOR.'build.tar.gz';
