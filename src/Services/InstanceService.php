@@ -33,6 +33,11 @@ class InstanceService
     private $instancesCache = null;
 
     /**
+     * @var Filter|null
+     */
+    private $instancesCacheFilter = null;
+
+    /**
      * InstallationService constructor.
      */
     public function __construct(StyleInterface $io, ConfigurationService $configurationService, InstallationService $installationService)
@@ -49,23 +54,12 @@ class InstanceService
      */
     public function getInstancesByFilter(?Filter $filter): array
     {
-        if (null === $this->instancesCache) {
-            $this->instancesCache = $this->loadInstances();
-        }
-
-        if (null === $filter) {
+        if ($this->instancesCache && $this->instancesCacheFilter === $filter) {
             return $this->instancesCache;
         }
 
-        /** @var Instance[] $filteredInstallations */
-        $filteredInstallations = [];
-        foreach ($this->instancesCache as $installation) {
-            if ($filter->instanceMatches($installation)) {
-                $filteredInstallations[] = $installation;
-            }
-        }
-
-        return $filteredInstallations;
+        $this->instancesCache = $this->loadInstances($filter);
+        return $this->instancesCache;
     }
 
     /**
@@ -73,15 +67,19 @@ class InstanceService
      *
      * @throws Exception
      */
-    private function loadInstances(): array
+    private function loadInstances(?Filter $filter): array
     {
         $servers = $this->configurationService->getServers();
 
         $instances = [];
         foreach ($servers as $server) {
-            $this->io->text('loading instances of '.$server->getName());
+            $this->io->text('loading instances of ' . $server->getName());
             foreach ($server->getEnvironments() as $environment) {
                 foreach ($environment->getStages() as $stage) {
+                    if (!$filter->matches($server->getName(), $environment->getName(), $stage)) {
+                        continue;
+                    }
+
                     $instances[] = $this->createInstance($server->getConnection(), $server->getPath(), $server, $environment->getName(), $stage);
                 }
             }
@@ -99,7 +97,7 @@ class InstanceService
 
         $installations = $this->installationService->loadInstallations($instance);
         if (count($installations) > 0) {
-            $this->io->text('loaded '.count($installations).' installations of '.$server->getName().':'.$environment.':'.$stage);
+            $this->io->text('loaded ' . count($installations) . ' installations of ' . $server->getName() . ':' . $environment . ':' . $stage);
 
             $symlink = $instance->getCurrentSymlink();
             $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
@@ -111,7 +109,7 @@ class InstanceService
                 }
             }
         } else {
-            $this->io->text('no installations yet at '.$server->getName().':'.$environment.':'.$stage.'.');
+            $this->io->text('no installations yet at ' . $server->getName() . ':' . $environment . ':' . $stage . '.');
         }
 
         return $instance;
@@ -126,7 +124,7 @@ class InstanceService
         $connection = $instance->getConnection();
 
         // create new symlink
-        $tempCurrentSymlink = $currentSymlink.'_';
+        $tempCurrentSymlink = $currentSymlink . '_';
         $connection->createSymlink($tempCurrentSymlink, $target->getFolder());
 
         // take old offline
@@ -171,7 +169,7 @@ class InstanceService
             }
 
             $instance->getConnection()->removeFolder($installation->getFolder());
-            $this->io->text('removed installation '.$installation->getFolder());
+            $this->io->text('removed installation ' . $installation->getFolder());
         }
     }
 
