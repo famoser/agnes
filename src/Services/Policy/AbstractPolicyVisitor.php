@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services\Policy;
 
 use Agnes\Models\Filter;
@@ -8,7 +17,6 @@ use Agnes\Models\Policy\SameReleasePolicy;
 use Agnes\Models\Policy\StageWriteDownPolicy;
 use Agnes\Models\Policy\StageWriteUpPolicy;
 use Agnes\Models\Task\AbstractTask;
-use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 abstract class AbstractPolicyVisitor
@@ -33,7 +41,7 @@ abstract class AbstractPolicyVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
@@ -45,7 +53,7 @@ abstract class AbstractPolicyVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
     {
@@ -57,7 +65,7 @@ abstract class AbstractPolicyVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
     {
@@ -96,7 +104,7 @@ abstract class AbstractPolicyVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     protected function filterMatches(?Filter $filter): bool
     {
@@ -104,7 +112,7 @@ abstract class AbstractPolicyVisitor
             return true;
         }
 
-        throw new Exception('Filter is non-null; undecidable');
+        throw new \Exception('Filter is non-null; undecidable');
     }
 
     public function validate(): bool

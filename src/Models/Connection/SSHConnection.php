@@ -1,14 +1,18 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Models\Connection;
 
 use Agnes\Models\Executor\Executor;
-use Exception;
-use function explode;
-use function file_get_contents;
-use function file_put_contents;
 use Symfony\Component\Console\Style\OutputStyle;
-use function unlink;
 
 class SSHConnection extends Connection
 {
@@ -34,7 +38,7 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function executeCommand(string $command): string
     {
@@ -46,7 +50,7 @@ class SSHConnection extends Connection
     /**
      * @param string[] $commands
      *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void
     {
@@ -65,7 +69,7 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function readFile(string $filePath): string
     {
@@ -76,19 +80,19 @@ class SSHConnection extends Connection
         $command = $this->executor->scpCopy($source, $tempFile);
         parent::executeCommand($command);
 
-        $content = file_get_contents($tempFile);
-        unlink($tempFile);
+        $content = \file_get_contents($tempFile);
+        \unlink($tempFile);
 
         return $content;
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function writeFile(string $filePath, string $content): void
     {
         $tempFile = self::getTempFile();
-        file_put_contents($tempFile, $content);
+        \file_put_contents($tempFile, $content);
 
         // upload file
         $destination = $this->getDestination().':'.$filePath;
@@ -103,18 +107,18 @@ class SSHConnection extends Connection
     /**
      * @return string[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getFolders(string $dir): array
     {
         try {
             $command = $this->executor->lsFolders($dir);
             $response = $this->executeCommand($command);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return [];
         }
 
-        $fullPaths = explode("\n", $response);
+        $fullPaths = \explode("\n", $response);
 
         return $this->keepFolderOnly($fullPaths);
     }
@@ -144,7 +148,7 @@ class SSHConnection extends Connection
     {
         try {
             $output = $this->executeCommand($command);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return false;
         }
 

@@ -1,36 +1,37 @@
 <?php
 
-namespace Agnes\Models\Connection;
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use function chdir;
-use Exception;
-use function file_get_contents;
-use function file_put_contents;
-use function glob;
-use const GLOB_ONLYDIR;
-use function is_file;
+namespace Agnes\Models\Connection;
 
 class LocalConnection extends Connection
 {
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void
     {
         // change working directory
         $originWorkingFolder = getcwd();
-        chdir($workingFolder);
+        \chdir($workingFolder);
 
         // execute commands
         $this->executeCommands($commands);
 
         // recover working directory
-        chdir($originWorkingFolder);
+        \chdir($originWorkingFolder);
     }
 
     public function readFile(string $filePath): string
     {
-        return file_get_contents($filePath);
+        return \file_get_contents($filePath);
     }
 
     public function writeFile(string $filePath, string $content): void
@@ -40,7 +41,7 @@ class LocalConnection extends Connection
             mkdir($folder, 0777, true);
         }
 
-        file_put_contents($filePath, $content);
+        \file_put_contents($filePath, $content);
     }
 
     /**
@@ -48,14 +49,14 @@ class LocalConnection extends Connection
      */
     public function getFolders(string $dir): array
     {
-        $fullPaths = glob("$dir/*", GLOB_ONLYDIR);
+        $fullPaths = \glob("$dir/*", \GLOB_ONLYDIR);
 
         return $this->keepFolderOnly($fullPaths);
     }
 
     public function checkFileExists(string $filePath): bool
     {
-        return is_file($filePath);
+        return \is_file($filePath);
     }
 
     public function checkSymlinkExists(string $symlinkPath): bool

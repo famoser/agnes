@@ -1,11 +1,19 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services;
 
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\Configuration\Script;
-use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class ScriptService
@@ -32,7 +40,7 @@ class ScriptService
     /**
      * @return string[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getBuildHookCommands(): array
     {
@@ -52,7 +60,7 @@ class ScriptService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function executeDeployHook(Instance $instance, Installation $newInstallation): void
     {
@@ -69,7 +77,7 @@ class ScriptService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function executeAfterDeployHook(Instance $instance): void
     {
@@ -77,7 +85,7 @@ class ScriptService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function executeRollbackHook(Instance $instance, Installation $previousInstallation): void
     {
@@ -87,7 +95,7 @@ class ScriptService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function executeAfterRollbackHook(Instance $instance): void
     {
@@ -95,7 +103,7 @@ class ScriptService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function executeScriptsForHook(string $hook, Instance $instance, Installation $installation, array $arguments = []): void
     {
@@ -105,7 +113,7 @@ class ScriptService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function executeScriptByName(Instance $target, Installation $installation, string $name): void
     {
@@ -117,7 +125,7 @@ class ScriptService
     /**
      * @param Script[] $scripts
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function executeScripts(array $scripts, Instance $instance, Installation $installation, array $arguments = []): void
     {

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services\Policy;
 
 use Agnes\Models\Filter;
@@ -7,7 +16,6 @@ use Agnes\Models\Policy\StageWriteUpPolicy;
 use Agnes\Models\Task\Deploy;
 use Agnes\Services\InstanceService;
 use Agnes\Services\Task\ExecutionVisitor\BuildResult;
-use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
@@ -40,7 +48,7 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     protected function checkStageWriteUp(StageWriteUpPolicy $policy): bool
     {

@@ -1,9 +1,17 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Models;
 
 use Agnes\Models\Installation\OnlinePeriod;
-use DateTime;
 
 class Installation
 {
@@ -77,7 +85,7 @@ class Installation
      */
     public function startOnlinePeriod(): void
     {
-        $onlinePeriod = new OnlinePeriod(new DateTime(), null);
+        $onlinePeriod = new OnlinePeriod(new \DateTime(), null);
         $this->onlinePeriods[] = $onlinePeriod;
     }
 
@@ -91,7 +99,7 @@ class Installation
         }
 
         $lastPeriod = $this->onlinePeriods[count($this->onlinePeriods) - 1];
-        $lastPeriod->setEnd(new DateTime());
+        $lastPeriod->setEnd(new \DateTime());
     }
 
     public function toArray(): array

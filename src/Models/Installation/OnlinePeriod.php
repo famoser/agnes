@@ -1,41 +1,48 @@
 <?php
 
-namespace Agnes\Models\Installation;
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use DateTime;
+namespace Agnes\Models\Installation;
 
 class OnlinePeriod
 {
     /**
-     * @var DateTime
+     * @var \DateTime
      */
     private $start;
 
     /**
-     * @var DateTime|null
+     * @var \DateTime|null
      */
     private $end;
 
     /**
      * OnlinePeriod constructor.
      */
-    public function __construct(DateTime $start, ?DateTime $end)
+    public function __construct(\DateTime $start, ?\DateTime $end)
     {
         $this->start = $start;
         $this->end = $end;
     }
 
-    public function getStart(): DateTime
+    public function getStart(): \DateTime
     {
         return $this->start;
     }
 
-    public function getEnd(): ?DateTime
+    public function getEnd(): ?\DateTime
     {
         return $this->end;
     }
 
-    public function setEnd(?DateTime $end): void
+    public function setEnd(?\DateTime $end): void
     {
         $this->end = $end;
     }
@@ -56,8 +63,8 @@ class OnlinePeriod
      */
     public static function fromArray(array $array): self
     {
-        $start = new DateTime($array['start']);
-        $end = isset($array['end']) ? new DateTime($array['end']) : null;
+        $start = new \DateTime($array['start']);
+        $end = isset($array['end']) ? new \DateTime($array['end']) : null;
 
         return new self($start, $end);
     }

@@ -1,10 +1,18 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services;
 
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
-use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class FileService
@@ -29,7 +37,7 @@ class FileService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function allRequiredFilesExist(Instance $instance): bool
     {
@@ -56,7 +64,7 @@ class FileService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function uploadFiles(Instance $instance, Installation $installation): void
     {

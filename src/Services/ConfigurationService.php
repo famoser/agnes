@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services;
 
 use Agnes\Models\Connection\Connection;
@@ -35,7 +44,7 @@ class ConfigurationService
      */
     private $configFolder = null;
 
-    const AGNES_VERSION = 4;
+    public const AGNES_VERSION = 4;
 
     /**
      * @var OutputStyle
@@ -51,7 +60,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function validate(): bool
     {
@@ -72,7 +81,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function addConfig(string $path): void
     {
@@ -85,7 +94,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getConfigRepositoryUrl(): ?string
     {
@@ -93,7 +102,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getRepositoryUrl(): string
     {
@@ -107,11 +116,11 @@ class ConfigurationService
             return 'git@github.com:'.$githubRepository;
         }
 
-        throw new Exception('no git clone url configured. configure repository.url to change this.');
+        throw new \Exception('no git clone url configured. configure repository.url to change this.');
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getGithubConfig(): ?GithubConfig
     {
@@ -127,7 +136,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getBuildConnection(): ?Connection
     {
@@ -137,7 +146,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getBuildPath(): string
     {
@@ -145,7 +154,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getConfigPath(): ?string
     {
@@ -155,7 +164,7 @@ class ConfigurationService
     /**
      * @return Script[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getScriptsForHook(string $hook): array
     {
@@ -168,7 +177,7 @@ class ConfigurationService
     /**
      * @return Script[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getScriptByName(string $name): ?Script
     {
@@ -188,7 +197,7 @@ class ConfigurationService
     /**
      * @return Script[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getScriptsByCondition(callable $condition): array
     {
@@ -224,7 +233,7 @@ class ConfigurationService
     /**
      * @return Task[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getBeforeTasks(string $task): array
     {
@@ -236,7 +245,7 @@ class ConfigurationService
     /**
      * @return Task[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getAfterTasks(string $task): array
     {
@@ -248,7 +257,7 @@ class ConfigurationService
     /**
      * @return Task[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getTasksByCondition(callable $condition): array
     {
@@ -279,7 +288,7 @@ class ConfigurationService
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getNestedConfig(...$keys)
     {
@@ -293,12 +302,11 @@ class ConfigurationService
     }
 
     /**
-     * @param $default
      * @param string ...$keys
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getNestedConfigWithDefault($default, ...$keys)
     {
@@ -329,13 +337,13 @@ class ConfigurationService
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getValue(array $source, string $key, $default = false)
     {
         if (!isset($source[$key])) {
             if (false === $default) {
-                throw new Exception('key '.$key.' does not exist.');
+                throw new \Exception('key '.$key.' does not exist.');
             } else {
                 return $default;
             }
@@ -345,7 +353,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function replaceEnvVariables(array &$config)
     {
@@ -357,7 +365,7 @@ class ConfigurationService
                 if (0 === substr_compare($envPart, ')%', -2)) {
                     $envName = substr($envPart, 0, -2);
                     if (!isset($_ENV[$envName])) {
-                        throw new Exception('The requested environment value '.$envName.' is not set.');
+                        throw new \Exception('The requested environment value '.$envName.' is not set.');
                     }
                     $item = $_ENV[$envName];
                 }
@@ -368,7 +376,7 @@ class ConfigurationService
     /**
      * @return Server[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getServers(): array
     {
@@ -396,7 +404,7 @@ class ConfigurationService
     /**
      * @return Policy[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getPoliciesForTask(string $task): array
     {
@@ -428,7 +436,7 @@ class ConfigurationService
                     $parsedPolicies[] = new SameReleasePolicy($name, $filter);
                     break;
                 default:
-                    throw new Exception('Policy '.$name.' has unknown policy type '.$policyType.'.');
+                    throw new \Exception('Policy '.$name.' has unknown policy type '.$policyType.'.');
             }
         }
 
@@ -450,7 +458,7 @@ class ConfigurationService
     /**
      * @param string[] $connection
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getConnection(array $connection): Connection
     {
@@ -465,12 +473,12 @@ class ConfigurationService
 
             return new SSHConnection($this->io, $executor, $destination);
         } else {
-            throw new Exception("unknown connection type $connectionType");
+            throw new \Exception("unknown connection type $connectionType");
         }
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function getExecutor(string $system): Executor
     {
@@ -480,14 +488,14 @@ class ConfigurationService
             case 'FreeBSD':
                 return new BSDExecutor();
             default:
-                throw new Exception('System not implemented: '.$system);
+                throw new \Exception('System not implemented: '.$system);
         }
     }
 
     /**
      * @return string[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getSharedFolders(): array
     {
@@ -497,7 +505,7 @@ class ConfigurationService
     /**
      * @return File[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getFiles(): array
     {
