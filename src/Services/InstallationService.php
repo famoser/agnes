@@ -1,17 +1,25 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services;
 
 use Agnes\Models\Connection\Connection;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\Task\ExecutionVisitor\BuildResult;
-use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class InstallationService
 {
-    const AGNES_FILE_NAME = '.agnes';
+    public const AGNES_FILE_NAME = '.agnes';
 
     /**
      * @var StyleInterface
@@ -33,7 +41,7 @@ class InstallationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function install(Instance $target, BuildResult $buildResult): Installation
     {
@@ -72,7 +80,7 @@ class InstallationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function uploadBuild(Connection $connection, Installation $installation, string $content): void
     {
@@ -91,7 +99,7 @@ class InstallationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function createAndLinkSharedFolders(Connection $connection, Instance $target, Installation $installation): void
     {
@@ -142,7 +150,7 @@ class InstallationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function removeFoldersWithoutInstallation(Instance $instance): void
     {
@@ -162,7 +170,7 @@ class InstallationService
     /**
      * @return Installation[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function loadInstallations(Instance $instance): array
     {
@@ -181,7 +189,7 @@ class InstallationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function getInstallationFromFolder(Instance $instance, string $folder): ?Installation
     {

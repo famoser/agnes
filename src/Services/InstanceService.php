@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services;
 
 use Agnes\Models\Connection\Connection;
@@ -7,7 +16,6 @@ use Agnes\Models\Filter;
 use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\Configuration\Server;
-use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class InstanceService
@@ -50,7 +58,7 @@ class InstanceService
     /**
      * @return Instance[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getInstancesByFilter(?Filter $filter): array
     {
@@ -59,13 +67,14 @@ class InstanceService
         }
 
         $this->instancesCache = $this->loadInstances($filter);
+
         return $this->instancesCache;
     }
 
     /**
      * @return Instance[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function loadInstances(?Filter $filter): array
     {
@@ -79,7 +88,7 @@ class InstanceService
                         continue;
                     }
 
-                    $this->io->text('loading  ' . $server->getName() . ":" . $environment->getName() . ":" . $stage);
+                    $this->io->text('loading  '.$server->getName().':'.$environment->getName().':'.$stage);
                     $instances[] = $this->createInstance($server->getConnection(), $server->getPath(), $server, $environment->getName(), $stage);
                 }
             }
@@ -89,7 +98,7 @@ class InstanceService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function createInstance(Connection $connection, string $path, Server $server, string $environment, string $stage): Instance
     {
@@ -97,7 +106,7 @@ class InstanceService
 
         $installations = $this->installationService->loadInstallations($instance);
         if (count($installations) > 0) {
-            $this->io->text('loaded ' . count($installations) . ' installations of ' . $server->getName() . ':' . $environment . ':' . $stage);
+            $this->io->text('loaded '.count($installations).' installations of '.$server->getName().':'.$environment.':'.$stage);
 
             $symlink = $instance->getCurrentSymlink();
             $symlinkExists = $instance->getConnection()->checkSymlinkExists($symlink);
@@ -109,14 +118,14 @@ class InstanceService
                 }
             }
         } else {
-            $this->io->text('no installations yet at ' . $server->getName() . ':' . $environment . ':' . $stage . '.');
+            $this->io->text('no installations yet at '.$server->getName().':'.$environment.':'.$stage.'.');
         }
 
         return $instance;
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function switchInstallation(Instance $instance, Installation $target): void
     {
@@ -124,7 +133,7 @@ class InstanceService
         $connection = $instance->getConnection();
 
         // create new symlink
-        $tempCurrentSymlink = $currentSymlink . '_';
+        $tempCurrentSymlink = $currentSymlink.'_';
         $connection->createSymlink($tempCurrentSymlink, $target->getFolder());
 
         // take old offline
@@ -142,7 +151,7 @@ class InstanceService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function removeOldInstallations(Instance $instance): void
     {
@@ -169,14 +178,14 @@ class InstanceService
             }
 
             $instance->getConnection()->removeFolder($installation->getFolder());
-            $this->io->text('removed installation ' . $installation->getFolder());
+            $this->io->text('removed installation '.$installation->getFolder());
         }
     }
 
     /**
      * @return Instance[]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getInstancesBySpecification(string $target): array
     {

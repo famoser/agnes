@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services\Task;
 
 use Agnes\Models\Task\AbstractTask;
@@ -11,12 +20,11 @@ use Agnes\Models\Task\Download;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
 use Agnes\Models\Task\Run;
-use Exception;
 
 abstract class AbstractTaskVisitor
 {
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitCopy(Copy $copy)
     {
@@ -24,7 +32,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitDeploy(Deploy $deploy)
     {
@@ -32,7 +40,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitRelease(Release $release)
     {
@@ -40,7 +48,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitRollback(Rollback $rollback)
     {
@@ -48,7 +56,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitDownload(Download $downloadGithub)
     {
@@ -56,7 +64,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitBuild(Build $build)
     {
@@ -64,7 +72,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitRun(Run $run)
     {
@@ -72,7 +80,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitClear(Clear $clear)
     {
@@ -80,12 +88,12 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
-     *
      * @return mixed
+     *
+     * @throws \Exception
      */
     protected function visitDefault(AbstractTask $payload)
     {
-        throw new Exception('Not implemented for '.$payload->describe());
+        throw new \Exception('Not implemented for '.$payload->describe());
     }
 }

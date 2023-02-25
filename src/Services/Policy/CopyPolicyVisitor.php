@@ -1,12 +1,20 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services\Policy;
 
 use Agnes\Models\Filter;
 use Agnes\Models\Policy\SameReleasePolicy;
 use Agnes\Models\Policy\StageWriteDownPolicy;
 use Agnes\Models\Task\Copy;
-use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class CopyPolicyVisitor extends NoPolicyVisitor
@@ -53,7 +61,7 @@ class CopyPolicyVisitor extends NoPolicyVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     protected function checkStageWriteDown(StageWriteDownPolicy $policy): bool
     {

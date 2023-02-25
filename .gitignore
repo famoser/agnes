@@ -1,8 +1,5 @@
-.build
-.release
 .idea
-.php_cs.cache
+.php-cs-fixer.cache
 vendor
 
 .env.local
-.agnes

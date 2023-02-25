@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Services\Task;
 
 use Agnes\Models\Task\Build;
@@ -17,7 +26,6 @@ use Agnes\Services\InstallationService;
 use Agnes\Services\InstanceService;
 use Agnes\Services\ScriptService;
 use Agnes\Services\Task\ExecutionVisitor\BuildResult;
-use Exception;
 use Symfony\Component\Console\Style\StyleInterface;
 
 class ExecutionVisitor extends AbstractTaskVisitor
@@ -77,7 +85,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitCopy(Copy $copy): bool
     {
@@ -105,7 +113,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitClear(Clear $clear): bool
     {
@@ -120,7 +128,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitDeploy(Deploy $deploy): bool
     {
@@ -148,7 +156,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function visitRun(Run $run): bool
     {

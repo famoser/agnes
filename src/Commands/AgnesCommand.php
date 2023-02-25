@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the famoser/agnes project.
+ *
+ * (c) Florian Moser <git@famoser.ch>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Agnes\Commands;
 
 use Agnes\AgnesFactory;
@@ -7,7 +16,6 @@ use Agnes\Models\Connection\LocalConnection;
 use Agnes\Models\Executor\LinuxExecutor;
 use Agnes\Services\ConfigurationService;
 use Agnes\Services\TaskService;
-use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -17,7 +25,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AgnesCommand extends Command
 {
-    const INSTANCE_SPECIFICATION_EXPLANATION = '
+    public const INSTANCE_SPECIFICATION_EXPLANATION = '
             Instances are specified in the form server:environment:stage (like aws:example.com:production deploys to production of example.com on the aws server). 
             Replace entries with stars to not enforce a constraint (like *:*:production would deploy to all production stages).
             Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).';
@@ -33,14 +41,14 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     abstract protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService);
 
     /**
      * @return int|void|null
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
@@ -92,7 +100,7 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function loadConfigFile(StyleInterface $style, ConfigurationService $configurationService, ?string $configFile): bool
     {
@@ -117,7 +125,7 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function loadConfigFolder(SymfonyStyle $io, ConfigurationService $configurationService, ?string $configPath): bool
     {
