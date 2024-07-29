@@ -66,9 +66,9 @@ abstract class AgnesCommand extends Command
 
         // load config
         $configurationService = $factory->getConfigurationService();
-        if (!$this->loadConfigFile($io, $configurationService, $configFile) ||
-            !$this->loadConfigFolder($io, $configurationService, $configPath) ||
-            !$factory->getConfigurationService()->validate()) {
+        if (!$this->loadConfigFile($io, $configurationService, $configFile)
+            || !$this->loadConfigFolder($io, $configurationService, $configPath)
+            || !$factory->getConfigurationService()->validate()) {
             return 1;
         }
 

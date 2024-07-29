@@ -94,13 +94,11 @@ class CopyPolicyVisitor extends NoPolicyVisitor
 
     /**
      * checks if the policy has to be checked for.
-     *
-     * @param Filter $filter
      */
     protected function filterMatches(?Filter $filter): bool
     {
-        return null === $filter ||
-            $filter->instanceMatches($this->copy->getSource()) ||
-            $filter->instanceMatches($this->copy->getTarget());
+        return null === $filter
+            || $filter->instanceMatches($this->copy->getSource())
+            || $filter->instanceMatches($this->copy->getTarget());
     }
 }

@@ -139,9 +139,9 @@ class TaskFactory
         /** @var Installation|null $upperBoundInstallation */
         $upperBoundInstallation = null;
         foreach ($instance->getInstallations() as $installation) {
-            if ($installation->getNumber() < $currentInstallation->getNumber() &&
-                (null === $upperBoundInstallation || $upperBoundInstallation->getNumber() < $installation->getNumber()) &&
-                (null === $rollbackToMatcher || $rollbackToMatcher($installation))) {
+            if ($installation->getNumber() < $currentInstallation->getNumber()
+                && (null === $upperBoundInstallation || $upperBoundInstallation->getNumber() < $installation->getNumber())
+                && (null === $rollbackToMatcher || $rollbackToMatcher($installation))) {
                 $upperBoundInstallation = $installation;
             }
         }

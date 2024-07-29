@@ -38,12 +38,12 @@ class InstanceService
     /**
      * @var Instance[]|null
      */
-    private $instancesCache = null;
+    private $instancesCache;
 
     /**
      * @var Filter|null
      */
-    private $instancesCacheFilter = null;
+    private $instancesCacheFilter;
 
     /**
      * InstallationService constructor.

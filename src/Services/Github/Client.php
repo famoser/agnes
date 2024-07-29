@@ -74,7 +74,7 @@ class Client
         );
     }
 
-    private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], string $body = null): ResponseInterface
+    private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], ?string $body = null): ResponseInterface
     {
         $headers = array_merge([
             'Authorization' => 'token '.$this->githubConfig->getApiToken(),

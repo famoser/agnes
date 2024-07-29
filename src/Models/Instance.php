@@ -122,9 +122,9 @@ class Instance
             return true;
         }
 
-        if ($this->getServerName() === $other->getServerName() &&
-            $this->getEnvironmentName() === $other->getEnvironmentName() &&
-            $this->getStage() === $other->getStage()) {
+        if ($this->getServerName() === $other->getServerName()
+            && $this->getEnvironmentName() === $other->getEnvironmentName()
+            && $this->getStage() === $other->getStage()) {
             return true;
         }
 

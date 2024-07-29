@@ -42,7 +42,7 @@ class ConfigurationService
     /**
      * @var string|null
      */
-    private $configFolder = null;
+    private $configFolder;
 
     public const AGNES_VERSION = 4;
 
@@ -169,8 +169,8 @@ class ConfigurationService
     public function getScriptsForHook(string $hook): array
     {
         return $this->getScriptsByCondition(function (string $name, array $script) use ($hook) {
-            return (isset($script['hook']) && $script['hook'] === $hook) ||
-                isset($script['hooks']) && in_array($hook, $script['hooks']);
+            return (isset($script['hook']) && $script['hook'] === $hook)
+                || isset($script['hooks']) && in_array($hook, $script['hooks']);
         });
     }
 

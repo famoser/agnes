@@ -88,8 +88,6 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @return mixed
-     *
      * @throws \Exception
      */
     protected function visitDefault(AbstractTask $payload)
