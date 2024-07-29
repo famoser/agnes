@@ -9,7 +9,7 @@ composer require famoser/agnes --dev
 
 Then run commands
 ```bash
-php vendor/bin/agnes release v1.0 master`
+php vendor/bin/agnes release v1.0 main`
 ```
 
 ## commands
@@ -21,7 +21,7 @@ php vendor/bin/agnes release v1.0 master`
 | `deploy`   | `deploy *:*:dev v1.0` installs the release `v1.0` on all instances matching `*:*:dev` |
 | `rollback` | `rollback *:*:dev` rolls back instances matching `*:*:dev` to the previous release |
 | `copy`     | `copy example:example.com:dev production` copies the shared data to the instance `example:example.com:dev` from the `production` stage |
-| `build`    | `build master` builds the master release; useful to test the build script |
+| `build`    | `build main` builds the main release; useful to test the build script |
 | `run`      | `run *:*:dev my_script` runs the script called `my_script` on the `*:*:dev` instances |
 | `build`    | `build main` builds the release from the main branch |
 | `clear`    | `clear *:*:dev` clears surplus & invalid installations on the `*:*:dev` instances |
