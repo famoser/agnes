@@ -46,11 +46,9 @@ abstract class AgnesCommand extends Command
     abstract protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService);
 
     /**
-     * @return int|void|null
-     *
      * @throws \Exception
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $configFile = $input->getOption('config-file');
         $configPath = $input->getOption('config-path');
