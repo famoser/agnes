@@ -147,10 +147,11 @@ class ExecutionVisitor extends AbstractTaskVisitor
         $this->instanceService->switchInstallation($target, $newInstallation);
         $this->io->text('release online');
 
-        $this->instanceService->removeOldInstallations($target);
-
         $this->io->text('executing after deploy hook');
         $this->scriptService->executeAfterDeployHook($target);
+
+        $this->io->text('removing old installations');
+        $this->instanceService->removeOldInstallations($target);
 
         return true;
     }
