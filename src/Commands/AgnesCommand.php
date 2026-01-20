@@ -26,7 +26,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 abstract class AgnesCommand extends Command
 {
     public const INSTANCE_SPECIFICATION_EXPLANATION = '
-            Instances are specified in the form server:environment:stage (like aws:example.com:production deploys to production of example.com on the aws server). 
+            Instances are specified in the form server:environment:stage (like aws:example.com:production deploys to production of example.com on the aws server).
             Replace entries with stars to not enforce a constraint (like *:*:production would deploy to all production stages).
             Separate entries with comma (,) to enforce an OR constraint (like *:*:staging,production would deploy to all staging & production instances).';
 
@@ -150,6 +150,8 @@ abstract class AgnesCommand extends Command
                 $configConnection->gitPull($configPath);
             }
 
+            $configFolder = $configurationService->getConfigRepositoryFolder();
+            $configPath = $configFolder ? $configPath.DIRECTORY_SEPARATOR.$configFolder : $configPath;
             $configurationService->setConfigFolder($configPath);
 
             $configFilePaths = glob($configPath.DIRECTORY_SEPARATOR.'*.yml');

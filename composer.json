@@ -24,7 +24,6 @@
     "symfony/yaml": "^4.3 || ^5.0 || ^6.0 || ^7.0"
   },
   "require-dev": {
-    "brainmaestro/composer-git-hooks": "^2.8",
     "friendsofphp/php-cs-fixer": "^3"
   },
   "autoload": {
@@ -36,31 +35,16 @@
     ]
   },
   "scripts": {
-    "prepare-environment": [
-      "vendor/bin/cghooks update"
-    ],
     "configure-environment": [
       "touch .env.local"
     ],
     "pre-install-cmd": "@configure-environment",
-    "post-install-cmd": "@prepare-environment",
-    "pre-update-cmd": "@configure-environment",
-    "post-update-cmd": "@prepare-environment"
+    "pre-update-cmd": "@configure-environment"
   },
   "config": {
     "sort-packages": true,
     "platform": {
       "php": "8.0"
-    }
-  },
-  "extra": {
-    "hooks": {
-      "pre-commit": [
-        "echo committing as $(git config user.name)",
-        "./vendor/bin/php-cs-fixer fix",
-        "git update-index --again"
-      ],
-      "post-merge": "composer install"
     }
   }
 }
