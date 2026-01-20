@@ -104,6 +104,14 @@ class ConfigurationService
     /**
      * @throws \Exception
      */
+    public function getConfigRepositoryFolder(): ?string
+    {
+        return $this->getNestedConfigWithDefault(null, 'config', 'repository', 'folder');
+    }
+
+    /**
+     * @throws \Exception
+     */
     public function getRepositoryUrl(): string
     {
         $cloneUrl = $this->getNestedConfigWithDefault(null, 'repository', 'url');
