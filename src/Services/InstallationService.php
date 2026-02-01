@@ -26,7 +26,7 @@ class InstallationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function install(Instance $target, BuildResult $buildResult): Installation
     {
@@ -65,7 +65,7 @@ class InstallationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function uploadBuild(Connection $connection, Installation $installation, string $content): void
     {
@@ -84,7 +84,7 @@ class InstallationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function createAndLinkSharedFolders(Connection $connection, Instance $target, Installation $installation): void
     {
@@ -135,7 +135,7 @@ class InstallationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function removeFoldersWithoutInstallation(Instance $instance): void
     {
@@ -155,7 +155,7 @@ class InstallationService
     /**
      * @return Installation[]
      *
-     * @throws \Exception
+     *
      */
     public function loadInstallations(Instance $instance): array
     {
@@ -174,7 +174,7 @@ class InstallationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function getInstallationFromFolder(Instance $instance, string $folder): ?Installation
     {

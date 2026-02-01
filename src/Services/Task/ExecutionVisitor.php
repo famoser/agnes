@@ -52,7 +52,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitCopy(Copy $copy): bool
     {
@@ -80,7 +80,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitClear(Clear $clear): bool
     {
@@ -95,7 +95,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitDeploy(Deploy $deploy): bool
     {
@@ -124,7 +124,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitRun(Run $run): bool
     {

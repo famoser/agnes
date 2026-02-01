@@ -30,7 +30,7 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     protected function checkStageWriteUp(StageWriteUpPolicy $policy): bool
     {

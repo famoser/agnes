@@ -23,7 +23,7 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function executeCommand(string $command): string
     {
@@ -35,7 +35,7 @@ class SSHConnection extends Connection
     /**
      * @param string[] $commands
      *
-     * @throws \Exception
+     *
      */
     protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void
     {
@@ -54,7 +54,7 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function readFile(string $filePath): string
     {
@@ -72,7 +72,7 @@ class SSHConnection extends Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function writeFile(string $filePath, string $content): void
     {
@@ -92,7 +92,7 @@ class SSHConnection extends Connection
     /**
      * @return string[]
      *
-     * @throws \Exception
+     *
      */
     public function getFolders(string $dir): array
     {

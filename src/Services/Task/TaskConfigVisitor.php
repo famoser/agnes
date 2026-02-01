@@ -17,10 +17,7 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class TaskConfigVisitor extends AbstractTaskVisitor
 {
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
     private InstanceService $instanceService;
 
@@ -72,7 +69,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function createFrom(?Instance $instance = null): array
     {
@@ -95,7 +92,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function getMatchingInstances(?Instance $instance = null): array
     {
@@ -120,7 +117,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function createForInstance(Instance $instance): ?AbstractTask
     {
@@ -141,7 +138,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function createDeployTask(Instance $instance): ?Deploy
     {
@@ -149,7 +146,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function createCopyTask(Instance $instance): ?Copy
     {

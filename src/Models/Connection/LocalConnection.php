@@ -5,7 +5,7 @@ namespace Agnes\Models\Connection;
 class LocalConnection extends Connection
 {
     /**
-     * @throws \Exception
+     *
      */
     protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void
     {

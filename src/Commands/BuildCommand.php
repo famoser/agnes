@@ -20,7 +20,7 @@ class BuildCommand extends AgnesCommand
     }
 
     /**
-     * @throws \Exception
+     *
      */
     protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {

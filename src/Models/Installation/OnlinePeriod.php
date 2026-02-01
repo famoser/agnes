@@ -44,7 +44,7 @@ class OnlinePeriod
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public static function fromArray(array $array): self
     {

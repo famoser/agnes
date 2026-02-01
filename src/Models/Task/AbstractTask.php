@@ -7,7 +7,7 @@ use Agnes\Services\Task\AbstractTaskVisitor;
 abstract class AbstractTask
 {
     /**
-     * @throws \Exception
+     *
      */
     abstract public function accept(AbstractTaskVisitor $abstractActionVisitor);
 

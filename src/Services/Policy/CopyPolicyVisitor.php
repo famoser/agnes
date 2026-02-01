@@ -49,7 +49,7 @@ class CopyPolicyVisitor extends NoPolicyVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     protected function checkStageWriteDown(StageWriteDownPolicy $policy): bool
     {

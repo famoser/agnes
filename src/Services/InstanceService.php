@@ -39,8 +39,6 @@ class InstanceService
 
     /**
      * @return Instance[]
-     *
-     * @throws \Exception
      */
     public function getInstancesByFilter(?Filter $filter): array
     {
@@ -55,8 +53,6 @@ class InstanceService
 
     /**
      * @return Instance[]
-     *
-     * @throws \Exception
      */
     private function loadInstances(?Filter $filter): array
     {
@@ -79,9 +75,6 @@ class InstanceService
         return $instances;
     }
 
-    /**
-     * @throws \Exception
-     */
     private function createInstance(Connection $connection, string $path, Server $server, string $environment, string $stage): Instance
     {
         $instance = new Instance($connection, $path, $server->getName(), $server->getKeepInstallations(), $environment, $stage);
@@ -106,9 +99,6 @@ class InstanceService
         return $instance;
     }
 
-    /**
-     * @throws \Exception
-     */
     public function switchInstallation(Instance $instance, Installation $target): void
     {
         $currentSymlink = $instance->getCurrentSymlink();
@@ -132,9 +122,6 @@ class InstanceService
         $this->installationService->wasTakenOnline($instance, $target);
     }
 
-    /**
-     * @throws \Exception
-     */
     public function removeOldInstallations(Instance $instance): void
     {
         $onlineNumber = $instance->getCurrentInstallation()->getNumber();
@@ -166,8 +153,6 @@ class InstanceService
 
     /**
      * @return Instance[]
-     *
-     * @throws \Exception
      */
     public function getInstancesBySpecification(string $target): array
     {
