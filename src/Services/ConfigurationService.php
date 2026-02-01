@@ -338,7 +338,7 @@ class ConfigurationService
         /** @var Policy[] $parsedPolicies */
         $parsedPolicies = [];
         foreach ($policies as $name => $policy) {
-            $filter = isset($policy['filter']) ? $this->getFilter($policy['filter']) : null;
+            $filter = isset($policy['instance_filter']) ? Filter::createFromInstanceSpecification($policy['instance_filter']) : null;
 
             if (!isset($policy['task'])) {
                 $this->io->warning('policy ' . $name . ' is missing the required task property. skipping...');
@@ -359,18 +359,6 @@ class ConfigurationService
         }
 
         return $parsedPolicies;
-    }
-
-    /**
-     * @param string[] $filter
-     */
-    private function getFilter(array $filter): Filter
-    {
-        $servers = is_array($filter['servers']) ? $filter['servers'] : [];
-        $environments = is_array($filter['environments']) ? $filter['environments'] : [];
-        $stages = is_array($filter['stages']) ? $filter['stages'] : [];
-
-        return new Filter($servers, $environments, $stages);
     }
 
     /**
