@@ -20,17 +20,16 @@ abstract readonly class LayeredPolicy extends Policy
     {
         parent::__construct($name, $filter);
 
+        $sortedLayers = [];
         foreach ($layers as $key => $entries) {
-            $this->layers[(int) $key] = $entries;
+            $sortedLayers[(int) $key] = $entries;
         }
 
-        ksort($this->layers);
+        ksort($sortedLayers);
+        $this->layers = $sortedLayers;
     }
 
-    /**
-     * @return int|string
-     */
-    public function getLayerIndex(string $value)
+    public function getLayerIndex(string $value): int|false
     {
         foreach ($this->layers as $index => $entries) {
             foreach ($entries as $entry) {
@@ -46,25 +45,19 @@ abstract readonly class LayeredPolicy extends Policy
     /**
      * @return string[]
      */
-    public function getLayer(int $stageIndex)
+    public function getLayer(int $stageIndex): array
     {
         return $this->layers[$stageIndex];
     }
 
-    /**
-     * @return bool
-     */
-    public function isLowestLayer(int $index)
+    public function isLowestLayer(int $index): bool
     {
         $availableLayers = array_keys($this->layers);
 
         return min($availableLayers) === $index;
     }
 
-    /**
-     * @return bool
-     */
-    public function isHighestLayer(string $index)
+    public function isHighestLayer(int $index): bool
     {
         $availableLayers = array_keys($this->layers);
 

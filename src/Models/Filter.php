@@ -22,7 +22,7 @@ readonly class Filter
         };
 
         $entryCount = count($entries);
-        $servers = $entryCount > 0 ? $parseToArray($entries[0]) : null;
+        $servers = $parseToArray($entries[0]);
         $environments = $entryCount > 1 ? $parseToArray($entries[1]) : null;
         $stages = $entryCount > 2 ? $parseToArray($entries[2]) : null;
 
@@ -70,7 +70,9 @@ readonly class Filter
             return false;
         }
 
-        return $this->matches($filter->servers, $filter->environments, $filter->stages);
+        return array_diff($filter->servers, $this->servers) === array_diff($this->servers, $filter->servers) &&
+            array_diff($filter->environments, $this->environments) === array_diff($this->environments, $filter->environments) &&
+            array_diff($filter->stages, $this->stages) === array_diff($this->stages, $filter->stages);
     }
 
     public function instanceMatches(Instance $instance): bool
