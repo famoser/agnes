@@ -8,4 +8,9 @@ class LinuxExecutor extends Executor
     {
         return "mv -T $source $target";
     }
+
+    public function lnCreateSymbolicLink(string $filePath, string $destination): string
+    {
+        return "ln -s $destination $filePath";
+    }
 }
