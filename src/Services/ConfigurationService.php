@@ -240,16 +240,10 @@ class ConfigurationService
     }
 
     /**
-     * @return string|string[]|string[][]|string[][][]|string[][][][]
+     * @return string|string[]|string[][]|string[][][]|string[][][][]|null
      */
     private function getNestedConfigWithDefault(?array $default, string ...$keys)
     {
-        // choose new default 2 because if passed "false" to geValue this throws exception if not found
-        $defaultIsFalse = false === $default;
-        if ($defaultIsFalse) {
-            $default = 2;
-        }
-
         $current = $this->config;
 
         foreach ($keys as $key) {
@@ -259,17 +253,13 @@ class ConfigurationService
             }
         }
 
-        if ($current === $default && $defaultIsFalse) {
-            return false;
-        }
-
         return $current;
     }
 
     /**
-     * @param bool|string $default
+     * @param bool|string|int|string[]|null $default
      *
-     * @return string|string[]|string[][]|string[][][]|string[][][][]
+     * @return int|null|string|string[]|mixed[][]|mixed[][][]|mixed[][][][]
      */
     private function getValue(array $source, string $key, mixed $default = false)
     {
