@@ -5,7 +5,7 @@ namespace Agnes\Services\Github;
 use Agnes\Services\Configuration\GithubConfig;
 use Psr\Http\Message\ResponseInterface;
 
-class Client
+readonly class Client
 {
     /**
      * Client constructor.
@@ -41,15 +41,6 @@ class Client
             201,
             [],
             $releaseContent
-        );
-    }
-
-    public function deleteRelease(int $releaseId): ResponseInterface
-    {
-        return $this->executeRequest(
-            'DELETE',
-            'https://api.github.com/repos/' . $this->githubConfig->getRepository() . '/releases/' . $releaseId,
-            204
         );
     }
 
