@@ -8,16 +8,10 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class FileService
 {
-    /**
-     * FileService constructor.
-     */
     public function __construct(private StyleInterface $io, private ConfigurationService $configurationService)
     {
     }
 
-    /**
-     *
-     */
     public function allRequiredFilesExist(Instance $instance): bool
     {
         $instanceConfigFolder = $this->getLocalConfigFolderPath($instance);
@@ -42,9 +36,6 @@ class FileService
         return true;
     }
 
-    /**
-     *
-     */
     public function uploadFiles(Instance $instance, Installation $installation): void
     {
         $instanceConfigFolder = $this->getLocalConfigFolderPath($instance);

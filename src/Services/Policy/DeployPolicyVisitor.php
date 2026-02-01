@@ -13,7 +13,7 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
 {
     private Deploy $deploy;
 
-    private ?BuildResult $buildResult = null;
+    private ?BuildResult $buildResult;
 
     /**
      * DeployPolicyVisitor constructor.

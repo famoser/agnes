@@ -20,9 +20,6 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class TaskFactory
 {
-    /**
-     * TaskCreationService constructor.
-     */
     public function __construct(private StyleInterface $io, private FileService $fileService, private GithubService $githubService, private InstanceService $instanceService)
     {
     }
@@ -42,9 +39,6 @@ class TaskFactory
         return new Release($name);
     }
 
-    /**
-     *
-     */
     public function createDeploy(Instance $target): ?Deploy
     {
         if (!$this->fileService->allRequiredFilesExist($target)) {
@@ -124,9 +118,6 @@ class TaskFactory
         return new Rollback($instance, $upperBoundInstallation);
     }
 
-    /**
-     *
-     */
     public function createCopy(Instance $targetInstance, string $sourceStage): ?Copy
     {
         $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);

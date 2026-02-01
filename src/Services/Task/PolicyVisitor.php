@@ -17,9 +17,6 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class PolicyVisitor extends AbstractTaskVisitor
 {
-    /**
-     * PolicyVisitor constructor.
-     */
     public function __construct(private StyleInterface $io, private InstanceService $instanceService, private ?BuildResult $buildResult)
     {
     }

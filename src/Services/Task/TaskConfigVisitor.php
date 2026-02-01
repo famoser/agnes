@@ -54,9 +54,6 @@ class TaskConfigVisitor extends AbstractTaskVisitor
         return $this->createFrom($copy->getTarget());
     }
 
-    /**
-     *
-     */
     private function createFrom(?Instance $instance = null): array
     {
         if (null !== $instance && null !== $this->task->getFilter() && !$this->task->getFilter()->instanceMatches($instance)) {
@@ -77,9 +74,6 @@ class TaskConfigVisitor extends AbstractTaskVisitor
         return $tasks;
     }
 
-    /**
-     *
-     */
     private function getMatchingInstances(?Instance $instance = null): array
     {
         if (!isset($this->task->getArguments()['target'])) {
@@ -102,9 +96,6 @@ class TaskConfigVisitor extends AbstractTaskVisitor
         return $this->instanceService->getInstancesByFilter($filter);
     }
 
-    /**
-     *
-     */
     private function createForInstance(Instance $instance): ?AbstractTask
     {
         switch ($this->task->getTask()) {
@@ -123,17 +114,11 @@ class TaskConfigVisitor extends AbstractTaskVisitor
         }
     }
 
-    /**
-     *
-     */
     private function createDeployTask(Instance $instance): ?Deploy
     {
         return $this->taskFactory->createDeploy($instance);
     }
 
-    /**
-     *
-     */
     private function createCopyTask(Instance $instance): ?Copy
     {
         if (!isset($this->task->getArguments()['source'])) {
