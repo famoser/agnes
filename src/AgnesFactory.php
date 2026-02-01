@@ -25,9 +25,6 @@ class AgnesFactory
 
     private TaskService $taskService;
 
-    /**
-     * AgnesFactory constructor.
-     */
     public function __construct(OutputStyle $io)
     {
         // construct internal services
