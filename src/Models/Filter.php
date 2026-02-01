@@ -7,17 +7,17 @@ class Filter
     /**
      * @var string[]|null
      */
-    private $servers;
+    private ?array $servers;
 
     /**
      * @var string[]|null
      */
-    private $environments;
+    private ?array $environments;
 
     /**
      * @var string[]|null
      */
-    private $stages;
+    private ?array $stages;
 
     /**
      * Filter constructor.
@@ -37,7 +37,7 @@ class Filter
     {
         $entries = explode(':', $instanceSpecification);
 
-        $parseToArray = function ($entry) {
+        $parseToArray = function ($entry): ?array {
             return '*' !== $entry ? explode(',', $entry) : null;
         };
 
@@ -57,7 +57,7 @@ class Filter
 
         $entries = explode(':', $overrideInstanceSpecification);
 
-        $override = function (string $entry, string $default) {
+        $override = function (string $entry, string $default): string {
             return '*' !== $entry ? $entry : $default;
         };
         $newSpecification = $override($entries[0], $server) . ':' .

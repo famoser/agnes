@@ -9,7 +9,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DeployCommand extends AgnesCommand
 {
-    public function configure()
+    public function configure(): void
     {
         $this->setName('deploy')
             ->setDescription('Deploy a release to a specific environment')

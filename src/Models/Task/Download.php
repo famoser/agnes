@@ -8,15 +8,9 @@ class Download extends AbstractTask
 {
     public const TYPE = 'download';
 
-    /**
-     * @var string
-     */
-    private $commitish;
+    private string $commitish;
 
-    /**
-     * @var string
-     */
-    private $release;
+    private string $release;
 
     /**
      * DownloadGithub constructor.

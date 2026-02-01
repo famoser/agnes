@@ -9,7 +9,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class CopyCommand extends AgnesCommand
 {
-    public function configure()
+    public function configure(): void
     {
         $this->setName('copy')
             ->setDescription('Copies the shared data from the source to the target')

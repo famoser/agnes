@@ -9,7 +9,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RunCommand extends AgnesCommand
 {
-    public function configure()
+    public function configure(): void
     {
         $this->setName('run')
             ->setDescription('Run a script on an instance')

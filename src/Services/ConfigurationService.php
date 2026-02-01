@@ -25,22 +25,13 @@ use Symfony\Component\Yaml\Yaml;
 
 class ConfigurationService
 {
-    /**
-     * @var array
-     */
-    private $config = [];
+    private array $config = [];
 
-    /**
-     * @var string|null
-     */
-    private $configFolder;
+    private ?string $configFolder = null;
 
     public const AGNES_VERSION = 4;
 
-    /**
-     * @var OutputStyle
-     */
-    private $io;
+    private OutputStyle $io;
 
     /**
      * ConfigurationService constructor.
@@ -55,7 +46,7 @@ class ConfigurationService
      */
     public function validate(): bool
     {
-        if (0 === count($this->config)) {
+        if ([] === $this->config) {
             $this->io->error('no config supplied');
 
             return false;
@@ -167,7 +158,7 @@ class ConfigurationService
      */
     public function getScriptsForHook(string $hook): array
     {
-        return $this->getScriptsByCondition(function (string $name, array $script) use ($hook) {
+        return $this->getScriptsByCondition(function (string $name, array $script) use ($hook): bool {
             return (isset($script['hook']) && $script['hook'] === $hook)
                 || isset($script['hooks']) && in_array($hook, $script['hooks']);
         });
@@ -180,11 +171,11 @@ class ConfigurationService
      */
     public function getScriptByName(string $name): ?Script
     {
-        $scripts = $this->getScriptsByCondition(function (string $scriptName, array $script) use ($name) {
+        $scripts = $this->getScriptsByCondition(function (string $scriptName, array $script) use ($name): bool {
             return $scriptName === $name;
         });
 
-        if (0 === count($scripts)) {
+        if ([] === $scripts) {
             $this->io->warning('script ' . $name . ' does not exist.');
 
             return null;
@@ -236,7 +227,7 @@ class ConfigurationService
      */
     public function getBeforeTasks(string $task): array
     {
-        return $this->getTasksByCondition(function (string $name, array $taskConfig) use ($task) {
+        return $this->getTasksByCondition(function (string $name, array $taskConfig) use ($task): bool {
             return isset($taskConfig['before']) && $taskConfig['before'] === $task;
         });
     }
@@ -248,7 +239,7 @@ class ConfigurationService
      */
     public function getAfterTasks(string $task): array
     {
-        return $this->getTasksByCondition(function (string $name, array $taskConfig) use ($task) {
+        return $this->getTasksByCondition(function (string $name, array $taskConfig) use ($task): bool {
             return isset($taskConfig['after']) && $taskConfig['after'] === $task;
         });
     }
@@ -283,13 +274,11 @@ class ConfigurationService
     }
 
     /**
-     * @param string ...$keys
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     *
      * @throws \Exception
      */
-    private function getNestedConfig(...$keys)
+    private function getNestedConfig(string ...$keys)
     {
         $current = $this->config;
 
@@ -301,13 +290,11 @@ class ConfigurationService
     }
 
     /**
-     * @param string ...$keys
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     *
      * @throws \Exception
      */
-    private function getNestedConfigWithDefault($default, ...$keys)
+    private function getNestedConfigWithDefault(?array $default, string ...$keys)
     {
         // choose new default 2 because if passed "false" to geValue this throws exception if not found
         $defaultIsFalse = false === $default;
@@ -354,7 +341,7 @@ class ConfigurationService
     /**
      * @throws \Exception
      */
-    private function replaceEnvVariables(array &$config)
+    private function replaceEnvVariables(array &$config): void
     {
         foreach ($config as &$item) {
             if (is_array($item)) {
@@ -467,9 +454,9 @@ class ConfigurationService
         $connectionType = $this->getValue($connection, 'type', 'local');
         if ('local' === $connectionType) {
             return new LocalConnection($this->io, $executor);
-        } elseif ('ssh' === $connectionType) {
+        }
+        if ('ssh' === $connectionType) {
             $destination = $connection['destination'];
-
             return new SSHConnection($this->io, $executor, $destination);
         }
         throw new \Exception("unknown connection type $connectionType");
@@ -523,7 +510,7 @@ class ConfigurationService
         return $this->configFolder;
     }
 
-    public function setConfigFolder(string $configFolder)
+    public function setConfigFolder(string $configFolder): void
     {
         $this->configFolder = $configFolder;
     }

@@ -7,15 +7,9 @@ use Agnes\Services\Policy\AbstractPolicyVisitor;
 
 abstract class Policy
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var Filter|null
-     */
-    private $filter;
+    private ?Filter $filter;
 
     /**
      * Policy constructor.

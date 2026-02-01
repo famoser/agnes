@@ -8,10 +8,7 @@ class Build extends AbstractTask
 {
     public const TYPE = 'build';
 
-    /**
-     * @var string
-     */
-    private $commitish;
+    private string $commitish;
 
     /**
      * Build constructor.

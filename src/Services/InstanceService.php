@@ -11,25 +11,16 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class InstanceService
 {
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
+    private ConfigurationService $configurationService;
 
-    /**
-     * @var InstallationService
-     */
-    private $installationService;
+    private InstallationService $installationService;
 
     /**
      * @var Instance[]|null
      */
-    private $instancesCache;
+    private ?array $instancesCache = null;
 
     /**
      * @var Filter|null
@@ -96,7 +87,7 @@ class InstanceService
         $instance = new Instance($connection, $path, $server->getName(), $server->getKeepInstallations(), $environment, $stage);
 
         $installations = $this->installationService->loadInstallations($instance);
-        if (count($installations) > 0) {
+        if ($installations !== []) {
             $this->io->text('loaded ' . count($installations) . ' installations of ' . $server->getName() . ':' . $environment . ':' . $stage);
 
             $symlink = $instance->getCurrentSymlink();

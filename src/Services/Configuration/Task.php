@@ -8,20 +8,14 @@ class Task
 {
     use FilterTrait;
 
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var string
-     */
-    private $task;
+    private string $task;
 
     /**
      * @var string[]
      */
-    private $arguments;
+    private array $arguments;
 
     /**
      * Action constructor.

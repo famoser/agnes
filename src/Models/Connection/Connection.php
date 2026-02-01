@@ -10,17 +10,11 @@ abstract class Connection
     /**
      * @var string[]
      */
-    private $scriptOverrides = [];
+    private array $scriptOverrides = [];
 
-    /**
-     * @var Executor
-     */
-    private $executor;
+    private Executor $executor;
 
-    /**
-     * @var OutputStyle
-     */
-    private $io;
+    private OutputStyle $io;
 
     /**
      * Connection constructor.
@@ -120,7 +114,7 @@ abstract class Connection
             $envPrefix .= "$key=$value ";
         }
 
-        if (count($envVariables) > 0) {
+        if ($envVariables !== []) {
             $envPrefix .= '&& ';
         }
 
@@ -349,11 +343,7 @@ abstract class Connection
         $folder = [];
         foreach ($fullPaths as $fullPath) {
             $lastSlash = strrpos($fullPath, '/');
-            if (false === $lastSlash) {
-                $folder[] = $fullPath;
-            } else {
-                $folder[] = substr($fullPath, $lastSlash + 1);
-            }
+            $folder[] = false === $lastSlash ? $fullPath : substr($fullPath, $lastSlash + 1);
         }
 
         return $folder;

@@ -17,20 +17,11 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class PolicyVisitor extends AbstractTaskVisitor
 {
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
-    /**
-     * @var InstanceService
-     */
-    private $instanceService;
+    private InstanceService $instanceService;
 
-    /**
-     * @var BuildResult
-     */
-    private $buildResult;
+    private ?BuildResult $buildResult;
 
     /**
      * PolicyVisitor constructor.

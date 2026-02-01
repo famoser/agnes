@@ -4,15 +4,12 @@ namespace Agnes\Services\Configuration;
 
 class Environment
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
     /**
      * @var string[]
      */
-    private $stages;
+    private array $stages;
 
     /**
      * Environment constructor.

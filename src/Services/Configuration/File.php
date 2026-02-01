@@ -4,15 +4,9 @@ namespace Agnes\Services\Configuration;
 
 class File
 {
-    /**
-     * @var bool
-     */
-    private $required;
+    private bool $required;
 
-    /**
-     * @var string
-     */
-    private $path;
+    private string $path;
 
     /**
      * File constructor.

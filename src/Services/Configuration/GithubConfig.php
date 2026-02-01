@@ -4,15 +4,9 @@ namespace Agnes\Services\Configuration;
 
 class GithubConfig
 {
-    /**
-     * @var string
-     */
-    private $apiToken;
+    private string $apiToken;
 
-    /**
-     * @var string
-     */
-    private $repository;
+    private string $repository;
 
     /**
      * GithubConfig constructor.

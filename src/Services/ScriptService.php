@@ -9,15 +9,9 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class ScriptService
 {
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
+    private ConfigurationService $configurationService;
 
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
     /**
      * ScriptService constructor.

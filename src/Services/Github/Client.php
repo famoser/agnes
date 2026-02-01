@@ -7,10 +7,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class Client
 {
-    /**
-     * @var GithubConfig
-     */
-    private $githubConfig;
+    private GithubConfig $githubConfig;
 
     /**
      * Client constructor.

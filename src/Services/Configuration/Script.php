@@ -8,15 +8,12 @@ class Script
 {
     use FilterTrait;
 
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
     /**
      * @var string[]
      */
-    private $script;
+    private array $script;
 
     /**
      * Script constructor.

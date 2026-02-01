@@ -9,10 +9,7 @@ class Clear extends AbstractTask
 {
     public const TYPE = 'clear';
 
-    /**
-     * @var Instance
-     */
-    private $target;
+    private Instance $target;
 
     /**
      * Deployment constructor.

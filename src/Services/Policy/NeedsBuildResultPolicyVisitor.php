@@ -8,20 +8,11 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class NeedsBuildResultPolicyVisitor extends NoPolicyVisitor
 {
-    /**
-     * @var BuildResult|null
-     */
-    private $buildResult;
+    private ?BuildResult $buildResult;
 
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
-    /**
-     * @var AbstractTask
-     */
-    private $task;
+    private AbstractTask $task;
 
     /**
      * DeployPolicyVisitor constructor.

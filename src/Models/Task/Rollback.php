@@ -10,15 +10,9 @@ class Rollback extends AbstractTask
 {
     public const TYPE = 'rollback';
 
-    /**
-     * @var Instance
-     */
-    private $target;
+    private Instance $target;
 
-    /**
-     * @var Installation
-     */
-    private $installation;
+    private Installation $installation;
 
     /**
      * Rollback constructor.
