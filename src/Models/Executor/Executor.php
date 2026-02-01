@@ -49,19 +49,24 @@ abstract class Executor
         return "tar -xzf $archivePath -C $targetFolder";
     }
 
+    public function gitFlatCheckout(string $path, string $repository, string $commitish): array
+    {
+        return [
+            "git init $path",
+            "git --git-dir=$path/.git  --work-tree=$path remote add origin " . $repository,
+            "git --git-dir=$path/.git  --work-tree=$path fetch --depth 1 origin " . $commitish,
+            "git --git-dir=$path/.git  --work-tree=$path checkout FETCH_HEAD"
+        ];
+    }
+
     public function gitClone(string $path, string $repository): string
     {
         return 'git clone ' . $repository . " $path";
     }
 
-    public function gitCheckout(string $path, string $commitish): string
+    public function gitPull(string $path): string
     {
-        return "git --git-dir=$path/.git  --work-tree=$path checkout " . $commitish;
-    }
-
-    public function gitPull(string $path)
-    {
-        return "git  --git-dir=$path/.git  --work-tree=$path pull";
+        return "git --git-dir=$path/.git  --work-tree=$path pull";
     }
 
     public function gitShowHash(string $path): string
