@@ -55,9 +55,11 @@ abstract class AgnesCommand extends Command
 
         // load config
         $configurationService = $factory->getConfigurationService();
-        if (!$this->loadConfigFile($io, $configurationService, $configFile)
+        if (
+            !$this->loadConfigFile($io, $configurationService, $configFile)
             || !$this->loadConfigFolder($io, $configurationService, $configPath)
-            || !$factory->getConfigurationService()->validate()) {
+            || !$factory->getConfigurationService()->validate()
+        ) {
             return 1;
         }
 
@@ -102,7 +104,7 @@ abstract class AgnesCommand extends Command
         if (null !== $configFile) {
             $path = realpath($configFile);
             if (!$path || !is_file($path)) {
-                $style->error('config file not found at '.$configFile);
+                $style->error('config file not found at ' . $configFile);
 
                 return false;
             }
@@ -129,7 +131,7 @@ abstract class AgnesCommand extends Command
 
             if (!is_dir($configPath)) {
                 if (null === $configRepository) {
-                    $io->error('config folder not found at '.$configPath.' with working dir '.getcwd().' and not config repository configured.');
+                    $io->error('config folder not found at ' . $configPath . ' with working dir ' . getcwd() . ' and not config repository configured.');
 
                     return false;
                 }
@@ -142,10 +144,10 @@ abstract class AgnesCommand extends Command
             }
 
             $configFolder = $configurationService->getConfigRepositoryFolder();
-            $configPath = $configFolder ? $configPath.DIRECTORY_SEPARATOR.$configFolder : $configPath;
+            $configPath = $configFolder ? $configPath . DIRECTORY_SEPARATOR . $configFolder : $configPath;
             $configurationService->setConfigFolder($configPath);
 
-            $configFilePaths = glob($configPath.DIRECTORY_SEPARATOR.'*.yml');
+            $configFilePaths = glob($configPath . DIRECTORY_SEPARATOR . '*.yml');
             foreach ($configFilePaths as $configFilePath) {
                 $configurationService->addConfig($configFilePath);
             }
@@ -156,7 +158,7 @@ abstract class AgnesCommand extends Command
 
     private function printPayloads(SymfonyStyle $io, array $payloads): void
     {
-        $io->text(count($payloads).' tasks created');
+        $io->text(count($payloads) . ' tasks created');
         $descriptions = [];
         foreach ($payloads as $payload) {
             $descriptions[] = $payload->describe();

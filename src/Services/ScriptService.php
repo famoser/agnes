@@ -40,7 +40,7 @@ class ScriptService
         $commands = [];
         foreach ($scripts as $script) {
             if (null !== $script->getFilter()) {
-                $this->io->warning($script->getName().' script defines a filter which is unsupported for build hook. skipping...');
+                $this->io->warning($script->getName() . ' script defines a filter which is unsupported for build hook. skipping...');
                 continue;
             }
 
@@ -125,7 +125,7 @@ class ScriptService
                 continue;
             }
 
-            $this->io->text('executing script '.$script->getName());
+            $this->io->text('executing script ' . $script->getName());
             $instance->getConnection()->executeScript($installation->getFolder(), $script->getScript(), $arguments);
         }
     }

@@ -83,6 +83,6 @@ abstract class AbstractTaskVisitor
      */
     protected function visitDefault(AbstractTask $payload)
     {
-        throw new \Exception('Not implemented for '.$payload->describe());
+        throw new \Exception('Not implemented for ' . $payload->describe());
     }
 }

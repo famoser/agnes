@@ -40,7 +40,7 @@ class Copy extends AbstractTask
 
     public function describe(): string
     {
-        return 'copy shared data from '.$this->getSource()->describe().' to '.$this->getTarget()->describe();
+        return 'copy shared data from ' . $this->getSource()->describe() . ' to ' . $this->getTarget()->describe();
     }
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)

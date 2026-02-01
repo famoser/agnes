@@ -18,7 +18,7 @@ class RollbackCommand extends AgnesCommand
 If rollback-to is supplied, it will rollback instances to that an installation matching the version.
 If rollback-from is supplied, it will rollback instances with that installation version.
 If neither target nor source is supplied, it will rollback to the previously installed installation.')
-            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to rollback. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION)
+            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to rollback. ' . AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION)
             ->addOption('rollback-to', null, InputOption::VALUE_OPTIONAL, 'name of the release or hash to rollback to')
             ->addOption('rollback-from', null, InputOption::VALUE_OPTIONAL, 'name of the release or hash to rollback from');
 

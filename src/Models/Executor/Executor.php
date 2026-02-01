@@ -51,12 +51,12 @@ abstract class Executor
 
     public function gitClone(string $path, string $repository): string
     {
-        return 'git clone '.$repository." $path";
+        return 'git clone ' . $repository . " $path";
     }
 
     public function gitCheckout(string $path, string $commitish): string
     {
-        return "git --git-dir=$path/.git  --work-tree=$path checkout ".$commitish;
+        return "git --git-dir=$path/.git  --work-tree=$path checkout " . $commitish;
     }
 
     public function gitPull(string $path)

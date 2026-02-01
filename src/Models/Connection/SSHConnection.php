@@ -67,7 +67,7 @@ class SSHConnection extends Connection
         $tempFile = self::getTempFile();
 
         // download file
-        $source = $this->getDestination().':'.$filePath;
+        $source = $this->getDestination() . ':' . $filePath;
         $command = $this->executor->scpCopy($source, $tempFile);
         parent::executeCommand($command);
 
@@ -86,7 +86,7 @@ class SSHConnection extends Connection
         \file_put_contents($tempFile, $content);
 
         // upload file
-        $destination = $this->getDestination().':'.$filePath;
+        $destination = $this->getDestination() . ':' . $filePath;
         $command = $this->executor->scpCopy($tempFile, $destination);
         parent::executeCommand($command);
 

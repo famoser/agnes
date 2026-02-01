@@ -63,7 +63,7 @@ class ConfigurationService
 
         $version = $this->getNestedConfig('agnes', 'version');
         if (self::AGNES_VERSION !== $version) {
-            $this->io->error('expected '.self::AGNES_VERSION.' as the agnes.version value');
+            $this->io->error('expected ' . self::AGNES_VERSION . ' as the agnes.version value');
 
             return false;
         }
@@ -112,7 +112,7 @@ class ConfigurationService
 
         $githubRepository = $this->getNestedConfigWithDefault(null, 'github', 'repository');
         if (null !== $githubRepository) {
-            return 'git@github.com:'.$githubRepository;
+            return 'git@github.com:' . $githubRepository;
         }
 
         throw new \Exception('no git clone url configured. configure repository.url to change this.');
@@ -185,7 +185,7 @@ class ConfigurationService
         });
 
         if (0 === count($scripts)) {
-            $this->io->warning('script '.$name.' does not exist.');
+            $this->io->warning('script ' . $name . ' does not exist.');
 
             return null;
         }
@@ -209,7 +209,7 @@ class ConfigurationService
             }
 
             if (!isset($script['script'])) {
-                $this->io->warning('script '.$name.' is missing the required script property. skipping...');
+                $this->io->warning('script ' . $name . ' is missing the required script property. skipping...');
                 continue;
             }
 
@@ -269,7 +269,7 @@ class ConfigurationService
             }
 
             if (!isset($task['task'])) {
-                $this->io->warning('task '.$name.' is missing the required task property. skipping...');
+                $this->io->warning('task ' . $name . ' is missing the required task property. skipping...');
                 continue;
             }
 
@@ -342,7 +342,7 @@ class ConfigurationService
     {
         if (!isset($source[$key])) {
             if (false === $default) {
-                throw new \Exception('key '.$key.' does not exist.');
+                throw new \Exception('key ' . $key . ' does not exist.');
             }
 
             return $default;
@@ -364,7 +364,7 @@ class ConfigurationService
                 if (0 === substr_compare($envPart, ')%', -2)) {
                     $envName = substr($envPart, 0, -2);
                     if (!isset($_ENV[$envName])) {
-                        throw new \Exception('The requested environment value '.$envName.' is not set.');
+                        throw new \Exception('The requested environment value ' . $envName . ' is not set.');
                     }
                     $item = $_ENV[$envName];
                 }
@@ -415,7 +415,7 @@ class ConfigurationService
             $filter = isset($policy['filter']) ? $this->getFilter($policy['filter']) : null;
 
             if (!isset($policy['task'])) {
-                $this->io->warning('policy '.$name.' is missing the required task property. skipping...');
+                $this->io->warning('policy ' . $name . ' is missing the required task property. skipping...');
                 continue;
             }
 
@@ -435,7 +435,7 @@ class ConfigurationService
                     $parsedPolicies[] = new SameReleasePolicy($name, $filter);
                     break;
                 default:
-                    throw new \Exception('Policy '.$name.' has unknown policy type '.$policyType.'.');
+                    throw new \Exception('Policy ' . $name . ' has unknown policy type ' . $policyType . '.');
             }
         }
 
@@ -486,7 +486,7 @@ class ConfigurationService
             case 'FreeBSD':
                 return new BSDExecutor();
             default:
-                throw new \Exception('System not implemented: '.$system);
+                throw new \Exception('System not implemented: ' . $system);
         }
     }
 

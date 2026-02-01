@@ -72,7 +72,7 @@ class TaskFactory
     public function createDeploy(Instance $target): ?Deploy
     {
         if (!$this->fileService->allRequiredFilesExist($target)) {
-            $this->io->warning('For instance '.$target->describe().' not all required files were found.');
+            $this->io->warning('For instance ' . $target->describe() . ' not all required files were found.');
 
             return null;
         }
@@ -93,7 +93,7 @@ class TaskFactory
 
         $commitish = $this->githubService->commitishOfReleaseByReleaseName($release);
         if (null === $commitish) {
-            $this->io->warning('Release '.$release.' was not found.');
+            $this->io->warning('Release ' . $release . ' was not found.');
 
             return null;
         }
@@ -114,7 +114,7 @@ class TaskFactory
 
         // skip if rollback from does not match
         if (null !== $rollbackFrom && $currentInstallation->getCommitish() !== $rollbackFrom) {
-            $this->io->warning('Active installation does not match '.$rollbackFrom.'. skipping...');
+            $this->io->warning('Active installation does not match ' . $rollbackFrom . '. skipping...');
 
             return null;
         }
@@ -130,15 +130,17 @@ class TaskFactory
         /** @var Installation|null $upperBoundInstallation */
         $upperBoundInstallation = null;
         foreach ($instance->getInstallations() as $installation) {
-            if ($installation->getNumber() < $currentInstallation->getNumber()
+            if (
+                $installation->getNumber() < $currentInstallation->getNumber()
                 && (null === $upperBoundInstallation || $upperBoundInstallation->getNumber() < $installation->getNumber())
-                && (null === $rollbackToMatcher || $rollbackToMatcher($installation))) {
+                && (null === $rollbackToMatcher || $rollbackToMatcher($installation))
+            ) {
                 $upperBoundInstallation = $installation;
             }
         }
 
         if (null === $upperBoundInstallation) {
-            $this->io->warning('For instance '.$instance->describe().' no matching rollback installation was found.');
+            $this->io->warning('For instance ' . $instance->describe() . ' no matching rollback installation was found.');
 
             return null;
         }
@@ -155,7 +157,7 @@ class TaskFactory
         $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
 
         if (0 === count($sourceInstances)) {
-            $this->io->warning('For instance '.$targetInstance->describe().' no matching source was found.');
+            $this->io->warning('For instance ' . $targetInstance->describe() . ' no matching source was found.');
 
             return null;
         }

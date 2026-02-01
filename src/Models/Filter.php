@@ -60,8 +60,8 @@ class Filter
         $override = function (string $entry, string $default) {
             return '*' !== $entry ? $entry : $default;
         };
-        $newSpecification = $override($entries[0], $server).':'.
-            $override($entries[1], $environment).':'.
+        $newSpecification = $override($entries[0], $server) . ':' .
+            $override($entries[1], $environment) . ':' .
             $override($entries[2], $stage);
 
         return self::createFromInstanceSpecification($newSpecification);

@@ -7,6 +7,7 @@ use Agnes\Models\Filter;
 class Script
 {
     use FilterTrait;
+
     /**
      * @var string
      */

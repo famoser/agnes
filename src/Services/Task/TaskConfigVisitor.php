@@ -113,7 +113,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     {
         if (!isset($this->task->getArguments()['target'])) {
             if (null === $instance) {
-                $this->io->error($this->task->getName().' misses the required target argument (like arguments: { source: production }). skipping...');
+                $this->io->error($this->task->getName() . ' misses the required target argument (like arguments: { source: production }). skipping...');
 
                 return [];
             }
@@ -166,7 +166,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     private function createCopyTask(Instance $instance): ?Copy
     {
         if (!isset($this->task->getArguments()['source'])) {
-            $this->io->error($this->task->getName().' misses the required source argument (like arguments: { source: production }). skipping...');
+            $this->io->error($this->task->getName() . ' misses the required source argument (like arguments: { source: production }). skipping...');
 
             return null;
         }
@@ -179,7 +179,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     private function createRunTask(Instance $instance): ?Run
     {
         if (!isset($this->task->getArguments()['script'])) {
-            $this->io->error($this->task->getName().' misses the required script argument (like arguments: { script: clear_cache }). skipping...');
+            $this->io->error($this->task->getName() . ' misses the required script argument (like arguments: { script: clear_cache }). skipping...');
 
             return null;
         }
