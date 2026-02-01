@@ -14,12 +14,6 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class TaskService
 {
-    private StyleInterface $io;
-
-    private ConfigurationService $configurationService;
-
-    private InstanceService $instanceService;
-
     private TaskFactory $taskFactory;
 
     private ExecutionVisitor $executionVisitor;
@@ -27,14 +21,10 @@ class TaskService
     /**
      * ExecutionVisitor constructor.
      */
-    public function __construct(StyleInterface $io, ConfigurationService $configurationService, FileService $fileService, GithubService $githubService, InstallationService $installationService, InstanceService $instanceService, ScriptService $scriptService)
+    public function __construct(private StyleInterface $io, private ConfigurationService $configurationService, FileService $fileService, GithubService $githubService, InstallationService $installationService, private InstanceService $instanceService, ScriptService $scriptService)
     {
-        $this->io = $io;
-        $this->configurationService = $configurationService;
-        $this->instanceService = $instanceService;
-
-        $this->taskFactory = new TaskFactory($io, $fileService, $githubService, $instanceService);
-        $this->executionVisitor = new ExecutionVisitor($io, $configurationService, $fileService, $githubService, $installationService, $instanceService, $scriptService);
+        $this->taskFactory = new TaskFactory($this->io, $fileService, $githubService, $this->instanceService);
+        $this->executionVisitor = new ExecutionVisitor($this->io, $this->configurationService, $fileService, $githubService, $installationService, $this->instanceService, $scriptService);
     }
 
     /**

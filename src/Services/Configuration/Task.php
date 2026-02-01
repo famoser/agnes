@@ -8,25 +8,13 @@ class Task
 {
     use FilterTrait;
 
-    private string $name;
-
-    private string $task;
-
-    /**
-     * @var string[]
-     */
-    private array $arguments;
-
     /**
      * Action constructor.
      *
      * @param string[] $arguments
      */
-    public function __construct(string $name, string $task, array $arguments, ?Filter $filter)
+    public function __construct(private string $name, private string $task, private array $arguments, ?Filter $filter)
     {
-        $this->name = $name;
-        $this->task = $task;
-        $this->arguments = $arguments;
         $this->filter = $filter;
     }
 

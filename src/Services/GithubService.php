@@ -8,17 +8,11 @@ use Symfony\Component\Console\Style\OutputStyle;
 
 class GithubService
 {
-    private OutputStyle $io;
-
-    private ConfigurationService $configurationService;
-
     /**
      * GithubService constructor.
      */
-    public function __construct(OutputStyle $io, ConfigurationService $configurationService)
+    public function __construct(private OutputStyle $io, private ConfigurationService $configurationService)
     {
-        $this->io = $io;
-        $this->configurationService = $configurationService;
     }
 
     private ?Client $clientCache = null;

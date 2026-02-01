@@ -20,23 +20,11 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class TaskFactory
 {
-    private StyleInterface $io;
-
-    private FileService $fileService;
-
-    private GithubService $githubService;
-
-    private InstanceService $instanceService;
-
     /**
      * TaskCreationService constructor.
      */
-    public function __construct(StyleInterface $io, FileService $fileService, GithubService $githubService, InstanceService $instanceService)
+    public function __construct(private StyleInterface $io, private FileService $fileService, private GithubService $githubService, private InstanceService $instanceService)
     {
-        $this->io = $io;
-        $this->fileService = $fileService;
-        $this->githubService = $githubService;
-        $this->instanceService = $instanceService;
     }
 
     public function createBuild(string $releaseOrCommitish): ?Build

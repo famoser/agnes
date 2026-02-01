@@ -8,8 +8,6 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class NeedsBuildResultPolicyVisitor extends NoPolicyVisitor
 {
-    private ?BuildResult $buildResult;
-
     private StyleInterface $io;
 
     private AbstractTask $task;
@@ -17,11 +15,9 @@ class NeedsBuildResultPolicyVisitor extends NoPolicyVisitor
     /**
      * DeployPolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, ?BuildResult $buildResult, AbstractTask $task)
+    public function __construct(StyleInterface $io, private ?BuildResult $buildResult, AbstractTask $task)
     {
         parent::__construct($io, $task);
-
-        $this->buildResult = $buildResult;
         $this->io = $io;
         $this->task = $task;
     }

@@ -6,29 +6,20 @@ use Agnes\Models\Installation\OnlinePeriod;
 
 class Installation
 {
-    private string $folder;
-
-    private int $number;
-
-    private string $commitish;
-
-    private string $releaseOrHash;
-
-    /**
-     * @var OnlinePeriod[]
-     */
-    private array $onlinePeriods;
-
     /**
      * Installation constructor.
      */
-    public function __construct(string $folder, int $number, string $commitish, string $releaseOrHash, array $onlinePeriods = [])
+    public function __construct(
+        private string $folder,
+        private int $number,
+        private string $commitish,
+        private string $releaseOrHash,
+        /**
+         * @var OnlinePeriod[]
+         */
+        private array $onlinePeriods = []
+    )
     {
-        $this->folder = $folder;
-        $this->number = $number;
-        $this->commitish = $commitish;
-        $this->releaseOrHash = $releaseOrHash;
-        $this->onlinePeriods = $onlinePeriods;
     }
 
     public function getFolder(): string

@@ -4,17 +4,11 @@ namespace Agnes\Models\Installation;
 
 class OnlinePeriod
 {
-    private \DateTime $start;
-
-    private ?\DateTime $end;
-
     /**
      * OnlinePeriod constructor.
      */
-    public function __construct(\DateTime $start, ?\DateTime $end)
+    public function __construct(private \DateTime $start, private ?\DateTime $end)
     {
-        $this->start = $start;
-        $this->end = $end;
     }
 
     public function getStart(): \DateTime

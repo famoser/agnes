@@ -8,14 +8,11 @@ class Release extends AbstractTask
 {
     public const TYPE = 'release';
 
-    private string $name;
-
     /**
      * Release constructor.
      */
-    public function __construct(string $name)
+    public function __construct(private string $name)
     {
-        $this->name = $name;
     }
 
     public function getName(): string

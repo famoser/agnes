@@ -6,33 +6,14 @@ use Agnes\Models\Connection\Connection;
 
 class Server
 {
-    private string $name;
-
-    private Connection $connection;
-
-    private string $path;
-
-    private int $keepInstallations;
-
-    /**
-     * @var Environment[]
-     */
-    private array $environments;
-
     /**
      * Server constructor.
      *
      * @param Environment[] $environments
      */
-    public function __construct(string $name, Connection $connection, string $path, int $keepInstallations, array $scriptOverrides, array $environments)
+    public function __construct(private string $name, private Connection $connection, private string $path, private int $keepInstallations, array $scriptOverrides, private array $environments)
     {
-        $this->name = $name;
-        $this->connection = $connection;
-        $this->path = $path;
-        $this->keepInstallations = $keepInstallations;
-        $this->environments = $environments;
-
-        $connection->setScriptOverrides($scriptOverrides);
+        $this->connection->setScriptOverrides($scriptOverrides);
     }
 
     public function getName(): string

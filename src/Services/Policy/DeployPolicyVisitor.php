@@ -11,8 +11,6 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
 {
-    private InstanceService $installationService;
-
     private Deploy $deploy;
 
     private ?BuildResult $buildResult = null;
@@ -20,11 +18,9 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
     /**
      * DeployPolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, InstanceService $installationService, ?BuildResult $buildResult, Deploy $deploy)
+    public function __construct(StyleInterface $io, private InstanceService $installationService, ?BuildResult $buildResult, Deploy $deploy)
     {
         parent::__construct($io, $buildResult, $deploy);
-
-        $this->installationService = $installationService;
         $this->deploy = $deploy;
         $this->buildResult = $buildResult;
     }

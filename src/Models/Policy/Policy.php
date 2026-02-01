@@ -7,17 +7,11 @@ use Agnes\Services\Policy\AbstractPolicyVisitor;
 
 abstract class Policy
 {
-    private string $name;
-
-    private ?Filter $filter;
-
     /**
      * Policy constructor.
      */
-    public function __construct(string $name, ?Filter $filter)
+    public function __construct(private string $name, private ?Filter $filter)
     {
-        $this->name = $name;
-        $this->filter = $filter;
     }
 
     /**

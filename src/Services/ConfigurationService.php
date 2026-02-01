@@ -31,14 +31,11 @@ class ConfigurationService
 
     public const AGNES_VERSION = 4;
 
-    private OutputStyle $io;
-
     /**
      * ConfigurationService constructor.
      */
-    public function __construct(OutputStyle $io)
+    public function __construct(private OutputStyle $io)
     {
-        $this->io = $io;
     }
 
     /**

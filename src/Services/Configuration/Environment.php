@@ -4,22 +4,13 @@ namespace Agnes\Services\Configuration;
 
 class Environment
 {
-    private string $name;
-
-    /**
-     * @var string[]
-     */
-    private array $stages;
-
     /**
      * Environment constructor.
      *
      * @param string[] $stages
      */
-    public function __construct(string $name, array $stages)
+    public function __construct(private string $name, private array $stages)
     {
-        $this->name = $name;
-        $this->stages = $stages;
     }
 
     public function getName(): string

@@ -10,17 +10,11 @@ class Rollback extends AbstractTask
 {
     public const TYPE = 'rollback';
 
-    private Instance $target;
-
-    private Installation $installation;
-
     /**
      * Rollback constructor.
      */
-    public function __construct(Instance $target, Installation $installation)
+    public function __construct(private Instance $target, private Installation $installation)
     {
-        $this->target = $target;
-        $this->installation = $installation;
     }
 
     public function getTarget(): Instance
