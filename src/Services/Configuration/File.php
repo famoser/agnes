@@ -2,11 +2,8 @@
 
 namespace Agnes\Services\Configuration;
 
-class File
+readonly class File
 {
-    /**
-     * File constructor.
-     */
     public function __construct(private bool $required, private string $path)
     {
     }

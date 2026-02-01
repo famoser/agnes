@@ -4,11 +4,9 @@ namespace Agnes\Services\Configuration;
 
 use Agnes\Models\Connection\Connection;
 
-class Server
+readonly class Server
 {
     /**
-     * Server constructor.
-     *
      * @param Environment[] $environments
      */
     public function __construct(private string $name, private Connection $connection, private string $path, private int $keepInstallations, array $scriptOverrides, private array $environments)

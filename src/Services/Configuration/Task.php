@@ -6,16 +6,11 @@ use Agnes\Models\Filter;
 
 class Task
 {
-    use FilterTrait;
-
     /**
-     * Action constructor.
-     *
      * @param string[] $arguments
      */
-    public function __construct(private string $name, private string $task, private array $arguments, ?Filter $filter)
+    public function __construct(private string $name, private string $task, private array $arguments, private ?Filter $filter)
     {
-        $this->filter = $filter;
     }
 
     public function getName(): string
@@ -34,5 +29,10 @@ class Task
     public function getTask(): string
     {
         return $this->task;
+    }
+
+    public function getFilter(): ?Filter
+    {
+        return $this->filter;
     }
 }

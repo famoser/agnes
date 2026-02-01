@@ -2,11 +2,9 @@
 
 namespace Agnes\Services\Configuration;
 
-class Environment
+readonly class Environment
 {
     /**
-     * Environment constructor.
-     *
      * @param string[] $stages
      */
     public function __construct(private string $name, private array $stages)

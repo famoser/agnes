@@ -4,12 +4,12 @@ namespace Agnes\Models\Policy;
 
 use Agnes\Models\Filter;
 
-abstract class LayeredPolicy extends Policy
+abstract readonly class LayeredPolicy extends Policy
 {
     /**
      * @var string[][]
      */
-    private array $layers = [];
+    private array $layers;
 
     /**
      * LayeredPolicy constructor.

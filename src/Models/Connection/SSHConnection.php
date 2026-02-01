@@ -9,18 +9,12 @@ class SSHConnection extends Connection
 {
     private Executor $executor;
 
-    /**
-     * SSHConnection constructor.
-     */
     public function __construct(OutputStyle $io, Executor $executor, private string $destination)
     {
         parent::__construct($io, $executor);
         $this->executor = $executor;
     }
 
-    /**
-     *
-     */
     public function executeCommand(string $command): string
     {
         $command = $this->executor->sshExecute($this->getDestination(), $command);
@@ -30,8 +24,6 @@ class SSHConnection extends Connection
 
     /**
      * @param string[] $commands
-     *
-     *
      */
     protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void
     {
@@ -49,9 +41,6 @@ class SSHConnection extends Connection
         return $this->destination;
     }
 
-    /**
-     *
-     */
     public function readFile(string $filePath): string
     {
         $tempFile = $this->getTempFile();
@@ -67,9 +56,6 @@ class SSHConnection extends Connection
         return $content;
     }
 
-    /**
-     *
-     */
     public function writeFile(string $filePath, string $content): void
     {
         $tempFile = $this->getTempFile();
@@ -87,8 +73,6 @@ class SSHConnection extends Connection
 
     /**
      * @return string[]
-     *
-     *
      */
     public function getFolders(string $dir): array
     {

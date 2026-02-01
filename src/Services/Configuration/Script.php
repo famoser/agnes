@@ -4,19 +4,16 @@ namespace Agnes\Services\Configuration;
 
 use Agnes\Models\Filter;
 
-class Script
+readonly class Script
 {
-    use FilterTrait;
-
     /**
-     * Script constructor.
+     * @param string[] $script
      */
-    public function __construct(private string $name, /**
-     * @var string[]
-     */
-    private array $script, ?Filter $filter)
-    {
-        $this->filter = $filter;
+    public function __construct(
+        private string $name,
+        private array $script,
+        private ?Filter $filter
+    ) {
     }
 
     public function getName(): string
@@ -30,5 +27,10 @@ class Script
     public function getScript(): array
     {
         return $this->script;
+    }
+
+    public function getFilter(): ?Filter
+    {
+        return $this->filter;
     }
 }

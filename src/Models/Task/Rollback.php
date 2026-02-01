@@ -6,13 +6,10 @@ use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Rollback extends AbstractTask
+readonly class Rollback extends AbstractTask
 {
     public const TYPE = 'rollback';
 
-    /**
-     * Rollback constructor.
-     */
     public function __construct(private Instance $target, private Installation $installation)
     {
     }

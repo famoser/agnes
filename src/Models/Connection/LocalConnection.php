@@ -4,9 +4,6 @@ namespace Agnes\Models\Connection;
 
 class LocalConnection extends Connection
 {
-    /**
-     *
-     */
     protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void
     {
         // change working directory

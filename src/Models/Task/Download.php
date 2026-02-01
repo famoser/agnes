@@ -4,13 +4,10 @@ namespace Agnes\Models\Task;
 
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Download extends AbstractTask
+readonly class Download extends AbstractTask
 {
     public const TYPE = 'download';
 
-    /**
-     * DownloadGithub constructor.
-     */
     public function __construct(private string $commitish, private string $release)
     {
     }

@@ -2,11 +2,8 @@
 
 namespace Agnes\Services\Configuration;
 
-class GithubConfig
+readonly class GithubConfig
 {
-    /**
-     * GithubConfig constructor.
-     */
     public function __construct(private string $apiToken, private string $repository)
     {
     }

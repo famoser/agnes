@@ -15,9 +15,6 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
 
     private ?BuildResult $buildResult;
 
-    /**
-     * DeployPolicyVisitor constructor.
-     */
     public function __construct(StyleInterface $io, private InstanceService $installationService, ?BuildResult $buildResult, Deploy $deploy)
     {
         parent::__construct($io, $buildResult, $deploy);
@@ -25,9 +22,6 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
         $this->buildResult = $buildResult;
     }
 
-    /**
-     *
-     */
     protected function checkStageWriteUp(StageWriteUpPolicy $policy): bool
     {
         if (!$this->filterMatches($policy->getFilter())) {

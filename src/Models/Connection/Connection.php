@@ -12,9 +12,6 @@ abstract class Connection
      */
     private array $scriptOverrides = [];
 
-    /**
-     * Connection constructor.
-     */
     public function __construct(private OutputStyle $io, private Executor $executor)
     {
     }
@@ -27,9 +24,6 @@ abstract class Connection
         $this->scriptOverrides = $scriptOverrides;
     }
 
-    /**
-     *
-     */
     public function executeScript(string $workingFolder, array $commands, array $envVariables = []): void
     {
         $commands = $this->prependEnvVariables($commands, $envVariables);
@@ -40,8 +34,6 @@ abstract class Connection
 
     /**
      * @param string[] $commands
-     *
-     *
      */
     abstract protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void;
 
@@ -62,9 +54,6 @@ abstract class Connection
 
     abstract public function equals(Connection $connection): bool;
 
-    /**
-     *
-     */
     protected function executeCommand(string $command): string
     {
         if ($this->io->isVerbose()) {
@@ -83,8 +72,6 @@ abstract class Connection
 
     /**
      * @param string[] $commands
-     *
-     *
      */
     public function executeCommands(array $commands): void
     {
@@ -120,9 +107,6 @@ abstract class Connection
         return $commands;
     }
 
-    /**
-     *
-     */
     public function flatCloneRepositoryAtCommitish(string $path, string $repository, string $commitish): string
     {
         $commands = $this->executor->gitFlatCheckout($path, $repository, $commitish);
@@ -137,27 +121,18 @@ abstract class Connection
         return $hash;
     }
 
-    /**
-     *
-     */
     public function checkoutRepository(string $path, string $repository): void
     {
         $gitClone = $this->executor->gitClone($path, $repository);
         $this->executeCommand($gitClone);
     }
 
-    /**
-     *
-     */
     public function gitPull(string $path): void
     {
         $gitPull = $this->executor->gitPull($path);
         $this->executeCommand($gitPull);
     }
 
-    /**
-     *
-     */
     public function createOrClearFolder(string $folder): void
     {
         $command = $this->executor->rmRecursive($folder);
@@ -165,18 +140,12 @@ abstract class Connection
         $this->createFolder($folder);
     }
 
-    /**
-     *
-     */
     public function createFolder(string $folder): void
     {
         $command = $this->executor->mkdirRecursive($folder);
         $this->executeCommand($command);
     }
 
-    /**
-     *
-     */
     public function compressTarGz(string $folder, string $fileName): string
     {
         $targetFilePath = $folder . '/' . $fileName;
@@ -192,27 +161,18 @@ abstract class Connection
         return $folder . DIRECTORY_SEPARATOR . $fileName;
     }
 
-    /**
-     *
-     */
     public function uncompressTarGz(string $archivePath, string $targetFolder): void
     {
         $command = $this->executor->tarUncompress($archivePath, $targetFolder);
         $this->executeCommand($command);
     }
 
-    /**
-     *
-     */
     public function removeFile(string $path): void
     {
         $command = $this->executor->rmRecursive($path);
         $this->executeCommand($command);
     }
 
-    /**
-     *
-     */
     public function createSymlink(string $source, string $target): void
     {
         $relativeSharedFolder = $this->getRelativeSymlinkPath($source, $target);
@@ -220,9 +180,6 @@ abstract class Connection
         $this->executeCommand($command);
     }
 
-    /**
-     *
-     */
     public function readSymlink(string $symlink): string
     {
         $command = $this->executor->readlinkCanonicalize($symlink);
@@ -252,28 +209,12 @@ abstract class Connection
         return str_repeat('..' . DIRECTORY_SEPARATOR, $levelsBack) . implode(DIRECTORY_SEPARATOR, $targetArray);
     }
 
-    /**
-     *
-     */
-    public function absolutePath(string $relativePath): string
-    {
-        $command = $this->executor->readlinkCanonicalize($relativePath);
-
-        return $this->executeCommand($command);
-    }
-
-    /**
-     *
-     */
     public function moveFolder(string $source, string $target): void
     {
         $command = $this->executor->rmMoveAndReplace($source, $target);
         $this->executeCommand($command);
     }
 
-    /**
-     *
-     */
     public function copyFolderContent(string $source, string $target): void
     {
         $sourceContent = $source . DIRECTORY_SEPARATOR . '.';
@@ -281,18 +222,12 @@ abstract class Connection
         $this->executeCommand($command);
     }
 
-    /**
-     *
-     */
     public function removeFolder(string $folder): void
     {
         $command = $this->executor->rmRecursive($folder);
         $this->executeCommand($command);
     }
 
-    /**
-     *
-     */
     public function replaceSymlink(string $source, string $target): void
     {
         $command = $this->executor->mvSymlinkAtomicReplace($source, $target);
