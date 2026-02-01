@@ -7,19 +7,15 @@ use Agnes\Models\Installation\OnlinePeriod;
 class Installation
 {
     /**
-     * Installation constructor.
+     * @param OnlinePeriod[]  $onlinePeriods
      */
     public function __construct(
         private string $folder,
         private int $number,
         private string $commitish,
         private string $releaseOrHash,
-        /**
-         * @var OnlinePeriod[]
-         */
         private array $onlinePeriods = []
-    )
-    {
+    ) {
     }
 
     public function getFolder(): string
