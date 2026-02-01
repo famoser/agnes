@@ -7,9 +7,6 @@ use Psr\Http\Message\ResponseInterface;
 
 readonly class Client
 {
-    /**
-     * Client constructor.
-     */
     public function __construct(private GithubConfig $githubConfig)
     {
     }

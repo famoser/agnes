@@ -17,9 +17,6 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class TaskConfigVisitor extends AbstractTaskVisitor
 {
-    /**
-     * AfterTaskVisitor constructor.
-     */
     public function __construct(private StyleInterface $io, private InstanceService $instanceService, private TaskFactory $taskFactory, private bool $buildExists, private Task $task)
     {
     }

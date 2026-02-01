@@ -12,8 +12,6 @@ abstract readonly class LayeredPolicy extends Policy
     private array $layers;
 
     /**
-     * LayeredPolicy constructor.
-     *
      * @param string[][] $layers
      */
     public function __construct(string $name, ?Filter $filter, array $layers)
