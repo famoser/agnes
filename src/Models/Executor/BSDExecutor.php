@@ -8,4 +8,9 @@ class BSDExecutor extends Executor
     {
         return "mv -h $source $target";
     }
+
+    public function lnCreateSymbolicLink(string $filePath, string $destination): string
+    {
+        return "ln -s $destination $filePath";
+    }
 }

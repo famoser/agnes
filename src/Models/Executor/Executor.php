@@ -29,11 +29,6 @@ abstract class Executor
         return "touch $target";
     }
 
-    public function lnCreateSymbolicLink(string $filePath, string $destination): string
-    {
-        return "ln -s $destination $filePath";
-    }
-
     public function readlinkCanonicalize(string $filePath): string
     {
         return "readlink -f $filePath";
@@ -125,4 +120,6 @@ abstract class Executor
     }
 
     abstract public function mvSymlinkAtomicReplace(string $source, string $target): string;
+
+    abstract public function lnCreateSymbolicLink(string $filePath, string $destination): string;
 }
