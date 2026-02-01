@@ -18,9 +18,6 @@ class TaskService
 
     private ExecutionVisitor $executionVisitor;
 
-    /**
-     * ExecutionVisitor constructor.
-     */
     public function __construct(private StyleInterface $io, private ConfigurationService $configurationService, FileService $fileService, GithubService $githubService, InstallationService $installationService, private InstanceService $instanceService, ScriptService $scriptService)
     {
         $this->taskFactory = new TaskFactory($this->io, $fileService, $githubService, $this->instanceService);
@@ -226,7 +223,7 @@ class TaskService
     private function executeTaskConfigs(array $taskConfigs, AbstractTask $task): void
     {
         foreach ($taskConfigs as $afterTaskConfig) {
-            $taskVisitor = new TaskConfigVisitor($this->instanceService, $this->taskFactory, $this->executionVisitor->buildExists(), $afterTaskConfig);
+            $taskVisitor = new TaskConfigVisitor($this->io, $this->instanceService, $this->taskFactory, $this->executionVisitor->buildExists(), $afterTaskConfig);
             $afterTasks = $task->accept($taskVisitor);
             foreach ($afterTasks as $afterTask) {
                 $this->executeTask($afterTask, true);
