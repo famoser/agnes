@@ -5,32 +5,14 @@ namespace Agnes\Models;
 class Filter
 {
     /**
-     * @var string[]|null
-     */
-    private ?array $servers;
-
-    /**
-     * @var string[]|null
-     */
-    private ?array $environments;
-
-    /**
-     * @var string[]|null
-     */
-    private ?array $stages;
-
-    /**
      * Filter constructor.
      *
      * @param string[]|null $servers
      * @param string[]|null $environments
      * @param string[]|null $stages
      */
-    public function __construct(?array $servers, ?array $environments, ?array $stages)
+    public function __construct(private ?array $servers, private ?array $environments, private ?array $stages)
     {
-        $this->servers = $servers;
-        $this->environments = $environments;
-        $this->stages = $stages;
     }
 
     public static function createFromInstanceSpecification(string $instanceSpecification): Filter

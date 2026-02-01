@@ -8,17 +8,11 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class FileService
 {
-    private StyleInterface $io;
-
-    private ConfigurationService $configurationService;
-
     /**
      * FileService constructor.
      */
-    public function __construct(StyleInterface $io, ConfigurationService $configurationService)
+    public function __construct(private StyleInterface $io, private ConfigurationService $configurationService)
     {
-        $this->io = $io;
-        $this->configurationService = $configurationService;
     }
 
     /**

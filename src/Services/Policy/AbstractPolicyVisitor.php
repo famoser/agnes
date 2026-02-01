@@ -12,17 +12,11 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 abstract class AbstractPolicyVisitor
 {
-    private StyleInterface $io;
-
-    private AbstractTask $task;
-
     /**
      * AbstractPolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, AbstractTask $task)
+    public function __construct(private StyleInterface $io, private AbstractTask $task)
     {
-        $this->io = $io;
-        $this->task = $task;
     }
 
     /**

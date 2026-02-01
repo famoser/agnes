@@ -9,14 +9,8 @@ class Run extends AbstractTask
 {
     public const TYPE = 'run';
 
-    private Instance $target;
-
-    private string $script;
-
-    public function __construct(string $script, Instance $target)
+    public function __construct(private string $script, private Instance $target)
     {
-        $this->script = $script;
-        $this->target = $target;
     }
 
     public function getTarget(): Instance

@@ -17,20 +17,11 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class PolicyVisitor extends AbstractTaskVisitor
 {
-    private StyleInterface $io;
-
-    private InstanceService $instanceService;
-
-    private ?BuildResult $buildResult;
-
     /**
      * PolicyVisitor constructor.
      */
-    public function __construct(StyleInterface $io, InstanceService $instanceService, ?BuildResult $buildResult)
+    public function __construct(private StyleInterface $io, private InstanceService $instanceService, private ?BuildResult $buildResult)
     {
-        $this->io = $io;
-        $this->instanceService = $instanceService;
-        $this->buildResult = $buildResult;
     }
 
     public function visitCopy(Copy $copy): AbstractPolicyVisitor

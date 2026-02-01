@@ -9,14 +9,11 @@ class Clear extends AbstractTask
 {
     public const TYPE = 'clear';
 
-    private Instance $target;
-
     /**
      * Deployment constructor.
      */
-    public function __construct(Instance $target)
+    public function __construct(private Instance $target)
     {
-        $this->target = $target;
     }
 
     public function getTarget(): Instance

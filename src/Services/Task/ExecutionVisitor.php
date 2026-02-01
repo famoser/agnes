@@ -21,34 +21,13 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class ExecutionVisitor extends AbstractTaskVisitor
 {
-    private StyleInterface $io;
-
-    private ConfigurationService $configurationService;
-
-    private FileService $fileService;
-
-    private GithubService $githubService;
-
-    private InstallationService $installationService;
-
-    private InstanceService $instanceService;
-
-    private ScriptService $scriptService;
-
     private ?BuildResult $buildResult = null;
 
     /**
      * ExecutionVisitor constructor.
      */
-    public function __construct(StyleInterface $io, ConfigurationService $configurationService, FileService $fileService, GithubService $githubService, InstallationService $installationService, InstanceService $instanceService, ScriptService $scriptService)
+    public function __construct(private StyleInterface $io, private ConfigurationService $configurationService, private FileService $fileService, private GithubService $githubService, private InstallationService $installationService, private InstanceService $instanceService, private ScriptService $scriptService)
     {
-        $this->io = $io;
-        $this->configurationService = $configurationService;
-        $this->fileService = $fileService;
-        $this->githubService = $githubService;
-        $this->installationService = $installationService;
-        $this->instanceService = $instanceService;
-        $this->scriptService = $scriptService;
     }
 
     /**

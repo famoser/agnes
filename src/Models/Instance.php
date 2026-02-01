@@ -6,18 +6,6 @@ use Agnes\Models\Connection\Connection;
 
 class Instance
 {
-    private Connection $connection;
-
-    private string $path;
-
-    private string $server;
-
-    private int $keepInstallations;
-
-    private string $environment;
-
-    private string $stage;
-
     /**
      * @var Installation[]
      */
@@ -28,14 +16,8 @@ class Instance
     /**
      * Instance constructor.
      */
-    public function __construct(Connection $connection, string $path, string $server, int $keepInstallations, string $environment, string $stage)
+    public function __construct(private Connection $connection, private string $path, private string $server, private int $keepInstallations, private string $environment, private string $stage)
     {
-        $this->connection = $connection;
-        $this->path = $path;
-        $this->server = $server;
-        $this->keepInstallations = $keepInstallations;
-        $this->environment = $environment;
-        $this->stage = $stage;
     }
 
     public function addInstallation(Installation $installation): void

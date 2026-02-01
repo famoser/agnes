@@ -12,17 +12,11 @@ abstract class Connection
      */
     private array $scriptOverrides = [];
 
-    private Executor $executor;
-
-    private OutputStyle $io;
-
     /**
      * Connection constructor.
      */
-    public function __construct(OutputStyle $io, Executor $executor)
+    public function __construct(private OutputStyle $io, private Executor $executor)
     {
-        $this->executor = $executor;
-        $this->io = $io;
     }
 
     /**

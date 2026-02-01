@@ -9,14 +9,11 @@ class Deploy extends AbstractTask
 {
     public const TYPE = 'deploy';
 
-    private Instance $target;
-
     /**
      * Deployment constructor.
      */
-    public function __construct(Instance $target)
+    public function __construct(private Instance $target)
     {
-        $this->target = $target;
     }
 
     public function getTarget(): Instance

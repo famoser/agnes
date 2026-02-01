@@ -11,12 +11,6 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class InstanceService
 {
-    private StyleInterface $io;
-
-    private ConfigurationService $configurationService;
-
-    private InstallationService $installationService;
-
     /**
      * @var Instance[]|null
      */
@@ -30,11 +24,8 @@ class InstanceService
     /**
      * InstallationService constructor.
      */
-    public function __construct(StyleInterface $io, ConfigurationService $configurationService, InstallationService $installationService)
+    public function __construct(private StyleInterface $io, private ConfigurationService $configurationService, private InstallationService $installationService)
     {
-        $this->io = $io;
-        $this->configurationService = $configurationService;
-        $this->installationService = $installationService;
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
 use Rector\Config\RectorConfig;
+use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
 use Rector\Symfony\Set\SensiolabsSetList;
 use Rector\Symfony\Set\SymfonySetList;
 use Rector\TypeDeclaration\Rector\ClassMethod\ReturnTypeFromStrictNativeCallRector;
@@ -13,6 +14,7 @@ return RectorConfig::configure()
     ->withRules([
         TypedPropertyFromStrictConstructorRector::class,
         ReturnTypeFromStrictNativeCallRector::class,
+        ClassPropertyAssignToConstructorPromotionRector::class
     ])
     ->withSkip([
         FlipTypeControlToUseExclusiveTypeRector::class,

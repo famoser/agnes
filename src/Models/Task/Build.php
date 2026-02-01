@@ -8,14 +8,11 @@ class Build extends AbstractTask
 {
     public const TYPE = 'build';
 
-    private string $commitish;
-
     /**
      * Build constructor.
      */
-    public function __construct(string $commtish)
+    public function __construct(private string $commitish)
     {
-        $this->commitish = $commtish;
     }
 
     public function getCommitish(): string

@@ -9,17 +9,11 @@ class Copy extends AbstractTask
 {
     public const TYPE = 'copy';
 
-    private Instance $source;
-
-    private Instance $target;
-
     /**
      * Copy constructor.
      */
-    public function __construct(Instance $source, Instance $target)
+    public function __construct(private Instance $source, private Instance $target)
     {
-        $this->source = $source;
-        $this->target = $target;
     }
 
     public function getSource(): Instance

@@ -19,23 +19,11 @@ class TaskConfigVisitor extends AbstractTaskVisitor
 {
     private StyleInterface $io;
 
-    private InstanceService $instanceService;
-
-    private TaskFactory $taskFactory;
-
-    private Task $task;
-
-    private bool $buildExists;
-
     /**
      * AfterTaskVisitor constructor.
      */
-    public function __construct(InstanceService $instanceService, TaskFactory $taskFactory, bool $buildExists, Task $task)
+    public function __construct(private InstanceService $instanceService, private TaskFactory $taskFactory, private bool $buildExists, private Task $task)
     {
-        $this->instanceService = $instanceService;
-        $this->taskFactory = $taskFactory;
-        $this->buildExists = $buildExists;
-        $this->task = $task;
     }
 
     public function visitRelease(Release $release): array

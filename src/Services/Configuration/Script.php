@@ -8,20 +8,14 @@ class Script
 {
     use FilterTrait;
 
-    private string $name;
-
-    /**
-     * @var string[]
-     */
-    private array $script;
-
     /**
      * Script constructor.
      */
-    public function __construct(string $name, array $script, ?Filter $filter)
+    public function __construct(private string $name, /**
+     * @var string[]
+     */
+    private array $script, ?Filter $filter)
     {
-        $this->name = $name;
-        $this->script = $script;
         $this->filter = $filter;
     }
 

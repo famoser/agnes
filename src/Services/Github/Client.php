@@ -7,14 +7,11 @@ use Psr\Http\Message\ResponseInterface;
 
 class Client
 {
-    private GithubConfig $githubConfig;
-
     /**
      * Client constructor.
      */
-    public function __construct(GithubConfig $githubConfig)
+    public function __construct(private GithubConfig $githubConfig)
     {
-        $this->githubConfig = $githubConfig;
     }
 
     public function getReleases(): ResponseInterface

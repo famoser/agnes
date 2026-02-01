@@ -7,18 +7,14 @@ use Symfony\Component\Console\Style\OutputStyle;
 
 class SSHConnection extends Connection
 {
-    private string $destination;
-
     private Executor $executor;
 
     /**
      * SSHConnection constructor.
      */
-    public function __construct(OutputStyle $io, Executor $executor, string $destination)
+    public function __construct(OutputStyle $io, Executor $executor, private string $destination)
     {
         parent::__construct($io, $executor);
-
-        $this->destination = $destination;
         $this->executor = $executor;
     }
 
