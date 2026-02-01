@@ -119,6 +119,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     {
         $this->io->text('publishing release to github');
         $this->githubService->publish($release->getName(), $this->buildResult->getCommitish(), $this->buildResult->getContent());
+        $this->buildResult = new BuildResult($this->buildResult->getCommitish(), $release->getName(), $this->buildResult->getContent());
 
         return true;
     }
