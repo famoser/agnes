@@ -15,7 +15,7 @@ use Agnes\Models\Task\Run;
 abstract class AbstractTaskVisitor
 {
     /**
-     * @throws \Exception
+     *
      */
     public function visitCopy(Copy $copy)
     {
@@ -23,7 +23,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitDeploy(Deploy $deploy)
     {
@@ -31,7 +31,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitRelease(Release $release)
     {
@@ -39,7 +39,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitRollback(Rollback $rollback)
     {
@@ -47,7 +47,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitDownload(Download $downloadGithub)
     {
@@ -55,7 +55,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitBuild(Build $build)
     {
@@ -63,7 +63,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitRun(Run $run)
     {
@@ -71,7 +71,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitClear(Clear $clear)
     {
@@ -79,7 +79,7 @@ abstract class AbstractTaskVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     protected function visitDefault(AbstractTask $payload)
     {

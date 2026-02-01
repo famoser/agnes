@@ -26,7 +26,7 @@ abstract class AbstractPolicyVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
@@ -38,7 +38,7 @@ abstract class AbstractPolicyVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
     {
@@ -50,7 +50,7 @@ abstract class AbstractPolicyVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
     {
@@ -89,7 +89,7 @@ abstract class AbstractPolicyVisitor
     }
 
     /**
-     * @throws \Exception
+     *
      */
     protected function filterMatches(?Filter $filter): bool
     {

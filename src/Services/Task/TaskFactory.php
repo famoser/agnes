@@ -55,7 +55,7 @@ class TaskFactory
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function createDeploy(Instance $target): ?Deploy
     {
@@ -137,7 +137,7 @@ class TaskFactory
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function createCopy(Instance $targetInstance, string $sourceStage): ?Copy
     {

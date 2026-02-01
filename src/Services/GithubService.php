@@ -24,7 +24,7 @@ class GithubService
     private ?Client $clientCache = null;
 
     /**
-     * @throws \Exception
+     *
      */
     private function getClient(): Client
     {
@@ -41,7 +41,7 @@ class GithubService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function commitishOfReleaseByReleaseName(string $releaseName): ?string
     {
@@ -60,7 +60,7 @@ class GithubService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function downloadAssetForReleaseByReleaseName(string $releaseName): ?string
     {
@@ -89,7 +89,7 @@ class GithubService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function publish(string $name, string $commitish, string $content): void
     {
@@ -104,7 +104,7 @@ class GithubService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function createRelease(string $name, string $commitish): ResponseInterface
     {
@@ -129,7 +129,7 @@ class GithubService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function configured(): bool
     {

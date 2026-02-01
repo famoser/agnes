@@ -32,12 +32,12 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @throws \Exception
+     *
      */
     abstract protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService);
 
     /**
-     * @throws \Exception
+     *
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -91,7 +91,7 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function loadConfigFile(StyleInterface $style, ConfigurationService $configurationService, ?string $configFile): bool
     {
@@ -112,7 +112,7 @@ abstract class AgnesCommand extends Command
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function loadConfigFolder(SymfonyStyle $io, ConfigurationService $configurationService, ?string $configPath): bool
     {

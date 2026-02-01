@@ -22,7 +22,7 @@ class FileService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function allRequiredFilesExist(Instance $instance): bool
     {
@@ -49,7 +49,7 @@ class FileService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function uploadFiles(Instance $instance, Installation $installation): void
     {

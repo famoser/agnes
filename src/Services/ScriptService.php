@@ -25,7 +25,7 @@ class ScriptService
     /**
      * @return string[]
      *
-     * @throws \Exception
+     *
      */
     public function getBuildHookCommands(): array
     {
@@ -45,7 +45,7 @@ class ScriptService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function executeDeployHook(Instance $instance, Installation $newInstallation): void
     {
@@ -62,7 +62,7 @@ class ScriptService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function executeAfterDeployHook(Instance $instance): void
     {
@@ -70,7 +70,7 @@ class ScriptService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function executeRollbackHook(Instance $instance, Installation $previousInstallation): void
     {
@@ -80,7 +80,7 @@ class ScriptService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function executeAfterRollbackHook(Instance $instance): void
     {
@@ -88,7 +88,7 @@ class ScriptService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function executeScriptsForHook(string $hook, Instance $instance, Installation $installation, array $arguments = []): void
     {
@@ -98,7 +98,7 @@ class ScriptService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function executeScriptByName(Instance $target, Installation $installation, string $name): void
     {
@@ -110,7 +110,7 @@ class ScriptService
     /**
      * @param Script[] $scripts
      *
-     * @throws \Exception
+     *
      */
     private function executeScripts(array $scripts, Instance $instance, Installation $installation, array $arguments = []): void
     {

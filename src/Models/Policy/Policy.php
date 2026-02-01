@@ -23,7 +23,7 @@ abstract class Policy
     /**
      * @return bool
      *
-     * @throws \Exception
+     *
      */
     abstract public function accept(AbstractPolicyVisitor $visitor);
 

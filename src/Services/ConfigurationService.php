@@ -42,7 +42,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function validate(): bool
     {
@@ -63,7 +63,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function addConfig(string $path): void
     {
@@ -76,7 +76,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function getConfigRepositoryUrl(): ?string
     {
@@ -84,7 +84,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function getConfigRepositoryFolder(): ?string
     {
@@ -92,7 +92,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function getRepositoryUrl(): string
     {
@@ -110,7 +110,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function getGithubConfig(): ?GithubConfig
     {
@@ -126,7 +126,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function getBuildConnection(): ?Connection
     {
@@ -136,7 +136,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function getBuildPath(): string
     {
@@ -144,7 +144,7 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function getConfigPath(): ?string
     {
@@ -154,7 +154,7 @@ class ConfigurationService
     /**
      * @return Script[]
      *
-     * @throws \Exception
+     *
      */
     public function getScriptsForHook(string $hook): array
     {
@@ -167,7 +167,7 @@ class ConfigurationService
     /**
      * @return Script[]
      *
-     * @throws \Exception
+     *
      */
     public function getScriptByName(string $name): ?Script
     {
@@ -187,7 +187,7 @@ class ConfigurationService
     /**
      * @return Script[]
      *
-     * @throws \Exception
+     *
      */
     private function getScriptsByCondition(callable $condition): array
     {
@@ -222,8 +222,6 @@ class ConfigurationService
 
     /**
      * @return Task[]
-     *
-     * @throws \Exception
      */
     public function getBeforeTasks(string $task): array
     {
@@ -235,7 +233,7 @@ class ConfigurationService
     /**
      * @return Task[]
      *
-     * @throws \Exception
+     *
      */
     public function getAfterTasks(string $task): array
     {
@@ -246,8 +244,6 @@ class ConfigurationService
 
     /**
      * @return Task[]
-     *
-     * @throws \Exception
      */
     private function getTasksByCondition(callable $condition): array
     {
@@ -276,7 +272,7 @@ class ConfigurationService
     /**
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     * @throws \Exception
+     *
      */
     private function getNestedConfig(string ...$keys)
     {
@@ -290,9 +286,7 @@ class ConfigurationService
     }
 
     /**
-     *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     * @throws \Exception
      */
     private function getNestedConfigWithDefault(?array $default, string ...$keys)
     {
@@ -323,7 +317,7 @@ class ConfigurationService
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      *
-     * @throws \Exception
+     *
      */
     private function getValue(array $source, string $key, $default = false)
     {
@@ -339,14 +333,14 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function replaceEnvVariables(array &$config): void
     {
         foreach ($config as &$item) {
             if (is_array($item)) {
                 $this->replaceEnvVariables($item);
-            } elseif (0 === strpos($item, '%env(')) {
+            } elseif (str_starts_with($item, '%env(')) {
                 $envPart = substr($item, 5);
                 if (0 === substr_compare($envPart, ')%', -2)) {
                     $envName = substr($envPart, 0, -2);
@@ -362,7 +356,7 @@ class ConfigurationService
     /**
      * @return Server[]
      *
-     * @throws \Exception
+     *
      */
     public function getServers(): array
     {
@@ -390,7 +384,7 @@ class ConfigurationService
     /**
      * @return Policy[]
      *
-     * @throws \Exception
+     *
      */
     public function getPoliciesForTask(string $task): array
     {
@@ -411,19 +405,12 @@ class ConfigurationService
             }
 
             $policyType = $policy['type'];
-            switch ($policyType) {
-                case 'stage_write_up':
-                    $parsedPolicies[] = new StageWriteUpPolicy($name, $filter, $policy['layers']);
-                    break;
-                case 'stage_write_down':
-                    $parsedPolicies[] = new StageWriteDownPolicy($name, $filter, $policy['layers']);
-                    break;
-                case 'same_release':
-                    $parsedPolicies[] = new SameReleasePolicy($name, $filter);
-                    break;
-                default:
-                    throw new \Exception('Policy ' . $name . ' has unknown policy type ' . $policyType . '.');
-            }
+            $parsedPolicies[] = match ($policyType) {
+                'stage_write_up' => new StageWriteUpPolicy($name, $filter, $policy['layers']),
+                'stage_write_down' => new StageWriteDownPolicy($name, $filter, $policy['layers']),
+                'same_release' => new SameReleasePolicy($name, $filter),
+                default => throw new \Exception('Policy ' . $name . ' has unknown policy type ' . $policyType . '.'),
+            };
         }
 
         return $parsedPolicies;
@@ -444,7 +431,7 @@ class ConfigurationService
     /**
      * @param string[] $connection
      *
-     * @throws \Exception
+     *
      */
     private function getConnection(array $connection): Connection
     {
@@ -463,24 +450,21 @@ class ConfigurationService
     }
 
     /**
-     * @throws \Exception
+     *
      */
     private function getExecutor(string $system): Executor
     {
-        switch ($system) {
-            case 'Linux':
-                return new LinuxExecutor();
-            case 'FreeBSD':
-                return new BSDExecutor();
-            default:
-                throw new \Exception('System not implemented: ' . $system);
-        }
+        return match ($system) {
+            'Linux' => new LinuxExecutor(),
+            'FreeBSD' => new BSDExecutor(),
+            default => throw new \Exception('System not implemented: ' . $system),
+        };
     }
 
     /**
      * @return string[]
      *
-     * @throws \Exception
+     *
      */
     public function getSharedFolders(): array
     {
@@ -490,7 +474,7 @@ class ConfigurationService
     /**
      * @return File[]
      *
-     * @throws \Exception
+     *
      */
     public function getFiles(): array
     {

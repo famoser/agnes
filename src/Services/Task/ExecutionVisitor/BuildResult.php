@@ -2,7 +2,7 @@
 
 namespace Agnes\Services\Task\ExecutionVisitor;
 
-class BuildResult
+readonly class BuildResult
 {
     private string $commitish;
 

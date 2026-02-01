@@ -34,7 +34,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function executeScript(string $workingFolder, array $commands, array $envVariables = []): void
     {
@@ -47,7 +47,7 @@ abstract class Connection
     /**
      * @param string[] $commands
      *
-     * @throws \Exception
+     *
      */
     abstract protected function executeWithinWorkingFolder(string $workingFolder, array $commands): void;
 
@@ -69,7 +69,7 @@ abstract class Connection
     abstract public function equals(Connection $connection): bool;
 
     /**
-     * @throws \Exception
+     *
      */
     protected function executeCommand(string $command): string
     {
@@ -90,7 +90,7 @@ abstract class Connection
     /**
      * @param string[] $commands
      *
-     * @throws \Exception
+     *
      */
     public function executeCommands(array $commands): void
     {
@@ -127,7 +127,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function getRepositoryStateAtCommitish(string $path, string $repository, string $commitish): string
     {
@@ -146,7 +146,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function checkoutRepository(string $path, string $repository): void
     {
@@ -155,7 +155,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function gitPull(string $path): void
     {
@@ -164,7 +164,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function createOrClearFolder(string $folder): void
     {
@@ -174,7 +174,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function createFolder(string $folder): void
     {
@@ -183,7 +183,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function compressTarGz(string $folder, string $fileName): string
     {
@@ -201,7 +201,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function uncompressTarGz(string $archivePath, string $targetFolder): void
     {
@@ -210,7 +210,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function removeFile(string $path): void
     {
@@ -219,7 +219,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function createSymlink(string $source, string $target): void
     {
@@ -229,7 +229,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function readSymlink(string $symlink): string
     {
@@ -261,7 +261,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function absolutePath(string $relativePath): string
     {
@@ -271,7 +271,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function moveFolder(string $source, string $target): void
     {
@@ -280,7 +280,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function copyFolderContent(string $source, string $target): void
     {
@@ -290,7 +290,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function removeFolder(string $folder): void
     {
@@ -299,7 +299,7 @@ abstract class Connection
     }
 
     /**
-     * @throws \Exception
+     *
      */
     public function replaceSymlink(string $source, string $target): void
     {

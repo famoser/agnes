@@ -26,7 +26,7 @@ If neither target nor source is supplied, it will rollback to the previously ins
     }
 
     /**
-     * @throws \Exception
+     *
      */
     protected function createTasks(InputInterface $input, SymfonyStyle $io, TaskService $taskService)
     {
