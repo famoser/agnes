@@ -38,7 +38,7 @@ class NeedsBuildResultPolicyVisitor extends NoPolicyVisitor
     public function validate(): bool
     {
         if (null === $this->buildResult) {
-            $this->io->error('To '.$this->task->describe().' a successful build it required.');
+            $this->io->error('To ' . $this->task->describe() . ' a successful build it required.');
 
             return false;
         }

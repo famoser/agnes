@@ -82,7 +82,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     {
         // does not make sense to copy from itself
         if ($copy->getSource()->equals($copy->getTarget())) {
-            $this->io->warning('Skipping '.$copy->describe().' because source and target are same instance.');
+            $this->io->warning('Skipping ' . $copy->describe() . ' because source and target are same instance.');
 
             return true;
         }
@@ -93,10 +93,10 @@ class ExecutionVisitor extends AbstractTaskVisitor
 
         $sharedFolders = $this->configurationService->getSharedFolders();
         foreach ($sharedFolders as $sharedFolder) {
-            $sourceFolderPath = $sourceSharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
-            $targetFolderPath = $targetSharedPath.DIRECTORY_SEPARATOR.$sharedFolder;
+            $sourceFolderPath = $sourceSharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
+            $targetFolderPath = $targetSharedPath . DIRECTORY_SEPARATOR . $sharedFolder;
 
-            $this->io->text('copying folder '.$sharedFolder);
+            $this->io->text('copying folder ' . $sharedFolder);
             $connection->copyFolderContent($sourceFolderPath, $targetFolderPath);
         }
 
@@ -216,7 +216,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
 
     public function visitDownload(Download $downloadGithub): bool
     {
-        $this->io->text('downloading asset for release '.$downloadGithub->getRelease());
+        $this->io->text('downloading asset for release ' . $downloadGithub->getRelease());
         $content = $this->githubService->downloadAssetForReleaseByReleaseName($downloadGithub->getRelease());
         if (null === $content) {
             return false;

@@ -44,7 +44,7 @@ class Download extends AbstractTask
 
     public function describe(): string
     {
-        return 'download asset of release '.$this->release;
+        return 'download asset of release ' . $this->release;
     }
 
     public function type(): string

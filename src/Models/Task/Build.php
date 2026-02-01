@@ -33,7 +33,7 @@ class Build extends AbstractTask
 
     public function describe(): string
     {
-        return 'build '.$this->commitish;
+        return 'build ' . $this->commitish;
     }
 
     public function type(): string

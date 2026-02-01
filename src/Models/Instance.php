@@ -113,9 +113,11 @@ class Instance
             return true;
         }
 
-        if ($this->getServerName() === $other->getServerName()
+        if (
+            $this->getServerName() === $other->getServerName()
             && $this->getEnvironmentName() === $other->getEnvironmentName()
-            && $this->getStage() === $other->getStage()) {
+            && $this->getStage() === $other->getStage()
+        ) {
             return true;
         }
 
@@ -124,26 +126,26 @@ class Instance
 
     public function getInstallationsFolder(): string
     {
-        return $this->getInstanceFolder().DIRECTORY_SEPARATOR.'installations';
+        return $this->getInstanceFolder() . DIRECTORY_SEPARATOR . 'installations';
     }
 
     public function getCurrentSymlink(): string
     {
-        return $this->getInstanceFolder().DIRECTORY_SEPARATOR.'current';
+        return $this->getInstanceFolder() . DIRECTORY_SEPARATOR . 'current';
     }
 
     public function getSharedFolder(): string
     {
-        return $this->getInstanceFolder().DIRECTORY_SEPARATOR.'shared';
+        return $this->getInstanceFolder() . DIRECTORY_SEPARATOR . 'shared';
     }
 
     private function getInstanceFolder(): string
     {
-        return $this->path.DIRECTORY_SEPARATOR.$this->environment.DIRECTORY_SEPARATOR.$this->stage;
+        return $this->path . DIRECTORY_SEPARATOR . $this->environment . DIRECTORY_SEPARATOR . $this->stage;
     }
 
     public function describe(): string
     {
-        return $this->server.':'.$this->environment.':'.$this->stage;
+        return $this->server . ':' . $this->environment . ':' . $this->stage;
     }
 }

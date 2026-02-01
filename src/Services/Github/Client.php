@@ -24,7 +24,7 @@ class Client
     {
         return $this->executeRequest(
             'GET',
-            'https://api.github.com/repos/'.$this->githubConfig->getRepository().'/releases',
+            'https://api.github.com/repos/' . $this->githubConfig->getRepository() . '/releases',
             200
         );
     }
@@ -32,7 +32,8 @@ class Client
     public function downloadAsset(int $assetId): ResponseInterface
     {
         return $this->executeRequest(
-            'GET', 'https://api.github.com/repos/'.$this->githubConfig->getRepository().'/releases/assets/'.$assetId,
+            'GET',
+            'https://api.github.com/repos/' . $this->githubConfig->getRepository() . '/releases/assets/' . $assetId,
             200,
             ['Accept' => 'application/octet-stream']
         );
@@ -41,7 +42,8 @@ class Client
     public function createRelease(string $releaseContent): ResponseInterface
     {
         return $this->executeRequest(
-            'POST', 'https://api.github.com/repos/'.$this->githubConfig->getRepository().'/releases',
+            'POST',
+            'https://api.github.com/repos/' . $this->githubConfig->getRepository() . '/releases',
             201,
             [],
             $releaseContent
@@ -51,14 +53,17 @@ class Client
     public function deleteRelease(int $releaseId): ResponseInterface
     {
         return $this->executeRequest(
-            'DELETE', 'https://api.github.com/repos/'.$this->githubConfig->getRepository().'/releases/'.$releaseId, 204
+            'DELETE',
+            'https://api.github.com/repos/' . $this->githubConfig->getRepository() . '/releases/' . $releaseId,
+            204
         );
     }
 
     public function addReleaseAsset(int $releaseId, string $assetName, string $assetContentType, string $assetContent): ResponseInterface
     {
         return $this->executeRequest(
-            'POST', 'https://uploads.github.com/repos/'.$this->githubConfig->getRepository().'/releases/'.$releaseId.'/assets?name='.$assetName,
+            'POST',
+            'https://uploads.github.com/repos/' . $this->githubConfig->getRepository() . '/releases/' . $releaseId . '/assets?name=' . $assetName,
             201,
             ['Content-Type' => $assetContentType],
             $assetContent
@@ -68,7 +73,7 @@ class Client
     private function executeRequest(string $method, string $url, int $expectedStatusCode, array $additionalHeaders = [], ?string $body = null): ResponseInterface
     {
         $headers = array_merge([
-            'Authorization' => 'token '.$this->githubConfig->getApiToken(),
+            'Authorization' => 'token ' . $this->githubConfig->getApiToken(),
             'Accept' => 'application/vnd.github.v3+json',
         ], $additionalHeaders);
 
@@ -81,7 +86,7 @@ class Client
         $response = $client->request($method, $url, $options);
 
         if ($response->getStatusCode() !== $expectedStatusCode) {
-            throw new \Exception("Request failed: $method $url with status code ".$response->getStatusCode()."\n".$response->getBody());
+            throw new \Exception("Request failed: $method $url with status code " . $response->getStatusCode() . "\n" . $response->getBody());
         }
 
         return $response;

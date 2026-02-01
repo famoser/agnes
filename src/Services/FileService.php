@@ -38,7 +38,7 @@ class FileService
         $missingFiles = [];
         foreach ($configuredFiles as $configuredFile) {
             $configuredFileKey = $configuredFile->getPath();
-            $expectedFilePath = $instanceConfigFolder.DIRECTORY_SEPARATOR.$configuredFileKey;
+            $expectedFilePath = $instanceConfigFolder . DIRECTORY_SEPARATOR . $configuredFileKey;
 
             if ($configuredFile->getIsRequired() && !file_exists($expectedFilePath)) {
                 $missingFiles[$configuredFileKey] = $expectedFilePath;
@@ -46,7 +46,7 @@ class FileService
         }
 
         if (count($missingFiles) > 0) {
-            $this->io->error('For instance '.$instance->describe().' the required file(s) '.implode(', ', array_keys($missingFiles)).' are missing, expected at '.implode(', ', $missingFiles));
+            $this->io->error('For instance ' . $instance->describe() . ' the required file(s) ' . implode(', ', array_keys($missingFiles)) . ' are missing, expected at ' . implode(', ', $missingFiles));
 
             return false;
         }
@@ -64,10 +64,10 @@ class FileService
         $configuredFiles = $this->configurationService->getFiles();
         foreach ($configuredFiles as $configuredFile) {
             $configuredFileKey = $configuredFile->getPath();
-            $expectedFilePath = $instanceConfigFolder.DIRECTORY_SEPARATOR.$configuredFileKey;
+            $expectedFilePath = $instanceConfigFolder . DIRECTORY_SEPARATOR . $configuredFileKey;
 
             if (file_exists($expectedFilePath)) {
-                $fullPath = $installation->getFolder().DIRECTORY_SEPARATOR.$configuredFileKey;
+                $fullPath = $installation->getFolder() . DIRECTORY_SEPARATOR . $configuredFileKey;
                 $folder = dirname($fullPath);
                 $content = file_get_contents($expectedFilePath);
                 $instance->getConnection()->createFolder($folder);
@@ -80,9 +80,9 @@ class FileService
     {
         $configFolder = $this->configurationService->getConfigFolder();
 
-        return $configFolder.DIRECTORY_SEPARATOR.
-            $instance->getServerName().DIRECTORY_SEPARATOR.
-            $instance->getEnvironmentName().DIRECTORY_SEPARATOR.
+        return $configFolder . DIRECTORY_SEPARATOR .
+            $instance->getServerName() . DIRECTORY_SEPARATOR .
+            $instance->getEnvironmentName() . DIRECTORY_SEPARATOR .
             $instance->getStage();
     }
 }

@@ -38,7 +38,7 @@ class InstallationService
     {
         $newInstallation = $this->createInstallation($target, $buildResult->getCommitish(), $buildResult->getReleaseOrHash());
 
-        $this->io->text('uploading build to '.$newInstallation->getFolder());
+        $this->io->text('uploading build to ' . $newInstallation->getFolder());
         $this->uploadBuild($target->getConnection(), $newInstallation, $buildResult->getContent());
 
         $this->io->text('creating and linking shared folders');
@@ -49,13 +49,13 @@ class InstallationService
 
     private function createInstallation(Instance $target, string $commitish, string $releaseOrHash): Installation
     {
-        $installationFolder = $target->getInstallationsFolder().DIRECTORY_SEPARATOR.$releaseOrHash;
+        $installationFolder = $target->getInstallationsFolder() . DIRECTORY_SEPARATOR . $releaseOrHash;
         if ($target->getConnection()->checkFolderExists($installationFolder)) {
             $duplicationCounter = 1;
-            while ($target->getConnection()->checkFolderExists($installationFolder.'-'.$duplicationCounter)) {
+            while ($target->getConnection()->checkFolderExists($installationFolder . '-' . $duplicationCounter)) {
                 ++$duplicationCounter;
             }
-            $installationFolder .= '-'.$duplicationCounter;
+            $installationFolder .= '-' . $duplicationCounter;
         }
 
         $maxNumber = 0;
@@ -79,7 +79,7 @@ class InstallationService
         $connection->createOrClearFolder($installation->getFolder());
 
         // transfer release packet
-        $assetPath = $installation->getFolder().DIRECTORY_SEPARATOR.'build.tar.gz';
+        $assetPath = $installation->getFolder() . DIRECTORY_SEPARATOR . 'build.tar.gz';
         $connection->writeFile($assetPath, $content);
 
         // unpack release packet
@@ -97,8 +97,8 @@ class InstallationService
         $instanceSharedFolder = $target->getSharedFolder();
         $installationSharedFolders = $this->configurationService->getSharedFolders();
         foreach ($installationSharedFolders as $sharedFolder) {
-            $sharedFolderTarget = $instanceSharedFolder.DIRECTORY_SEPARATOR.$sharedFolder;
-            $releaseFolderSource = $installation->getFolder().DIRECTORY_SEPARATOR.$sharedFolder;
+            $sharedFolderTarget = $instanceSharedFolder . DIRECTORY_SEPARATOR . $sharedFolder;
+            $releaseFolderSource = $installation->getFolder() . DIRECTORY_SEPARATOR . $sharedFolder;
 
             // if created for the first time...
             if (!$connection->checkFolderExists($sharedFolderTarget)) {
@@ -136,7 +136,7 @@ class InstallationService
     private function saveInstallation(Connection $connection, Installation $installation): void
     {
         $metaJson = json_encode($installation->toArray(), JSON_PRETTY_PRINT);
-        $agnesFilePath = $installation->getFolder().DIRECTORY_SEPARATOR.self::AGNES_FILE_NAME;
+        $agnesFilePath = $installation->getFolder() . DIRECTORY_SEPARATOR . self::AGNES_FILE_NAME;
         $connection->writeFile($agnesFilePath, $metaJson);
     }
 
@@ -151,9 +151,9 @@ class InstallationService
         foreach ($folders as $folder) {
             $installation = $this->getInstallationFromFolder($instance, $folder);
             if (null === $installation) {
-                $path = $instance->getInstallationsFolder().DIRECTORY_SEPARATOR.$folder;
+                $path = $instance->getInstallationsFolder() . DIRECTORY_SEPARATOR . $folder;
                 $instance->getConnection()->removeFolder($path);
-                $this->io->text('removed '.$path);
+                $this->io->text('removed ' . $path);
             }
         }
     }
@@ -184,8 +184,8 @@ class InstallationService
      */
     private function getInstallationFromFolder(Instance $instance, string $folder): ?Installation
     {
-        $installationPath = $instance->getInstallationsFolder().DIRECTORY_SEPARATOR.$folder;
-        $agnesFilePath = $installationPath.DIRECTORY_SEPARATOR.self::AGNES_FILE_NAME;
+        $installationPath = $instance->getInstallationsFolder() . DIRECTORY_SEPARATOR . $folder;
+        $agnesFilePath = $installationPath . DIRECTORY_SEPARATOR . self::AGNES_FILE_NAME;
 
         if (!$instance->getConnection()->checkFileExists($agnesFilePath)) {
             return null;

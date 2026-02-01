@@ -14,7 +14,7 @@ class ClearCommand extends AgnesCommand
         $this->setName('clear')
             ->setDescription('Clears failed installations from a specific environment')
             ->setHelp('This command removes any folder that does not contain a valid installation (=was never online).')
-            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to clear. '.AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION);
+            ->addArgument('target', InputArgument::REQUIRED, 'the instance(s) to clear. ' . AgnesCommand::INSTANCE_SPECIFICATION_EXPLANATION);
 
         parent::configure();
     }

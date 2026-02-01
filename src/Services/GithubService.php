@@ -82,7 +82,7 @@ class GithubService
             }
 
             if (0 === count($release->assets)) {
-                $this->io->error('Release '.$releaseName.' has no release asset.');
+                $this->io->error('Release ' . $releaseName . ' has no release asset.');
 
                 return null;
             }
@@ -92,7 +92,7 @@ class GithubService
             return $response->getBody()->getContents();
         }
 
-        $this->io->error('Release '.$releaseName.' does not exist.');
+        $this->io->error('Release ' . $releaseName . ' does not exist.');
 
         return null;
     }
@@ -107,7 +107,7 @@ class GithubService
         $responseJson = $response->getBody()->getContents();
         $responseObject = json_decode($responseJson);
         $releaseId = (int) $responseObject->id;
-        $assetName = $name.'.tar.gz';
+        $assetName = $name . '.tar.gz';
 
         $this->getClient()->addReleaseAsset($releaseId, $assetName, 'application/zip', $content);
     }
@@ -121,12 +121,12 @@ class GithubService
 
         $body = '
         {
-          "tag_name": "'.$name.'",
-          "target_commitish": "'.$commitish.'",
-          "name": "'.$name.'",
-          "body": "Release of '.$name.'",
+          "tag_name": "' . $name . '",
+          "target_commitish": "' . $commitish . '",
+          "name": "' . $name . '",
+          "body": "Release of ' . $name . '",
           "draft": false,
-          "prerelease": '.$this->booleanToString($isPrerelease).'
+          "prerelease": ' . $this->booleanToString($isPrerelease) . '
         }';
 
         return $this->getClient()->createRelease($body);

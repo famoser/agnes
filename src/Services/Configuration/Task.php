@@ -7,6 +7,7 @@ use Agnes\Models\Filter;
 class Task
 {
     use FilterTrait;
+
     /**
      * @var string
      */

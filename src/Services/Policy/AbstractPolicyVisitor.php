@@ -84,12 +84,12 @@ abstract class AbstractPolicyVisitor
 
     protected function checkDefault(Policy $policy): bool
     {
-        return $this->policyPreventsExecution($policy, 'policy '.get_class($policy).' has not been implemented for the executing task.');
+        return $this->policyPreventsExecution($policy, 'policy ' . get_class($policy) . ' has not been implemented for the executing task.');
     }
 
     protected function policyPreventsExecution(Policy $policy, string $reason): bool
     {
-        $this->io->error('Policy '.$policy->getName().' prevents execution of '.$this->task->describe().': '.$reason);
+        $this->io->error('Policy ' . $policy->getName() . ' prevents execution of ' . $this->task->describe() . ': ' . $reason);
 
         return false;
     }

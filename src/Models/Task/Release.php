@@ -28,7 +28,7 @@ class Release extends AbstractTask
 
     public function describe(): string
     {
-        return 'release '.$this->getName();
+        return 'release ' . $this->getName();
     }
 
     public function accept(AbstractTaskVisitor $abstractActionVisitor)

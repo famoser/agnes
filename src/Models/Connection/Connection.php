@@ -80,14 +80,14 @@ abstract class Connection
     protected function executeCommand(string $command): string
     {
         if ($this->io->isVerbose()) {
-            $this->io->text('executing '.$command);
+            $this->io->text('executing ' . $command);
         }
 
-        exec($command.' 2>&1', $output, $returnVar);
+        exec($command . ' 2>&1', $output, $returnVar);
 
         $outputMessage = implode("\n", $output);
         if (0 !== $returnVar) {
-            throw new \Exception('command execution of '.$command.' failed with '.$returnVar." because $outputMessage.");
+            throw new \Exception('command execution of ' . $command . ' failed with ' . $returnVar . " because $outputMessage.");
         }
 
         return $outputMessage;
@@ -126,7 +126,7 @@ abstract class Connection
 
         // prefix env definition
         foreach ($commands as &$command) {
-            $command = $envPrefix.$command;
+            $command = $envPrefix . $command;
         }
 
         return $commands;
@@ -145,7 +145,7 @@ abstract class Connection
         $gitShowHash = $this->executor->gitShowHash($path);
         $hash = $this->executeCommand($gitShowHash);
 
-        $removeRecursively = $this->executor->rmRecursive($path.'/.git');
+        $removeRecursively = $this->executor->rmRecursive($path . '/.git');
         $this->executeCommand($removeRecursively);
 
         return $hash;
@@ -193,7 +193,7 @@ abstract class Connection
      */
     public function compressTarGz(string $folder, string $fileName): string
     {
-        $targetFilePath = $folder.'/'.$fileName;
+        $targetFilePath = $folder . '/' . $fileName;
         $command = $this->executor->rmIfExists($targetFilePath);
         $this->executeCommand($command);
 
@@ -203,7 +203,7 @@ abstract class Connection
         $command = $this->executor->tarCompressInSameFolder($folder, $fileName);
         $this->executeCommand($command);
 
-        return $folder.DIRECTORY_SEPARATOR.$fileName;
+        return $folder . DIRECTORY_SEPARATOR . $fileName;
     }
 
     /**
@@ -263,7 +263,7 @@ abstract class Connection
         // find out how many levels we need to go back until we can start the relative target path
         $levelsBack = count($sourceArray) - $equalEntries - 1;
 
-        return str_repeat('..'.DIRECTORY_SEPARATOR, $levelsBack).implode(DIRECTORY_SEPARATOR, $targetArray);
+        return str_repeat('..' . DIRECTORY_SEPARATOR, $levelsBack) . implode(DIRECTORY_SEPARATOR, $targetArray);
     }
 
     /**
@@ -290,7 +290,7 @@ abstract class Connection
      */
     public function copyFolderContent(string $source, string $target): void
     {
-        $sourceContent = $source.DIRECTORY_SEPARATOR.'.';
+        $sourceContent = $source . DIRECTORY_SEPARATOR . '.';
         $command = $this->executor->cpRecursive($sourceContent, $target);
         $this->executeCommand($command);
     }

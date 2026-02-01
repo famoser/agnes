@@ -90,14 +90,14 @@ class TaskService
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
-            $this->io->error('For target specification '.$target.' no matching instances were found.');
+            $this->io->error('For target specification ' . $target . ' no matching instances were found.');
 
             return;
         }
 
         $scriptModel = $this->configurationService->getScriptByName($script);
         if (null === $scriptModel) {
-            $this->io->error('No script by the name '.$script.' was found.');
+            $this->io->error('No script by the name ' . $script . ' was found.');
 
             return;
         }
@@ -112,7 +112,7 @@ class TaskService
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
-            $this->io->error('For target specification '.$target.' no matching instances were found.');
+            $this->io->error('For target specification ' . $target . ' no matching instances were found.');
 
             return;
         }
@@ -130,7 +130,7 @@ class TaskService
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
         if (0 === count($instances)) {
-            $this->io->error('For target specification '.$target.' no matching instances were found.');
+            $this->io->error('For target specification ' . $target . ' no matching instances were found.');
 
             return;
         }
@@ -147,7 +147,7 @@ class TaskService
         $filter = Filter::createFromInstanceSpecification($target);
         $instances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($instances)) {
-            $this->io->warning('For target specification '.$target.' no matching instances were found.');
+            $this->io->warning('For target specification ' . $target . ' no matching instances were found.');
 
             return;
         }
@@ -163,7 +163,7 @@ class TaskService
         $filter = Filter::createFromInstanceSpecification($target);
         $targetInstances = $this->instanceService->getInstancesByFilter($filter);
         if (0 === count($targetInstances)) {
-            $this->io->warning('For target specification '.$target.' no matching instances were found.');
+            $this->io->warning('For target specification ' . $target . ' no matching instances were found.');
 
             return;
         }
