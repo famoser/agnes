@@ -12,16 +12,10 @@ class InstallationService
 {
     public const AGNES_FILE_NAME = '.agnes';
 
-    /**
-     * InstallationService constructor.
-     */
     public function __construct(private StyleInterface $io, private ConfigurationService $configurationService)
     {
     }
 
-    /**
-     *
-     */
     public function install(Instance $target, BuildResult $buildResult): Installation
     {
         $newInstallation = $this->createInstallation($target, $buildResult->getCommitish(), $buildResult->getReleaseOrHash());
@@ -58,9 +52,6 @@ class InstallationService
         return $installation;
     }
 
-    /**
-     *
-     */
     private function uploadBuild(Connection $connection, Installation $installation, string $content): void
     {
         // make empty dir for new release
@@ -70,16 +61,13 @@ class InstallationService
         $assetPath = $installation->getFolder() . DIRECTORY_SEPARATOR . 'build.tar.gz';
         $connection->writeFile($assetPath, $content);
 
-        // unpack release packet
+        // unpack release paket
         $connection->uncompressTarGz($assetPath, $installation->getFolder());
 
-        // remove release packet
+        // remove release paket
         $connection->removeFile($assetPath);
     }
 
-    /**
-     *
-     */
     private function createAndLinkSharedFolders(Connection $connection, Instance $target, Installation $installation): void
     {
         $instanceSharedFolder = $target->getSharedFolder();
@@ -128,9 +116,6 @@ class InstallationService
         $connection->writeFile($agnesFilePath, $metaJson);
     }
 
-    /**
-     *
-     */
     public function removeFoldersWithoutInstallation(Instance $instance): void
     {
         $installationsFolder = $instance->getInstallationsFolder();
@@ -148,8 +133,6 @@ class InstallationService
 
     /**
      * @return Installation[]
-     *
-     *
      */
     public function loadInstallations(Instance $instance): array
     {
@@ -167,9 +150,6 @@ class InstallationService
         return $installations;
     }
 
-    /**
-     *
-     */
     private function getInstallationFromFolder(Instance $instance, string $folder): ?Installation
     {
         $installationPath = $instance->getInstallationsFolder() . DIRECTORY_SEPARATOR . $folder;

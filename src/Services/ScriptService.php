@@ -9,17 +9,12 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class ScriptService
 {
-    /**
-     * ScriptService constructor.
-     */
     public function __construct(private StyleInterface $io, private ConfigurationService $configurationService)
     {
     }
 
     /**
      * @return string[]
-     *
-     *
      */
     public function getBuildHookCommands(): array
     {
@@ -38,9 +33,6 @@ class ScriptService
         return $commands;
     }
 
-    /**
-     *
-     */
     public function executeDeployHook(Instance $instance, Installation $newInstallation): void
     {
         $previousInstallation = $instance->getCurrentInstallation();
@@ -55,17 +47,11 @@ class ScriptService
         $this->executeScriptsForHook('deploy', $instance, $newInstallation, $arguments);
     }
 
-    /**
-     *
-     */
     public function executeAfterDeployHook(Instance $instance): void
     {
         $this->executeScriptsForHook('after_deploy', $instance, $instance->getCurrentInstallation());
     }
 
-    /**
-     *
-     */
     public function executeRollbackHook(Instance $instance, Installation $previousInstallation): void
     {
         $arguments = ['PREVIOUS_INSTALLATION_PATH' => $previousInstallation->getFolder()];
@@ -73,17 +59,11 @@ class ScriptService
         $this->executeScriptsForHook('rollback', $instance, $instance->getCurrentInstallation(), $arguments);
     }
 
-    /**
-     *
-     */
     public function executeAfterRollbackHook(Instance $instance): void
     {
         $this->executeScriptsForHook('after_rollback', $instance, $instance->getCurrentInstallation());
     }
 
-    /**
-     *
-     */
     private function executeScriptsForHook(string $hook, Instance $instance, Installation $installation, array $arguments = []): void
     {
         $scripts = $this->configurationService->getScriptsForHook($hook);
@@ -91,9 +71,6 @@ class ScriptService
         $this->executeScripts($scripts, $instance, $installation, $arguments);
     }
 
-    /**
-     *
-     */
     public function executeScriptByName(Instance $target, Installation $installation, string $name): void
     {
         $script = $this->configurationService->getScriptByName($name);
@@ -103,8 +80,6 @@ class ScriptService
 
     /**
      * @param Script[] $scripts
-     *
-     *
      */
     private function executeScripts(array $scripts, Instance $instance, Installation $installation, array $arguments = []): void
     {

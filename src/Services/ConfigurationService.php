@@ -31,16 +31,10 @@ class ConfigurationService
 
     public const AGNES_VERSION = 4;
 
-    /**
-     * ConfigurationService constructor.
-     */
     public function __construct(private OutputStyle $io)
     {
     }
 
-    /**
-     *
-     */
     public function validate(): bool
     {
         if ([] === $this->config) {
@@ -59,9 +53,6 @@ class ConfigurationService
         return true;
     }
 
-    /**
-     *
-     */
     public function addConfig(string $path): void
     {
         $configFileContent = file_get_contents($path);
@@ -72,25 +63,16 @@ class ConfigurationService
         $this->config = array_merge_recursive($this->config, $config);
     }
 
-    /**
-     *
-     */
     public function getConfigRepositoryUrl(): ?string
     {
         return $this->getNestedConfigWithDefault(null, 'config', 'repository', 'url');
     }
 
-    /**
-     *
-     */
     public function getConfigRepositoryFolder(): ?string
     {
         return $this->getNestedConfigWithDefault(null, 'config', 'repository', 'folder');
     }
 
-    /**
-     *
-     */
     public function getRepositoryUrl(): string
     {
         $cloneUrl = $this->getNestedConfigWithDefault(null, 'repository', 'url');
@@ -106,9 +88,6 @@ class ConfigurationService
         throw new \Exception('no git clone url configured. configure repository.url to change this.');
     }
 
-    /**
-     *
-     */
     public function getGithubConfig(): ?GithubConfig
     {
         $githubConfig = $this->getNestedConfigWithDefault(null, 'github');
@@ -122,9 +101,6 @@ class ConfigurationService
         return new GithubConfig($apiToken, $repository);
     }
 
-    /**
-     *
-     */
     public function getBuildConnection(): ?Connection
     {
         $connection = $this->getNestedConfigWithDefault([], 'build', 'connection');
@@ -132,17 +108,11 @@ class ConfigurationService
         return $this->getConnection($connection);
     }
 
-    /**
-     *
-     */
     public function getBuildPath(): string
     {
         return $this->getNestedConfig('build', 'path');
     }
 
-    /**
-     *
-     */
     public function getConfigPath(): ?string
     {
         return $this->getNestedConfigWithDefault(null, 'config', 'path');
@@ -150,8 +120,6 @@ class ConfigurationService
 
     /**
      * @return Script[]
-     *
-     *
      */
     public function getScriptsForHook(string $hook): array
     {
@@ -161,11 +129,6 @@ class ConfigurationService
         });
     }
 
-    /**
-     * @return Script[]
-     *
-     *
-     */
     public function getScriptByName(string $name): ?Script
     {
         $scripts = $this->getScriptsByCondition(function (string $scriptName, array $script) use ($name): bool {
@@ -183,8 +146,6 @@ class ConfigurationService
 
     /**
      * @return Script[]
-     *
-     *
      */
     private function getScriptsByCondition(callable $condition): array
     {
@@ -229,8 +190,6 @@ class ConfigurationService
 
     /**
      * @return Task[]
-     *
-     *
      */
     public function getAfterTasks(string $task): array
     {
@@ -267,9 +226,7 @@ class ConfigurationService
     }
 
     /**
-     *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     *
      */
     private function getNestedConfig(string ...$keys)
     {
@@ -313,8 +270,6 @@ class ConfigurationService
      * @param bool $default
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
-     *
-     *
      */
     private function getValue(array $source, string $key, $default = false)
     {
@@ -329,9 +284,6 @@ class ConfigurationService
         return $source[$key];
     }
 
-    /**
-     *
-     */
     private function replaceEnvVariables(array &$config): void
     {
         foreach ($config as &$item) {
@@ -352,8 +304,6 @@ class ConfigurationService
 
     /**
      * @return Server[]
-     *
-     *
      */
     public function getServers(): array
     {
@@ -380,8 +330,6 @@ class ConfigurationService
 
     /**
      * @return Policy[]
-     *
-     *
      */
     public function getPoliciesForTask(string $task): array
     {
@@ -446,9 +394,6 @@ class ConfigurationService
         throw new \Exception("unknown connection type $connectionType");
     }
 
-    /**
-     *
-     */
     private function getExecutor(string $system): Executor
     {
         return match ($system) {
@@ -460,8 +405,6 @@ class ConfigurationService
 
     /**
      * @return string[]
-     *
-     *
      */
     public function getSharedFolders(): array
     {
@@ -470,8 +413,6 @@ class ConfigurationService
 
     /**
      * @return File[]
-     *
-     *
      */
     public function getFiles(): array
     {

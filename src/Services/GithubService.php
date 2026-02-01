@@ -8,18 +8,12 @@ use Symfony\Component\Console\Style\OutputStyle;
 
 class GithubService
 {
-    /**
-     * GithubService constructor.
-     */
     public function __construct(private OutputStyle $io, private ConfigurationService $configurationService)
     {
     }
 
     private ?Client $clientCache = null;
 
-    /**
-     *
-     */
     private function getClient(): Client
     {
         if (null === $this->clientCache) {
@@ -34,9 +28,6 @@ class GithubService
         return $this->clientCache;
     }
 
-    /**
-     *
-     */
     public function commitishOfReleaseByReleaseName(string $releaseName): ?string
     {
         $response = $this->getClient()->getReleases();
@@ -53,9 +44,6 @@ class GithubService
         return null;
     }
 
-    /**
-     *
-     */
     public function downloadAssetForReleaseByReleaseName(string $releaseName): ?string
     {
         $response = $this->getClient()->getReleases();
@@ -82,9 +70,6 @@ class GithubService
         return null;
     }
 
-    /**
-     *
-     */
     public function publish(string $name, string $commitish, string $content): void
     {
         $response = $this->createRelease($name, $commitish);
@@ -97,9 +82,6 @@ class GithubService
         $this->getClient()->addReleaseAsset($releaseId, $assetName, 'application/zip', $content);
     }
 
-    /**
-     *
-     */
     private function createRelease(string $name, string $commitish): ResponseInterface
     {
         $isPrerelease = strpos($name, '-') > 0; // matches v1.0.0-alpha3

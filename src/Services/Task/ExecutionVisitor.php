@@ -23,9 +23,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
 {
     private ?BuildResult $buildResult = null;
 
-    /**
-     * ExecutionVisitor constructor.
-     */
     public function __construct(private StyleInterface $io, private ConfigurationService $configurationService, private FileService $fileService, private GithubService $githubService, private InstallationService $installationService, private InstanceService $instanceService, private ScriptService $scriptService)
     {
     }
