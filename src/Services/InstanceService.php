@@ -16,10 +16,7 @@ class InstanceService
      */
     private ?array $instancesCache = null;
 
-    /**
-     * @var Filter|null
-     */
-    private $instancesCacheFilter;
+    private ?Filter $instancesCacheFilter;
 
     /**
      * InstallationService constructor.
@@ -33,11 +30,15 @@ class InstanceService
      */
     public function getInstancesByFilter(?Filter $filter): array
     {
-        if ($this->instancesCache && $this->instancesCacheFilter === $filter) {
+        if (
+            $this->instancesCache &&
+            ($this->instancesCacheFilter === $filter || ($this->instancesCacheFilter?->equals($filter)))
+        ) {
             return $this->instancesCache;
         }
 
         $this->instancesCache = $this->loadInstances($filter);
+        $this->instancesCacheFilter = $filter;
 
         return $this->instancesCache;
     }

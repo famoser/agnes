@@ -66,6 +66,15 @@ class Filter
         return true;
     }
 
+    public function equals(?Filter $filter): bool
+    {
+        if (null === $filter) {
+            return false;
+        }
+
+        return $this->matches($filter->servers, $filter->environments, $filter->stages);
+    }
+
     public function instanceMatches(Instance $instance): bool
     {
         $serverName = $instance->getServerName();
