@@ -62,7 +62,7 @@ class TaskConfigVisitor extends AbstractTaskVisitor
 
         $instances = $this->getMatchingInstances($instance);
 
-        /** @var AbstractTask[] $task */
+        /** @var AbstractTask[] $tasks */
         $tasks = [];
         foreach ($instances as $instance) {
             $task = $this->createForInstance($instance);

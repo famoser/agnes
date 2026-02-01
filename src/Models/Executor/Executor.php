@@ -114,7 +114,7 @@ abstract class Executor
         return "cd $folder && $command";
     }
 
-    public function chmodSetPermissions(string $filePath, int $permissions): string
+    public function chmodSetPermissions(string $filePath, string $permissions): string
     {
         return "chmod $permissions $filePath";
     }

@@ -54,6 +54,9 @@ abstract class Connection
 
     abstract public function equals(Connection $connection): bool;
 
+    /**
+     * @throws \Exception
+     */
     protected function executeCommand(string $command): string
     {
         if ($this->io->isVerbose()) {
@@ -72,6 +75,7 @@ abstract class Connection
 
     /**
      * @param string[] $commands
+     * @throws \Exception
      */
     public function executeCommands(array $commands): void
     {

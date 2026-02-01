@@ -44,7 +44,7 @@ class ConfigurationService
         }
 
         $version = $this->getNestedConfig('agnes', 'version');
-        if (self::AGNES_VERSION !== $version) {
+        if (self::AGNES_VERSION !== (int) $version) {
             $this->io->error('expected ' . self::AGNES_VERSION . ' as the agnes.version value');
 
             return false;
@@ -267,11 +267,11 @@ class ConfigurationService
     }
 
     /**
-     * @param bool $default
+     * @param bool|string $default
      *
      * @return string|string[]|string[][]|string[][][]|string[][][][]
      */
-    private function getValue(array $source, string $key, $default = false)
+    private function getValue(array $source, string $key, mixed $default = false)
     {
         if (!isset($source[$key])) {
             if (false === $default) {
