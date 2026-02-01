@@ -123,12 +123,10 @@ abstract class Connection
     /**
      *
      */
-    public function getRepositoryStateAtCommitish(string $path, string $repository, string $commitish): string
+    public function flatCloneRepositoryAtCommitish(string $path, string $repository, string $commitish): string
     {
-        $this->checkoutRepository($path, $repository);
-
-        $gitCheckout = $this->executor->gitCheckout($path, $commitish);
-        $this->executeCommand($gitCheckout);
+        $commands = $this->executor->gitFlatCheckout($path, $repository, $commitish);
+        $this->executeCommands($commands);
 
         $gitShowHash = $this->executor->gitShowHash($path);
         $hash = $this->executeCommand($gitShowHash);
