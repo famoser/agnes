@@ -5,11 +5,8 @@ namespace Agnes\Models\Policy;
 use Agnes\Models\Filter;
 use Agnes\Services\Policy\AbstractPolicyVisitor;
 
-abstract class Policy
+abstract readonly class Policy
 {
-    /**
-     * Policy constructor.
-     */
     public function __construct(private string $name, private ?Filter $filter)
     {
     }

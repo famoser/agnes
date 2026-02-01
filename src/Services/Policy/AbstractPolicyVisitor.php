@@ -12,16 +12,10 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 abstract class AbstractPolicyVisitor
 {
-    /**
-     * AbstractPolicyVisitor constructor.
-     */
     public function __construct(private StyleInterface $io, private AbstractTask $task)
     {
     }
 
-    /**
-     *
-     */
     public function visitStageWriteUp(StageWriteUpPolicy $stageWriteUpPolicy): bool
     {
         if (!$this->filterMatches($stageWriteUpPolicy->getFilter())) {
@@ -31,9 +25,6 @@ abstract class AbstractPolicyVisitor
         return $this->checkStageWriteUp($stageWriteUpPolicy);
     }
 
-    /**
-     *
-     */
     public function visitStageWriteDown(StageWriteDownPolicy $stageWriteDownPolicy): bool
     {
         if (!$this->filterMatches($stageWriteDownPolicy->getFilter())) {
@@ -43,9 +34,6 @@ abstract class AbstractPolicyVisitor
         return $this->checkStageWriteDown($stageWriteDownPolicy);
     }
 
-    /**
-     *
-     */
     public function visitSameRelease(SameReleasePolicy $sameReleasePolicy): bool
     {
         if (!$this->filterMatches($sameReleasePolicy->getFilter())) {
@@ -82,9 +70,6 @@ abstract class AbstractPolicyVisitor
         return false;
     }
 
-    /**
-     *
-     */
     protected function filterMatches(?Filter $filter): bool
     {
         if (null === $filter) {

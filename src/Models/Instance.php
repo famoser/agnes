@@ -13,9 +13,6 @@ class Instance
 
     private ?Installation $currentInstallation = null;
 
-    /**
-     * Instance constructor.
-     */
     public function __construct(private Connection $connection, private string $path, private string $server, private int $keepInstallations, private string $environment, private string $stage)
     {
     }

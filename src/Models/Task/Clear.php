@@ -5,13 +5,10 @@ namespace Agnes\Models\Task;
 use Agnes\Models\Instance;
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Clear extends AbstractTask
+readonly class Clear extends AbstractTask
 {
     public const TYPE = 'clear';
 
-    /**
-     * Deployment constructor.
-     */
     public function __construct(private Instance $target)
     {
     }

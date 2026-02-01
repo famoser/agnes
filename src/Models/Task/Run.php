@@ -5,7 +5,7 @@ namespace Agnes\Models\Task;
 use Agnes\Models\Instance;
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Run extends AbstractTask
+readonly class Run extends AbstractTask
 {
     public const TYPE = 'run';
 

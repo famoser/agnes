@@ -4,13 +4,10 @@ namespace Agnes\Models\Task;
 
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Release extends AbstractTask
+readonly class Release extends AbstractTask
 {
     public const TYPE = 'release';
 
-    /**
-     * Release constructor.
-     */
     public function __construct(private string $name)
     {
     }

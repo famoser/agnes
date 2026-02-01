@@ -12,9 +12,6 @@ class CopyPolicyVisitor extends NoPolicyVisitor
 {
     private Copy $copy;
 
-    /**
-     * CopyPolicyVisitor constructor.
-     */
     public function __construct(StyleInterface $io, Copy $copy)
     {
         parent::__construct($io, $copy);
@@ -48,9 +45,6 @@ class CopyPolicyVisitor extends NoPolicyVisitor
         return true;
     }
 
-    /**
-     *
-     */
     protected function checkStageWriteDown(StageWriteDownPolicy $policy): bool
     {
         if (!$this->filterMatches($policy->getFilter())) {

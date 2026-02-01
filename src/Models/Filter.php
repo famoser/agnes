@@ -2,11 +2,9 @@
 
 namespace Agnes\Models;
 
-class Filter
+readonly class Filter
 {
     /**
-     * Filter constructor.
-     *
      * @param string[]|null $servers
      * @param string[]|null $environments
      * @param string[]|null $stages

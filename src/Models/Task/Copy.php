@@ -5,13 +5,10 @@ namespace Agnes\Models\Task;
 use Agnes\Models\Instance;
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Copy extends AbstractTask
+readonly class Copy extends AbstractTask
 {
     public const TYPE = 'copy';
 
-    /**
-     * Copy constructor.
-     */
     public function __construct(private Instance $source, private Instance $target)
     {
     }

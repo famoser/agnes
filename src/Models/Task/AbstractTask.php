@@ -4,7 +4,7 @@ namespace Agnes\Models\Task;
 
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-abstract class AbstractTask
+abstract readonly class AbstractTask
 {
     /**
      *

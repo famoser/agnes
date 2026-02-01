@@ -12,9 +12,6 @@ class NeedsBuildResultPolicyVisitor extends NoPolicyVisitor
 
     private AbstractTask $task;
 
-    /**
-     * DeployPolicyVisitor constructor.
-     */
     public function __construct(StyleInterface $io, private ?BuildResult $buildResult, AbstractTask $task)
     {
         parent::__construct($io, $task);

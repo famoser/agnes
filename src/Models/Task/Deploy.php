@@ -5,13 +5,10 @@ namespace Agnes\Models\Task;
 use Agnes\Models\Instance;
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Deploy extends AbstractTask
+readonly class Deploy extends AbstractTask
 {
     public const TYPE = 'deploy';
 
-    /**
-     * Deployment constructor.
-     */
     public function __construct(private Instance $target)
     {
     }

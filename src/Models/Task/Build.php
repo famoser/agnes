@@ -4,13 +4,10 @@ namespace Agnes\Models\Task;
 
 use Agnes\Services\Task\AbstractTaskVisitor;
 
-class Build extends AbstractTask
+readonly class Build extends AbstractTask
 {
     public const TYPE = 'build';
 
-    /**
-     * Build constructor.
-     */
     public function __construct(private string $commitish)
     {
     }
