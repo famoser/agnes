@@ -10,7 +10,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RollbackCommand extends AgnesCommand
 {
-    public function configure()
+    public function configure(): void
     {
         $this->setName('rollback')
             ->setDescription('Rollback an instance to a previously active installation')

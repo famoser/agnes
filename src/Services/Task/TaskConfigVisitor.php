@@ -22,25 +22,13 @@ class TaskConfigVisitor extends AbstractTaskVisitor
      */
     private $io;
 
-    /**
-     * @var InstanceService
-     */
-    private $instanceService;
+    private InstanceService $instanceService;
 
-    /**
-     * @var TaskFactory
-     */
-    private $taskFactory;
+    private TaskFactory $taskFactory;
 
-    /**
-     * @var Task
-     */
-    private $task;
+    private Task $task;
 
-    /**
-     * @var bool
-     */
-    private $buildExists;
+    private bool $buildExists;
 
     /**
      * AfterTaskVisitor constructor.

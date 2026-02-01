@@ -8,15 +8,9 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class FileService
 {
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
+    private ConfigurationService $configurationService;
 
     /**
      * FileService constructor.
@@ -45,7 +39,7 @@ class FileService
             }
         }
 
-        if (count($missingFiles) > 0) {
+        if ($missingFiles !== []) {
             $this->io->error('For instance ' . $instance->describe() . ' the required file(s) ' . implode(', ', array_keys($missingFiles)) . ' are missing, expected at ' . implode(', ', $missingFiles));
 
             return false;

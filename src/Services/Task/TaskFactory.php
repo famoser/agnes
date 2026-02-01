@@ -20,25 +20,13 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class TaskFactory
 {
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
-    /**
-     * @var FileService
-     */
-    private $fileService;
+    private FileService $fileService;
 
-    /**
-     * @var GithubService
-     */
-    private $githubService;
+    private GithubService $githubService;
 
-    /**
-     * @var InstanceService
-     */
-    private $instanceService;
+    private InstanceService $instanceService;
 
     /**
      * TaskCreationService constructor.
@@ -122,7 +110,7 @@ class TaskFactory
         // if not target specified, simply take next lower
         $rollbackToMatcher = null;
         if (null !== $rollbackTo) {
-            $rollbackToMatcher = function (Installation $installation) use ($rollbackTo) {
+            $rollbackToMatcher = function (Installation $installation) use ($rollbackTo): bool {
                 return $installation->getCommitish() === $rollbackTo;
             };
         }
@@ -156,7 +144,7 @@ class TaskFactory
         $sourceFilter = new Filter([$targetInstance->getServerName()], [$targetInstance->getEnvironmentName()], [$sourceStage]);
         $sourceInstances = $this->instanceService->getInstancesByFilter($sourceFilter);
 
-        if (0 === count($sourceInstances)) {
+        if ([] === $sourceInstances) {
             $this->io->warning('For instance ' . $targetInstance->describe() . ' no matching source was found.');
 
             return null;

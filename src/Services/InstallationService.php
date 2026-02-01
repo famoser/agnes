@@ -12,15 +12,9 @@ class InstallationService
 {
     public const AGNES_FILE_NAME = '.agnes';
 
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
+    private ConfigurationService $configurationService;
 
     /**
      * InstallationService constructor.

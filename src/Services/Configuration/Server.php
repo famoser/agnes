@@ -6,30 +6,18 @@ use Agnes\Models\Connection\Connection;
 
 class Server
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var Connection
-     */
-    private $connection;
+    private Connection $connection;
 
-    /**
-     * @var string
-     */
-    private $path;
+    private string $path;
 
-    /**
-     * @var int
-     */
-    private $keepInstallations;
+    private int $keepInstallations;
 
     /**
      * @var Environment[]
      */
-    private $environments;
+    private array $environments;
 
     /**
      * Server constructor.

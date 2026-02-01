@@ -4,20 +4,11 @@ namespace Agnes\Services\Task\ExecutionVisitor;
 
 class BuildResult
 {
-    /**
-     * @var string
-     */
-    private $commitish;
+    private string $commitish;
 
-    /**
-     * @var string
-     */
-    private $releaseOrHash;
+    private string $releaseOrHash;
 
-    /**
-     * @var string
-     */
-    private $content;
+    private string $content;
 
     /**
      * BuildResult constructor.

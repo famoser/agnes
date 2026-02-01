@@ -9,7 +9,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ClearCommand extends AgnesCommand
 {
-    public function configure()
+    public function configure(): void
     {
         $this->setName('clear')
             ->setDescription('Clears failed installations from a specific environment')

@@ -9,7 +9,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class BuildCommand extends AgnesCommand
 {
-    public function configure()
+    public function configure(): void
     {
         $this->setName('build')
             ->setDescription('Build the commitish.')

@@ -6,45 +6,24 @@ use Agnes\Models\Connection\Connection;
 
 class Instance
 {
-    /**
-     * @var Connection
-     */
-    private $connection;
+    private Connection $connection;
 
-    /**
-     * @var string
-     */
-    private $path;
+    private string $path;
 
-    /**
-     * @var string
-     */
-    private $server;
+    private string $server;
 
-    /**
-     * @var int
-     */
-    private $keepInstallations;
+    private int $keepInstallations;
 
-    /**
-     * @var string
-     */
-    private $environment;
+    private string $environment;
 
-    /**
-     * @var string
-     */
-    private $stage;
+    private string $stage;
 
     /**
      * @var Installation[]
      */
-    private $installations = [];
+    private array $installations = [];
 
-    /**
-     * @var Installation|null
-     */
-    private $currentInstallation;
+    private ?Installation $currentInstallation = null;
 
     /**
      * Instance constructor.
@@ -112,16 +91,9 @@ class Instance
         if ($this === $other) {
             return true;
         }
-
-        if (
-            $this->getServerName() === $other->getServerName()
-            && $this->getEnvironmentName() === $other->getEnvironmentName()
-            && $this->getStage() === $other->getStage()
-        ) {
-            return true;
-        }
-
-        return false;
+        return $this->getServerName() === $other->getServerName()
+        && $this->getEnvironmentName() === $other->getEnvironmentName()
+        && $this->getStage() === $other->getStage();
     }
 
     public function getInstallationsFolder(): string

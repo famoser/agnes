@@ -8,10 +8,7 @@ class Release extends AbstractTask
 {
     public const TYPE = 'release';
 
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
     /**
      * Release constructor.

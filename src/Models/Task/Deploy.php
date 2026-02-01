@@ -9,10 +9,7 @@ class Deploy extends AbstractTask
 {
     public const TYPE = 'deploy';
 
-    /**
-     * @var Instance
-     */
-    private $target;
+    private Instance $target;
 
     /**
      * Deployment constructor.

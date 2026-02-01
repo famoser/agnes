@@ -14,40 +14,15 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class TaskService
 {
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
+    private ConfigurationService $configurationService;
 
-    /**
-     * @var InstanceService
-     */
-    private $instanceService;
+    private InstanceService $instanceService;
 
-    /**
-     * @var FileService
-     */
-    private $fileService;
+    private TaskFactory $taskFactory;
 
-    /**
-     * @var GithubService
-     */
-    private $githubService;
-
-    /**
-     * @var TaskFactory
-     */
-    private $taskFactory;
-
-    /**
-     * @var ExecutionVisitor
-     */
-    private $executionVisitor;
+    private ExecutionVisitor $executionVisitor;
 
     /**
      * ExecutionVisitor constructor.
@@ -57,8 +32,6 @@ class TaskService
         $this->io = $io;
         $this->configurationService = $configurationService;
         $this->instanceService = $instanceService;
-        $this->fileService = $fileService;
-        $this->githubService = $githubService;
 
         $this->taskFactory = new TaskFactory($io, $fileService, $githubService, $instanceService);
         $this->executionVisitor = new ExecutionVisitor($io, $configurationService, $fileService, $githubService, $installationService, $instanceService, $scriptService);
@@ -89,7 +62,7 @@ class TaskService
     public function addRunTask(string $target, string $script): void
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
-        if (0 === count($instances)) {
+        if ([] === $instances) {
             $this->io->error('For target specification ' . $target . ' no matching instances were found.');
 
             return;
@@ -111,15 +84,13 @@ class TaskService
     public function addDeployTasks(string $target, string $releaseOrCommitish): void
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
-        if (0 === count($instances)) {
+        if ([] === $instances) {
             $this->io->error('For target specification ' . $target . ' no matching instances were found.');
 
             return;
         }
 
         $this->ensureBuild($releaseOrCommitish);
-
-        $setup = null;
         foreach ($instances as $instance) {
             $task = $this->taskFactory->createDeploy($instance);
             $this->addTask($task);
@@ -129,13 +100,11 @@ class TaskService
     public function addClearTask(string $target): void
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
-        if (0 === count($instances)) {
+        if ([] === $instances) {
             $this->io->error('For target specification ' . $target . ' no matching instances were found.');
 
             return;
         }
-
-        $setup = null;
         foreach ($instances as $instance) {
             $task = $this->taskFactory->createClear($instance);
             $this->addTask($task);
@@ -146,7 +115,7 @@ class TaskService
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $instances = $this->instanceService->getInstancesByFilter($filter);
-        if (0 === count($instances)) {
+        if ([] === $instances) {
             $this->io->warning('For target specification ' . $target . ' no matching instances were found.');
 
             return;
@@ -162,7 +131,7 @@ class TaskService
     {
         $filter = Filter::createFromInstanceSpecification($target);
         $targetInstances = $this->instanceService->getInstancesByFilter($filter);
-        if (0 === count($targetInstances)) {
+        if ([] === $targetInstances) {
             $this->io->warning('For target specification ' . $target . ' no matching instances were found.');
 
             return;
@@ -174,10 +143,7 @@ class TaskService
         }
     }
 
-    /**
-     * @var bool
-     */
-    private $built = false;
+    private bool $built = false;
 
     private function ensureBuild(string $releaseOrCommitish, bool $allowDownload = true): void
     {
@@ -207,7 +173,7 @@ class TaskService
     /**
      * @var AbstractTask[]
      */
-    private $tasks = [];
+    private array $tasks = [];
 
     public function executeAll(): void
     {

@@ -6,30 +6,18 @@ use Agnes\Models\Installation\OnlinePeriod;
 
 class Installation
 {
-    /**
-     * @var string
-     */
-    private $folder;
+    private string $folder;
 
-    /**
-     * @var int
-     */
-    private $number;
+    private int $number;
 
-    /**
-     * @var string
-     */
-    private $commitish;
+    private string $commitish;
 
-    /**
-     * @var string
-     */
-    private $releaseOrHash;
+    private string $releaseOrHash;
 
     /**
      * @var OnlinePeriod[]
      */
-    private $onlinePeriods;
+    private array $onlinePeriods;
 
     /**
      * Installation constructor.
@@ -85,7 +73,7 @@ class Installation
      */
     public function stopOnlinePeriod(): void
     {
-        if (0 === count($this->onlinePeriods)) {
+        if ([] === $this->onlinePeriods) {
             return;
         }
 

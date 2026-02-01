@@ -11,20 +11,11 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
 {
-    /**
-     * @var InstanceService
-     */
-    private $installationService;
+    private InstanceService $installationService;
 
-    /**
-     * @var Deploy
-     */
-    private $deploy;
+    private Deploy $deploy;
 
-    /**
-     * @var BuildResult|null
-     */
-    private $buildResult;
+    private ?BuildResult $buildResult = null;
 
     /**
      * DeployPolicyVisitor constructor.
@@ -66,7 +57,7 @@ class DeployPolicyVisitor extends NeedsBuildResultPolicyVisitor
         $instances = $this->installationService->getInstancesByFilter($filter);
 
         // if no instances exist of the specified stages fulfil the policy trivially
-        if (0 === count($instances)) {
+        if ([] === $instances) {
             return true;
         }
 

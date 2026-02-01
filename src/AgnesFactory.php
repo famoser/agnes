@@ -21,15 +21,9 @@ use Symfony\Component\Console\Style\OutputStyle;
 
 class AgnesFactory
 {
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
+    private ConfigurationService $configurationService;
 
-    /**
-     * @var TaskService
-     */
-    private $taskService;
+    private TaskService $taskService;
 
     /**
      * AgnesFactory constructor.

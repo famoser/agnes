@@ -24,7 +24,7 @@ abstract class AgnesCommand extends Command
     /**
      * add options for config file & additional config folder.
      */
-    public function configure()
+    public function configure(): void
     {
         $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'should the command skip the actual execution (useful for you to preview the potential impact)');
         $this->addOption('config-file', null, InputOption::VALUE_OPTIONAL, 'agnes main config file');
@@ -68,7 +68,7 @@ abstract class AgnesCommand extends Command
         $this->createTasks($input, $io, $factory->getTaskService());
 
         $tasks = $factory->getTaskService()->getTasks();
-        if (0 === count($tasks)) {
+        if ([] === $tasks) {
             $io->note('nothing to execute');
 
             return 0;
@@ -99,18 +99,14 @@ abstract class AgnesCommand extends Command
         if (null === $configFile) {
             $configFile = 'agnes.yml';
         }
-
         // read config file
-        if (null !== $configFile) {
-            $path = realpath($configFile);
-            if (!$path || !is_file($path)) {
-                $style->error('config file not found at ' . $configFile);
+        $path = realpath($configFile);
+        if (!$path || !is_file($path)) {
+            $style->error('config file not found at ' . $configFile);
 
-                return false;
-            }
-
-            $configurationService->addConfig($path);
+            return false;
         }
+        $configurationService->addConfig($path);
 
         return true;
     }

@@ -4,15 +4,9 @@ namespace Agnes\Models\Installation;
 
 class OnlinePeriod
 {
-    /**
-     * @var \DateTime
-     */
-    private $start;
+    private \DateTime $start;
 
-    /**
-     * @var \DateTime|null
-     */
-    private $end;
+    private ?\DateTime $end;
 
     /**
      * OnlinePeriod constructor.

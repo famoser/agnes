@@ -21,45 +21,21 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class ExecutionVisitor extends AbstractTaskVisitor
 {
-    /**
-     * @var StyleInterface
-     */
-    private $io;
+    private StyleInterface $io;
 
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
+    private ConfigurationService $configurationService;
 
-    /**
-     * @var FileService
-     */
-    private $fileService;
+    private FileService $fileService;
 
-    /**
-     * @var GithubService
-     */
-    private $githubService;
+    private GithubService $githubService;
 
-    /**
-     * @var InstallationService
-     */
-    private $installationService;
+    private InstallationService $installationService;
 
-    /**
-     * @var InstanceService
-     */
-    private $instanceService;
+    private InstanceService $instanceService;
 
-    /**
-     * @var ScriptService
-     */
-    private $scriptService;
+    private ScriptService $scriptService;
 
-    /**
-     * @var BuildResult|null
-     */
-    private $buildResult;
+    private ?BuildResult $buildResult = null;
 
     /**
      * ExecutionVisitor constructor.

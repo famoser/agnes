@@ -7,11 +7,9 @@ use Agnes\Services\Policy\AbstractPolicyVisitor;
 class StageWriteDownPolicy extends LayeredPolicy
 {
     /**
-     * @return bool
-     *
      * @throws \Exception
      */
-    public function accept(AbstractPolicyVisitor $visitor)
+    public function accept(AbstractPolicyVisitor $visitor): bool
     {
         return $visitor->visitStageWriteDown($this);
     }

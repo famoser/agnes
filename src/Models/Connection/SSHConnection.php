@@ -7,15 +7,9 @@ use Symfony\Component\Console\Style\OutputStyle;
 
 class SSHConnection extends Connection
 {
-    /**
-     * @var string
-     */
-    private $destination;
+    private string $destination;
 
-    /**
-     * @var Executor
-     */
-    private $executor;
+    private Executor $executor;
 
     /**
      * SSHConnection constructor.
@@ -64,7 +58,7 @@ class SSHConnection extends Connection
      */
     public function readFile(string $filePath): string
     {
-        $tempFile = self::getTempFile();
+        $tempFile = $this->getTempFile();
 
         // download file
         $source = $this->getDestination() . ':' . $filePath;
@@ -82,7 +76,7 @@ class SSHConnection extends Connection
      */
     public function writeFile(string $filePath, string $content): void
     {
-        $tempFile = self::getTempFile();
+        $tempFile = $this->getTempFile();
         \file_put_contents($tempFile, $content);
 
         // upload file
@@ -146,7 +140,7 @@ class SSHConnection extends Connection
         return false !== strpos($output, $expected);
     }
 
-    private static function getTempFile(): string
+    private function getTempFile(): string
     {
         return tempnam(sys_get_temp_dir(), 'Agnes');
     }

@@ -9,7 +9,7 @@ abstract class LayeredPolicy extends Policy
     /**
      * @var string[][]
      */
-    private $layers = [];
+    private array $layers = [];
 
     /**
      * LayeredPolicy constructor.

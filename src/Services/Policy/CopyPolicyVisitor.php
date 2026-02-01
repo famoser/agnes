@@ -10,10 +10,7 @@ use Symfony\Component\Console\Style\StyleInterface;
 
 class CopyPolicyVisitor extends NoPolicyVisitor
 {
-    /**
-     * @var Copy
-     */
-    private $copy;
+    private Copy $copy;
 
     /**
      * CopyPolicyVisitor constructor.
@@ -88,8 +85,12 @@ class CopyPolicyVisitor extends NoPolicyVisitor
      */
     protected function filterMatches(?Filter $filter): bool
     {
-        return null === $filter
-            || $filter->instanceMatches($this->copy->getSource())
-            || $filter->instanceMatches($this->copy->getTarget());
+        if (null === $filter) {
+            return true;
+        }
+        if ($filter->instanceMatches($this->copy->getSource())) {
+            return true;
+        }
+        return $filter->instanceMatches($this->copy->getTarget());
     }
 }

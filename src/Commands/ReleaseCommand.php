@@ -9,7 +9,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ReleaseCommand extends AgnesCommand
 {
-    public function configure()
+    public function configure(): void
     {
         $this->setName('release')
             ->setDescription('Publish a new release to github')

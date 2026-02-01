@@ -7,11 +7,9 @@ use Agnes\Services\Policy\AbstractPolicyVisitor;
 class SameReleasePolicy extends Policy
 {
     /**
-     * @return bool
-     *
      * @throws \Exception
      */
-    public function accept(AbstractPolicyVisitor $visitor)
+    public function accept(AbstractPolicyVisitor $visitor): bool
     {
         return $visitor->visitSameRelease($this);
     }
