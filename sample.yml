@@ -145,5 +145,6 @@ policies:
 
   # ensure only copied between same release
   copy_only_within_same_release:
+    instance_filter: *:*:prod,staging
     task: copy
     type: same_release
