@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of the famoser/agnes project.
- *
- * (c) Florian Moser <git@famoser.ch>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace Agnes\Services;
 
 use Agnes\Models\Connection\Connection;
@@ -352,9 +343,9 @@ class ConfigurationService
         if (!isset($source[$key])) {
             if (false === $default) {
                 throw new \Exception('key '.$key.' does not exist.');
-            } else {
-                return $default;
             }
+
+            return $default;
         }
 
         return $source[$key];
@@ -480,9 +471,8 @@ class ConfigurationService
             $destination = $connection['destination'];
 
             return new SSHConnection($this->io, $executor, $destination);
-        } else {
-            throw new \Exception("unknown connection type $connectionType");
         }
+        throw new \Exception("unknown connection type $connectionType");
     }
 
     /**
