@@ -70,9 +70,17 @@ readonly class Filter
             return false;
         }
 
-        return array_diff($filter->servers, $this->servers) === array_diff($this->servers, $filter->servers) &&
-            array_diff($filter->environments, $this->environments) === array_diff($this->environments, $filter->environments) &&
-            array_diff($filter->stages, $this->stages) === array_diff($this->stages, $filter->stages);
+        $sameSet = static function (?array $a, ?array $b): bool {
+            if ($a === null || $b === null) {
+                return $a === $b;
+            }
+
+            return array_diff($a, $b) === array_diff($b, $a);
+        };
+
+        return $sameSet($filter->servers, $this->servers)
+            && $sameSet($filter->environments, $this->environments)
+            && $sameSet($filter->stages, $this->stages);
     }
 
     public function instanceMatches(Instance $instance): bool
