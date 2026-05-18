@@ -6,7 +6,9 @@ use Agnes\Commands\AgnesCommand;
 use Agnes\Commands\BuildCommand;
 use Agnes\Commands\ClearCommand;
 use Agnes\Commands\CopyCommand;
+use Agnes\Commands\DecryptCommand;
 use Agnes\Commands\DeployCommand;
+use Agnes\Commands\EncryptCommand;
 use Agnes\Commands\ReleaseCommand;
 use Agnes\Commands\RollbackCommand;
 use Agnes\Commands\RunCommand;
@@ -64,6 +66,9 @@ class AgnesFactory
             new ReleaseCommand(),
             new RollbackCommand(),
             new RunCommand(),
+
+            new EncryptCommand(),
+            new DecryptCommand(),
         ];
     }
 }
