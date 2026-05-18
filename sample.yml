@@ -6,6 +6,9 @@ config:
   # where additional config files are looked for
   path: .config
 
+  # if some files are marked as encrypted (e.g., the environment configuration), specify the key here
+  encryption_key: '%env(ANGES_ENCRYPTION_KEY)%'
+
   # specify a repository with build config (optional)
   # if config path does not exist it is initialized with this repo
   # else before reading the config, git pull is executed in the folder
@@ -40,9 +43,11 @@ data:
   files:
     # if deploying on example:example.com:staging,
     # this file will be looked for at ./files/example/example.com/staging/.env.local
-    # if its not found, the deployment will not be started (because its marked as required)
+    # the file is marked as required, so if the file is not found, the deployment will not be started
+    # the file is also marked as encrypted, with the expected encrypted file therefore at location .env.local.encrypted
     - path: .env.local
       required: true
+      encrypted: true
 
 # instances are the target of your commands, each consisting of a server, an environment and a stage
 # you can match here defined instances with the expression *:*:*
