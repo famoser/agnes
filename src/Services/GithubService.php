@@ -104,9 +104,6 @@ class GithubService
         return $input ? 'true' : 'false';
     }
 
-    /**
-     *
-     */
     public function configured(): bool
     {
         return null !== $this->configurationService->getGithubConfig();
