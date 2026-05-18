@@ -6,7 +6,7 @@ use Agnes\Models\Installation;
 use Agnes\Models\Instance;
 use Symfony\Component\Console\Style\StyleInterface;
 
-class FileService
+readonly class FileService
 {
     public const ENCRYPTED_FILE_EXTENSION = '.encrypted';
     public const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
@@ -18,13 +18,13 @@ class FileService
     {
     }
 
-    public function encrypt(Instance $instance): ?bool
+    public function encrypt(Instance $instance, bool $overwrite): ?bool
     {
         $instanceConfigFolder = $this->getLocalConfigFolderPath($instance);
 
         $configuredFiles = $this->configurationService->getFiles();
+        $checkFailedFiles = [];
 
-        $key = $this->configurationService->getConfigEncryptionKey();
         foreach ($configuredFiles as $configuredFile) {
             $configuredFileKey = $configuredFile->getPath();
             $expectedFilePath = $instanceConfigFolder . DIRECTORY_SEPARATOR . $configuredFileKey;
@@ -33,29 +33,36 @@ class FileService
                 continue;
             }
 
-            if (!$key) {
-                $this->io->error('No encryption key configured.');
-                return false;
-            }
-
-            if (!extension_loaded('openssl')) {
-                $this->io->error('openssl extension is not installed.');
-                return false;
-            }
-
-            $fileContent = file_get_contents($expectedFilePath);
-            $iv = openssl_random_pseudo_bytes(self::ENCRYPTION_IV_LENGTH);
-            $hashedKey = hash(self::ENCRYPTION_KEY_HASH_ALGORITHM, $key);
-            $encrypted = openssl_encrypt($fileContent, self::ENCRYPTION_ALGORITHM, $hashedKey, OPENSSL_RAW_DATA, $iv, $tag, tag_length: self::ENCRYPTION_TAG_LENGTH);
-
             $encryptedFilePath = $expectedFilePath . self::ENCRYPTED_FILE_EXTENSION;
-            file_put_contents($encryptedFilePath, self::ENCRYPTION_ALGORITHM . $iv . $tag . $encrypted);
+            $fileContent = file_get_contents($expectedFilePath);
+            if (file_exists($encryptedFilePath) && !$overwrite) {
+                if (!$this->decryptFile($encryptedFilePath, $decrypted, $error)) {
+                    $this->io->error('Failed to decrypt file ' . $encryptedFilePath . ': ' . $error);
+                    return false;
+                }
+
+                if ($fileContent !== $decrypted) {
+                    $checkFailedFiles[$configuredFileKey] = $encryptedFilePath;
+                }
+
+                continue;
+            }
+
+            if (!$this->encryptFile($encryptedFilePath, $fileContent, $error)) {
+                $this->io->error('Failed to encrypt file ' . $expectedFilePath . ': ' . $error);
+                return false;
+            }
+
+        }
+
+        if ($checkFailedFiles !== []) {
+            $this->io->error('For instance ' . $instance->describe() . ' the encrypted file(s) ' . implode(', ', array_keys($checkFailedFiles)) . ' differ to their decrypted versions, expected at ' . implode(', ', $checkFailedFiles));
         }
 
         return true;
     }
 
-    public function decrypt(Instance $instance, bool $check): ?bool
+    public function decrypt(Instance $instance, bool $overwrite): ?bool
     {
         $instanceConfigFolder = $this->getLocalConfigFolderPath($instance);
 
@@ -63,7 +70,6 @@ class FileService
         $missingFiles = [];
         $checkFailedFiles = [];
 
-        $key = $this->configurationService->getConfigEncryptionKey();
         foreach ($configuredFiles as $configuredFile) {
             $configuredFileKey = $configuredFile->getPath();
             $expectedFilePath = $instanceConfigFolder . DIRECTORY_SEPARATOR . $configuredFileKey;
@@ -80,45 +86,21 @@ class FileService
                 continue;
             }
 
-            if (!$key) {
-                $this->io->error('No encryption key configured.');
+            if (!$this->decryptFile($expectedEncryptedFilePath, $decrypted, $error)) {
+                $this->io->error('Failed to decrypt file ' . $expectedEncryptedFilePath . ': ' . $error);
                 return false;
             }
 
-            if (!extension_loaded('openssl')) {
-                $this->io->error('openssl extension is not installed.');
-                return false;
-            }
-
-            $encryptedFileContent = file_get_contents($expectedEncryptedFilePath);
-            $startOfPayload = strlen(self::ENCRYPTION_ALGORITHM) + self::ENCRYPTION_IV_LENGTH + self::ENCRYPTION_TAG_LENGTH;
-            $encryptedFilePayload = substr($encryptedFileContent, $startOfPayload);
-            if (strlen($encryptedFileContent) < $startOfPayload) {
-                $this->io->error('file too small for the chosen algorithm.');
-                return false;
-            }
-
-            $algorithm = substr($encryptedFileContent, 0, strlen(self::ENCRYPTION_ALGORITHM));
-            if ($algorithm !== self::ENCRYPTION_ALGORITHM) {
-                $this->io->error('unexpected algorithm.');
-                return false;
-            }
-
-            $iv = substr($encryptedFileContent, strlen(self::ENCRYPTION_ALGORITHM), self::ENCRYPTION_IV_LENGTH);
-            $tag = substr($encryptedFileContent, strlen(self::ENCRYPTION_ALGORITHM) + self::ENCRYPTION_IV_LENGTH, self::ENCRYPTION_TAG_LENGTH);
-            $hashedKey = hash(self::ENCRYPTION_KEY_HASH_ALGORITHM, $key);
-            $decrypted = openssl_decrypt($encryptedFilePayload, self::ENCRYPTION_ALGORITHM, $hashedKey, OPENSSL_RAW_DATA, $iv, $tag);
-
-            if ($check) {
-                if (file_exists($expectedFilePath)) {
-                    $expectedContent = file_get_contents($expectedFilePath);
-                    if ($expectedContent !== $decrypted) {
-                        $checkFailedFiles[$configuredFileKey] = $expectedFilePath;
-                    }
+            if (file_exists($expectedFilePath) && !$overwrite) {
+                $expectedContent = file_get_contents($expectedFilePath);
+                if ($expectedContent !== $decrypted) {
+                    $checkFailedFiles[$configuredFileKey] = $expectedFilePath;
                 }
-            } else {
-                file_put_contents($expectedFilePath, $decrypted);
+
+                continue;
             }
+
+            file_put_contents($expectedFilePath, $decrypted);
         }
 
         if ($missingFiles !== []) {
@@ -132,6 +114,63 @@ class FileService
         if ($missingFiles !== [] || $checkFailedFiles !== []) {
             return false;
         }
+
+        return true;
+    }
+
+    private function encryptFile(string $filepath, string $content, string &$error = null): bool
+    {
+        $key = $this->configurationService->getConfigEncryptionKey();
+        if (!$key) {
+            $error = 'No encryption key configured.';
+            return false;
+        }
+
+        if (!extension_loaded('openssl')) {
+            $error = 'openssl extension is not installed.';
+            return false;
+        }
+
+        $iv = openssl_random_pseudo_bytes(self::ENCRYPTION_IV_LENGTH);
+        $hashedKey = hash(self::ENCRYPTION_KEY_HASH_ALGORITHM, $key);
+        $encrypted = openssl_encrypt($content, self::ENCRYPTION_ALGORITHM, $hashedKey, OPENSSL_RAW_DATA, $iv, $tag, tag_length: self::ENCRYPTION_TAG_LENGTH);
+
+        file_put_contents($filepath, self::ENCRYPTION_ALGORITHM . $iv . $tag . $encrypted);
+
+        return true;
+    }
+
+    private function decryptFile(string $filepath, string &$decrypted, string &$error = null): bool
+    {
+        $key = $this->configurationService->getConfigEncryptionKey();
+        if (!$key) {
+            $error = 'No encryption key configured.';
+            return false;
+        }
+
+        if (!extension_loaded('openssl')) {
+            $error = 'openssl extension is not installed.';
+            return false;
+        }
+
+        $encryptedFileContent = file_get_contents($filepath);
+        $startOfPayload = strlen(self::ENCRYPTION_ALGORITHM) + self::ENCRYPTION_IV_LENGTH + self::ENCRYPTION_TAG_LENGTH;
+        $encryptedFilePayload = substr($encryptedFileContent, $startOfPayload);
+        if (strlen($encryptedFileContent) < $startOfPayload) {
+            $error = 'File too small for the chosen algorithm.';
+            return false;
+        }
+
+        $algorithm = substr($encryptedFileContent, 0, strlen(self::ENCRYPTION_ALGORITHM));
+        if ($algorithm !== self::ENCRYPTION_ALGORITHM) {
+            $error = 'Unexpected algorithm.';
+            return false;
+        }
+
+        $iv = substr($encryptedFileContent, strlen(self::ENCRYPTION_ALGORITHM), self::ENCRYPTION_IV_LENGTH);
+        $tag = substr($encryptedFileContent, strlen(self::ENCRYPTION_ALGORITHM) + self::ENCRYPTION_IV_LENGTH, self::ENCRYPTION_TAG_LENGTH);
+        $hashedKey = hash(self::ENCRYPTION_KEY_HASH_ALGORITHM, $key);
+        $decrypted = openssl_decrypt($encryptedFilePayload, self::ENCRYPTION_ALGORITHM, $hashedKey, OPENSSL_RAW_DATA, $iv, $tag);
 
         return true;
     }
