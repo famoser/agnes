@@ -63,6 +63,11 @@ class ConfigurationService
         $this->config = array_merge_recursive($this->config, $config);
     }
 
+    public function getConfigEncryptionKey(): ?string
+    {
+        return $this->getNestedConfigWithDefault(null, 'config', 'encryption_key');
+    }
+
     public function getConfigRepositoryUrl(): ?string
     {
         return $this->getNestedConfigWithDefault(null, 'config', 'repository', 'url');
@@ -399,7 +404,7 @@ class ConfigurationService
         /** @var File[] $files */
         $files = [];
         foreach ($entries as $entry) {
-            $files[] = new File((bool) $entry['required'], $entry['path']);
+            $files[] = new File((bool) $entry['required'], (bool) $entry['encrypted'], $entry['path']);
         }
 
         return $files;
