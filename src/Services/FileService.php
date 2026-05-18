@@ -26,8 +26,10 @@ readonly class FileService
         foreach ($configuredFiles as $configuredFile) {
             $configuredFileKey = $configuredFile->getPath();
             $expectedFilePath = $instanceConfigFolder . DIRECTORY_SEPARATOR . $configuredFileKey;
-
-            if (!$configuredFile->getIsEncrypted() || !file_exists($expectedFilePath)) {
+            if (!$configuredFile->getIsEncrypted()) {
+                continue;
+            }
+            if (!file_exists($expectedFilePath)) {
                 continue;
             }
 

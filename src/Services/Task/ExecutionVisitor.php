@@ -2,7 +2,6 @@
 
 namespace Agnes\Services\Task;
 
-use Agnes\Models\Task\AbstractTask;
 use Agnes\Models\Task\Build;
 use Agnes\Models\Task\Clear;
 use Agnes\Models\Task\Copy;
