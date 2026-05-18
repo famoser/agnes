@@ -8,8 +8,10 @@ use Agnes\Models\Instance;
 use Agnes\Models\Task\Build;
 use Agnes\Models\Task\Clear;
 use Agnes\Models\Task\Copy;
+use Agnes\Models\Task\Decrypt;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
+use Agnes\Models\Task\Encrypt;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
 use Agnes\Models\Task\Run;
@@ -37,6 +39,16 @@ class TaskFactory
     public function createRelease(string $name): ?Release
     {
         return new Release($name);
+    }
+
+    public function createEncrypt(Instance $target, bool $overwrite): ?Encrypt
+    {
+        return new Encrypt($target, $overwrite);
+    }
+
+    public function createDecrypt(Instance $target, bool $diff): ?Decrypt
+    {
+        return new Decrypt($target, $diff);
     }
 
     public function createDeploy(Instance $target): ?Deploy

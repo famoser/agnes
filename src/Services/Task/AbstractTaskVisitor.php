@@ -6,8 +6,10 @@ use Agnes\Models\Task\AbstractTask;
 use Agnes\Models\Task\Build;
 use Agnes\Models\Task\Clear;
 use Agnes\Models\Task\Copy;
+use Agnes\Models\Task\Decrypt;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
+use Agnes\Models\Task\Encrypt;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
 use Agnes\Models\Task\Run;
@@ -52,6 +54,16 @@ abstract class AbstractTaskVisitor
     public function visitClear(Clear $clear)
     {
         return $this->visitDefault($clear);
+    }
+
+    public function visitEncrypt(Encrypt $encrypt)
+    {
+        return $this->visitDefault($encrypt);
+    }
+
+    public function visitDecrypt(Decrypt $decrypt)
+    {
+        return $this->visitDefault($decrypt);
     }
 
     protected function visitDefault(AbstractTask $payload)

@@ -2,11 +2,14 @@
 
 namespace Agnes\Services\Task;
 
+use Agnes\Models\Task\AbstractTask;
 use Agnes\Models\Task\Build;
 use Agnes\Models\Task\Clear;
 use Agnes\Models\Task\Copy;
+use Agnes\Models\Task\Decrypt;
 use Agnes\Models\Task\Deploy;
 use Agnes\Models\Task\Download;
+use Agnes\Models\Task\Encrypt;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
 use Agnes\Models\Task\Run;
@@ -27,9 +30,22 @@ class ExecutionVisitor extends AbstractTaskVisitor
     {
     }
 
-    /**
-     *
-     */
+    public function visitEncrypt(Encrypt $encrypt): bool
+    {
+        $this->io->text('encrypting files');
+        $this->fileService->encrypt($encrypt->getTarget(), $encrypt->isOverwrite());
+
+        return true;
+    }
+
+    public function visitDecrypt(Decrypt $decrypt): bool
+    {
+        $this->io->text('decrypting files');
+        $this->fileService->encrypt($decrypt->getTarget(), $decrypt->isDiff());
+
+        return true;
+    }
+
     public function visitCopy(Copy $copy): bool
     {
         // does not make sense to copy from itself
@@ -55,9 +71,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
         return true;
     }
 
-    /**
-     *
-     */
     public function visitClear(Clear $clear): bool
     {
         $target = $clear->getTarget();
@@ -70,9 +83,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
         return true;
     }
 
-    /**
-     *
-     */
     public function visitDeploy(Deploy $deploy): bool
     {
         $target = $deploy->getTarget();
@@ -99,9 +109,6 @@ class ExecutionVisitor extends AbstractTaskVisitor
         return true;
     }
 
-    /**
-     *
-     */
     public function visitRun(Run $run): bool
     {
         $target = $run->getTarget();

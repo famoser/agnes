@@ -46,6 +46,36 @@ class TaskService
         $this->addTask($task);
     }
 
+    public function addDecryptTask(string $target, bool $check): void
+    {
+        $instances = $this->instanceService->getInstancesBySpecification($target);
+        if ([] === $instances) {
+            $this->io->error('For target specification ' . $target . ' no matching instances were found.');
+
+            return;
+        }
+
+        foreach ($instances as $instance) {
+            $task = $this->taskFactory->createDecrypt($instance, $check);
+            $this->addTask($task);
+        }
+    }
+
+    public function addEncryptTask(string $target, bool $overwrite): void
+    {
+        $instances = $this->instanceService->getInstancesBySpecification($target);
+        if ([] === $instances) {
+            $this->io->error('For target specification ' . $target . ' no matching instances were found.');
+
+            return;
+        }
+
+        foreach ($instances as $instance) {
+            $task = $this->taskFactory->createEncrypt($instance, $overwrite);
+            $this->addTask($task);
+        }
+    }
+
     public function addRunTask(string $target, string $script): void
     {
         $instances = $this->instanceService->getInstancesBySpecification($target);
@@ -79,6 +109,9 @@ class TaskService
 
         $this->ensureBuild($releaseOrCommitish);
         foreach ($instances as $instance) {
+            $decrypt = $this->taskFactory->createDecrypt($instance, true);
+            $this->addTask($decrypt);
+
             $task = $this->taskFactory->createDeploy($instance);
             $this->addTask($task);
         }
