@@ -7,7 +7,9 @@ use Agnes\Models\Instance;
 use Agnes\Models\Task\AbstractTask;
 use Agnes\Models\Task\Build;
 use Agnes\Models\Task\Copy;
+use Agnes\Models\Task\Decrypt;
 use Agnes\Models\Task\Deploy;
+use Agnes\Models\Task\Encrypt;
 use Agnes\Models\Task\Release;
 use Agnes\Models\Task\Rollback;
 use Agnes\Models\Task\Run;
@@ -21,14 +23,14 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     {
     }
 
-    public function visitRelease(Release $release): array
+    public function visitEncrypt(Encrypt $encrypt): array
     {
-        return $this->createFrom();
+        return $this->createFrom($encrypt->getTarget());
     }
 
-    public function visitBuild(Build $build): array
+    public function visitDecrypt(Decrypt $decrypt): array
     {
-        return $this->createFrom();
+        return $this->createFrom($decrypt->getTarget());
     }
 
     public function visitDeploy(Deploy $deploy): array
@@ -49,6 +51,11 @@ class TaskConfigVisitor extends AbstractTaskVisitor
     public function visitCopy(Copy $copy): array
     {
         return $this->createFrom($copy->getTarget());
+    }
+
+    public function visitDefault(AbstractTask $payload): array
+    {
+        return $this->createFrom();
     }
 
     private function createFrom(?Instance $instance = null): array
