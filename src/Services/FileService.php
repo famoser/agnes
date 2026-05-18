@@ -23,8 +23,6 @@ readonly class FileService
         $instanceConfigFolder = $this->getLocalConfigFolderPath($instance);
 
         $configuredFiles = $this->configurationService->getFiles();
-        $checkFailedFiles = [];
-
         foreach ($configuredFiles as $configuredFile) {
             $configuredFileKey = $configuredFile->getPath();
             $expectedFilePath = $instanceConfigFolder . DIRECTORY_SEPARATOR . $configuredFileKey;
@@ -41,28 +39,21 @@ readonly class FileService
                     return false;
                 }
 
-                if ($fileContent !== $decrypted) {
-                    $checkFailedFiles[$configuredFileKey] = $encryptedFilePath;
+                if ($fileContent === $decrypted) {
+                    continue;
                 }
-
-                continue;
             }
 
             if (!$this->encryptFile($encryptedFilePath, $fileContent, $error)) {
                 $this->io->error('Failed to encrypt file ' . $expectedFilePath . ': ' . $error);
                 return false;
             }
-
-        }
-
-        if ($checkFailedFiles !== []) {
-            $this->io->error('For instance ' . $instance->describe() . ' the encrypted file(s) ' . implode(', ', array_keys($checkFailedFiles)) . ' differ to their decrypted versions, expected at ' . implode(', ', $checkFailedFiles));
         }
 
         return true;
     }
 
-    public function decrypt(Instance $instance, bool $overwrite): ?bool
+    public function decrypt(Instance $instance, bool $diff): ?bool
     {
         $instanceConfigFolder = $this->getLocalConfigFolderPath($instance);
 
@@ -91,7 +82,7 @@ readonly class FileService
                 return false;
             }
 
-            if (file_exists($expectedFilePath) && !$overwrite) {
+            if (file_exists($expectedFilePath) && $diff) {
                 $expectedContent = file_get_contents($expectedFilePath);
                 if ($expectedContent !== $decrypted) {
                     $checkFailedFiles[$configuredFileKey] = $expectedFilePath;
@@ -108,7 +99,7 @@ readonly class FileService
         }
 
         if ($checkFailedFiles !== []) {
-            $this->io->error('For instance ' . $instance->describe() . ' the encrypted file(s) ' . implode(', ', array_keys($checkFailedFiles)) . ' differ to their decrypted versions, expected at ' . implode(', ', $checkFailedFiles));
+            $this->io->warning('For instance ' . $instance->describe() . ' the encrypted file(s) ' . implode(', ', array_keys($checkFailedFiles)) . ' differ to their decrypted versions, expected at ' . implode(', ', $checkFailedFiles));
         }
 
         if ($missingFiles !== [] || $checkFailedFiles !== []) {
