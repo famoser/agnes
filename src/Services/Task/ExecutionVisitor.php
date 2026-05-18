@@ -41,7 +41,7 @@ class ExecutionVisitor extends AbstractTaskVisitor
     public function visitDecrypt(Decrypt $decrypt): bool
     {
         $this->io->text('decrypting files');
-        $this->fileService->encrypt($decrypt->getTarget(), $decrypt->isDiff());
+        $this->fileService->decrypt($decrypt->getTarget(), $decrypt->isDiff());
 
         return true;
     }

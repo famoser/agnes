@@ -109,7 +109,7 @@ readonly class FileService
         return true;
     }
 
-    private function encryptFile(string $filepath, string $content, string &$error = null): bool
+    private function encryptFile(string $filepath, string $content, ?string &$error = null): bool
     {
         $key = $this->configurationService->getConfigEncryptionKey();
         if (!$key) {
@@ -131,7 +131,7 @@ readonly class FileService
         return true;
     }
 
-    private function decryptFile(string $filepath, string &$decrypted, string &$error = null): bool
+    private function decryptFile(string $filepath, ?string &$decrypted = null, ?string &$error = null): bool
     {
         $key = $this->configurationService->getConfigEncryptionKey();
         if (!$key) {
