@@ -404,7 +404,7 @@ class ConfigurationService
         /** @var File[] $files */
         $files = [];
         foreach ($entries as $entry) {
-            $files[] = new File((bool) $entry['required'] ?? false, (bool) $entry['encrypted'] ?? false, $entry['path']);
+            $files[] = new File((bool) ($entry['required'] ?? false), (bool) ($entry['encrypted'] ?? false), $entry['path']);
         }
 
         return $files;
